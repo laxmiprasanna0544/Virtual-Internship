@@ -1,0 +1,439 @@
+"use client";
+
+import * as React from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Info,
+  Loader2,
+  MessagesSquare,
+  RotateCcw,
+} from "lucide-react";
+import { toast } from "sonner";
+import { PageHeader } from "@/components/shared/page-header";
+import { LoadingState } from "@/components/shared/states";
+import { DynamicIcon } from "@/components/shared/icon";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { INTERVIEW_KINDS, questionsFor } from "@/data/interviews";
+import { saveInterview, useCareerContext } from "@/lib/career";
+import { useStudentContext } from "@/lib/use-student";
+import { buildSession, evaluateInterview, type InterviewFeedback } from "@/lib/interviews";
+import { uid } from "@/lib/ids";
+import { delay } from "@/lib/api";
+import { cn, formatDate } from "@/lib/utils";
+import type { InterviewKind } from "@/types";
+
+type Stage =
+  | { name: "picking" }
+  | { name: "running"; kind: InterviewKind; index: number }
+  | { name: "result"; kind: InterviewKind; feedback: InterviewFeedback };
+
+export function InterviewView() {
+  const { ready, student, domain } = useStudentContext();
+  const career = useCareerContext();
+
+  const [stage, setStage] = React.useState<Stage>({ name: "picking" });
+  const [answers, setAnswers] = React.useState<Record<string, string>>({});
+  const [busy, setBusy] = React.useState(false);
+
+  if (!ready || !career.ready) {
+    return <LoadingState label="Loading the interview centre" rows={3} />;
+  }
+
+  const domainName = domain?.name ?? "your field";
+
+  function start(kind: InterviewKind) {
+    setAnswers({});
+    setStage({ name: "running", kind, index: 0 });
+  }
+
+  async function finish(kind: InterviewKind) {
+    if (!student || !domain) return;
+    setBusy(true);
+    await delay(650);
+    const feedback = evaluateInterview(kind, domainName, answers);
+    saveInterview(
+      buildSession(uid("intv"), student.id, kind, domain.id, answers, feedback),
+    );
+    setBusy(false);
+    setStage({ name: "result", kind, feedback });
+    toast.success("Session complete", {
+      description: `Overall score ${feedback.overallScore}/100.`,
+    });
+  }
+
+  /* ---------------------------- Picking ---------------------------- */
+  if (stage.name === "picking") {
+    return (
+      <div>
+        <PageHeader
+          title="Mock Interview Centre"
+          description="Practise before the real interview. Each session ends with written feedback on clarity, structure and depth, plus the specific things to work on next."
+        />
+
+        <div className="grid gap-5 md:grid-cols-3">
+          {INTERVIEW_KINDS.map((item) => {
+            const done = career.interviews.filter((s) => s.kind === item.kind);
+            const best = done.length
+              ? Math.max(...done.map((s) => s.overallScore))
+              : null;
+
+            return (
+              <div
+                key={item.kind}
+                className="lift-card flex flex-col rounded-2xl border border-border bg-card p-6 shadow-soft"
+              >
+                <div className="flex items-start justify-between">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <DynamicIcon name={item.icon} className="h-5 w-5" />
+                  </span>
+                  {best != null && (
+                    <Badge variant="success" className="font-mono">
+                      Best {best}
+                    </Badge>
+                  )}
+                </div>
+
+                <h2 className="mt-4 text-[0.98rem] font-semibold text-foreground">
+                  {item.title}
+                </h2>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+                  {item.blurb}
+                </p>
+
+                <p className="mt-4 text-[0.76rem] text-muted-foreground">
+                  {questionsFor(item.kind, domainName).length} questions ·{" "}
+                  {done.length} session{done.length === 1 ? "" : "s"} completed
+                </p>
+
+                <Button
+                  className="group mt-5 w-full"
+                  onClick={() => start(item.kind)}
+                  disabled={!domain}
+                >
+                  Start session <ArrowRight className="cta-arrow" />
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+
+        {!domain && (
+          <p className="mt-6 text-sm text-muted-foreground">
+            Choose a domain first — technical questions are tailored to it.
+          </p>
+        )}
+
+        <div className="mt-6 flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-5">
+          <Info
+            className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <p className="text-[0.78rem] leading-relaxed text-muted-foreground">
+            Feedback is generated by a transparent rubric over what you write —
+            answer length, sentence structure, signposting, and whether you
+            include specifics. It is a practice aid, not a human assessor, and
+            it will not catch a factually wrong answer. Your clarity and
+            structure scores feed the Communication component of your Career
+            Readiness Score.
+          </p>
+        </div>
+
+        {/* ── History ──────────────────────────────────────────────── */}
+        {career.interviews.length > 0 && (
+          <section className="mt-10">
+            <h2 className="eyebrow mb-4">Previous sessions</h2>
+            <div className="space-y-2.5">
+              {[...career.interviews]
+                .sort((a, b) => b.completedAt.localeCompare(a.completedAt))
+                .map((session) => (
+                  <div
+                    key={session.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-5 py-3.5 shadow-soft"
+                  >
+                    <div>
+                      <p className="text-[0.88rem] font-medium capitalize text-foreground">
+                        {session.kind} interview
+                      </p>
+                      <p className="mt-0.5 text-[0.75rem] text-muted-foreground">
+                        {formatDate(session.completedAt)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-4 text-[0.76rem] text-muted-foreground">
+                      <span>Clarity {session.scores.clarity}</span>
+                      <span>Structure {session.scores.structure}</span>
+                      <span>Depth {session.scores.depth}</span>
+                      <Badge variant="outline" className="font-mono">
+                        {session.overallScore}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </section>
+        )}
+      </div>
+    );
+  }
+
+  /* ---------------------------- Running ---------------------------- */
+  if (stage.name === "running") {
+    const questions = questionsFor(stage.kind, domainName);
+    const question = questions[stage.index];
+    const isLast = stage.index === questions.length - 1;
+    const answer = answers[question.id] ?? "";
+
+    return (
+      <div>
+        <PageHeader
+          title={`${stage.kind === "hr" ? "HR" : stage.kind === "technical" ? "Technical" : "Project"} Interview`}
+          description={`Question ${stage.index + 1} of ${questions.length}`}
+          action={
+            <Button
+              variant="outline"
+              onClick={() => setStage({ name: "picking" })}
+            >
+              <ArrowLeft /> Exit session
+            </Button>
+          }
+        />
+
+        {/* progress */}
+        <div className="mb-6 h-1.5 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-primary transition-[width] duration-500"
+            style={{
+              width: `${((stage.index + 1) / questions.length) * 100}%`,
+            }}
+          />
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+          <section className="rounded-2xl border border-border bg-card p-7 shadow-soft">
+            <p className="eyebrow">The question</p>
+            <h2 className="mt-3 font-display text-xl font-semibold leading-snug tracking-tight text-foreground">
+              {question.prompt}
+            </h2>
+
+            <Textarea
+              className="mt-6"
+              rows={10}
+              value={answer}
+              onChange={(e) =>
+                setAnswers((prev) => ({ ...prev, [question.id]: e.target.value }))
+              }
+              placeholder="Type your answer as you would say it out loud. Aim for 60–150 words."
+            />
+            <p className="mt-2 text-[0.74rem] text-muted-foreground">
+              {answer.trim() ? answer.trim().split(/\s+/).length : 0} words
+            </p>
+
+            <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
+              {stage.index > 0 && (
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() =>
+                    setStage({ ...stage, index: stage.index - 1 })
+                  }
+                >
+                  <ArrowLeft /> Previous
+                </Button>
+              )}
+              {isLast ? (
+                <Button
+                  className="flex-1"
+                  onClick={() => finish(stage.kind)}
+                  disabled={busy}
+                >
+                  {busy ? (
+                    <>
+                      <Loader2 className="animate-spin" /> Scoring…
+                    </>
+                  ) : (
+                    <>
+                      Finish and get feedback <ArrowRight className="cta-arrow" />
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  className="group flex-1"
+                  onClick={() => setStage({ ...stage, index: stage.index + 1 })}
+                >
+                  Next question <ArrowRight className="cta-arrow" />
+                </Button>
+              )}
+            </div>
+          </section>
+
+          <aside className="space-y-5">
+            <section className="rounded-2xl border border-border bg-muted/30 p-6">
+              <p className="eyebrow mb-3">What a strong answer covers</p>
+              <ul className="space-y-2.5">
+                {question.lookingFor.map((point) => (
+                  <li
+                    key={point}
+                    className="flex items-start gap-2.5 text-[0.82rem] leading-relaxed text-muted-foreground"
+                  >
+                    <span
+                      className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary"
+                      aria-hidden="true"
+                    />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+              <p className="eyebrow mb-2">Likely follow-up</p>
+              <p className="text-[0.85rem] italic leading-relaxed text-muted-foreground">
+                &ldquo;{question.followUp}&rdquo;
+              </p>
+            </section>
+          </aside>
+        </div>
+      </div>
+    );
+  }
+
+  /* ---------------------------- Result ----------------------------- */
+  const { feedback, kind } = stage;
+
+  return (
+    <div>
+      <PageHeader
+        title="Session feedback"
+        description="Scored on how you communicated, not on whether the content was factually right."
+        action={
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => start(kind)}>
+              <RotateCcw /> Retry
+            </Button>
+            <Button onClick={() => setStage({ name: "picking" })}>Done</Button>
+          </div>
+        }
+      />
+
+      <div className="grid gap-5 lg:grid-cols-[0.75fr_1.25fr]">
+        <div className="rounded-2xl border border-border bg-card p-7 shadow-soft">
+          <p className="eyebrow">Overall</p>
+          <p className="mt-4 font-display text-5xl font-semibold tracking-tight text-foreground">
+            {feedback.overallScore}
+            <span className="text-xl font-normal text-muted-foreground"> / 100</span>
+          </p>
+
+          <div className="mt-6 space-y-3.5 border-t border-border pt-5">
+            {(
+              [
+                ["Clarity", feedback.scores.clarity],
+                ["Structure", feedback.scores.structure],
+                ["Depth", feedback.scores.depth],
+              ] as const
+            ).map(([label, score]) => (
+              <div key={label}>
+                <div className="flex items-baseline justify-between text-[0.8rem]">
+                  <span className="text-muted-foreground">{label}</span>
+                  <span className="font-mono font-semibold text-foreground">
+                    {score}
+                  </span>
+                </div>
+                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className={cn(
+                      "h-full rounded-full",
+                      score >= 75
+                        ? "bg-success"
+                        : score >= 50
+                          ? "bg-primary"
+                          : "bg-warning",
+                    )}
+                    style={{ width: `${score}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-5">
+          <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+            <h2 className="text-[0.95rem] font-semibold text-foreground">
+              What went well
+            </h2>
+            <ul className="mt-4 space-y-2.5">
+              {feedback.strengths.map((item) => (
+                <li key={item} className="flex items-start gap-2.5 text-sm">
+                  <CheckCircle2
+                    className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success"
+                    aria-hidden="true"
+                  />
+                  <span className="text-muted-foreground">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {feedback.improvements.length > 0 && (
+            <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+              <h2 className="text-[0.95rem] font-semibold text-foreground">
+                Work on next
+              </h2>
+              <ul className="mt-4 space-y-2.5">
+                {feedback.improvements.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-sm">
+                    <ArrowRight
+                      className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary"
+                      aria-hidden="true"
+                    />
+                    <span className="text-muted-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+            <div className="flex items-center gap-2.5">
+              <MessagesSquare className="h-4 w-4 text-primary" aria-hidden="true" />
+              <h2 className="text-[0.95rem] font-semibold text-foreground">
+                Question by question
+              </h2>
+            </div>
+            <div className="mt-4 divide-y divide-border">
+              {feedback.perQuestion.map((item) => (
+                <div key={item.questionId} className="py-3.5 first:pt-0 last:pb-0">
+                  <div className="flex items-start justify-between gap-4">
+                    <p className="text-[0.85rem] font-medium text-foreground">
+                      {item.prompt}
+                    </p>
+                    <Badge
+                      variant={item.answered ? "outline" : "warning"}
+                      className="shrink-0 font-mono"
+                    >
+                      {item.answered
+                        ? Math.round(
+                            (item.scores.clarity +
+                              item.scores.structure +
+                              item.scores.depth) /
+                              3,
+                          )
+                        : "—"}
+                    </Badge>
+                  </div>
+                  <p className="mt-1.5 text-[0.78rem] leading-relaxed text-muted-foreground">
+                    {item.note}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}

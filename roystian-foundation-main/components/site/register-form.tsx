@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { safeNext } from "@/lib/safe-next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -40,12 +41,6 @@ const schema = z
   });
 
 type FormValues = z.infer<typeof schema>;
-
-/** Only same-origin paths are honoured, so `next` cannot redirect off-site. */
-function safeNext(value: string | null): string | null {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) return null;
-  return value;
-}
 
 export function RegisterForm() {
   const router = useRouter();

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { AppShell, type NavItem } from "@/components/dashboard/shell";
 import { RouteGuard } from "@/components/dashboard/guard";
+import { TRAINER_ADMIN_SECTIONS } from "@/lib/supabase/roles";
 
 export const ADMIN_NAV: NavItem[] = [
   { href: "/admin", label: "Overview", icon: LayoutGrid, exact: true },
@@ -38,16 +39,9 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
-const TRAINER_ALLOWED = new Set([
-  "/admin",
-  "/admin/students",
-  "/admin/assignments",
-  "/admin/projects",
-  "/admin/trainers",
-  "/admin/settings",
-]);
-
-const TRAINER_NAV = ADMIN_NAV.filter((item) => TRAINER_ALLOWED.has(item.href));
+const TRAINER_NAV = ADMIN_NAV.filter((item) =>
+  (TRAINER_ADMIN_SECTIONS as readonly string[]).includes(item.href),
+);
 
 export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -64,7 +58,7 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
         <AppShell
           user={user}
           nav={user.role === "trainer" ? TRAINER_NAV : ADMIN_NAV}
-          homeHref="/admin"
+          homeHref={user.role === "trainer" ? "/admin/trainers" : "/admin"}
           title={`${user.role === "trainer" ? "Trainer" : "Admin"} · ${match?.label ?? "Overview"}`}
         >
           {children}

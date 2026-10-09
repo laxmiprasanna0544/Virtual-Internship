@@ -225,7 +225,7 @@ export async function registerStudent(input: RegisterInput): Promise<LoginResult
     email: input.email.trim().toLowerCase(),
     password: input.password,
     options: {
-      emailRedirectTo: `${window.location.origin}/login`,
+      emailRedirectTo: `${window.location.origin}/auth/callback?next=/start`,
       data: {
         full_name: input.name.trim(),
         mobile: input.mobile ?? "",
@@ -252,6 +252,27 @@ export async function registerStudent(input: RegisterInput): Promise<LoginResult
 
   const user = await syncUser(data.user.id, true);
   return user ? { ok: true, user } : { ok: false, error: "Unable to load your new account." };
+}
+
+/**
+ * Sends a password reset link. Always reports success so the form cannot be
+ * used to discover which email addresses have accounts.
+ */
+export async function requestPasswordReset(email: string): Promise<void> {
+  await getSupabaseBrowserClient().auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+  });
+}
+
+/** Sets a new password for the user signed in through a recovery link. */
+export async function updatePassword(password: string): Promise<{ ok: boolean; error?: string }> {
+  const { error } = await getSupabaseBrowserClient().auth.updateUser({ password });
+  if (!error) return { ok: true };
+  if (error.code === "same_password") {
+    return { ok: false, error: "Choose a password different from your current one." };
+  }
+  if (error.code === "weak_password") return { ok: false, error: error.message };
+  return { ok: false, error: "This reset link has expired. Request a new one." };
 }
 
 export interface ProfileUpdate {
@@ -295,7 +316,10 @@ export async function updateOwnProfile(
   let emailChangePending = false;
   const nextEmail = values.email.trim().toLowerCase();
   if (nextEmail !== user.email?.toLowerCase()) {
-    const { error } = await supabase.auth.updateUser({ email: nextEmail });
+    const { error } = await supabase.auth.updateUser(
+      { email: nextEmail },
+      { emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard/profile` },
+    );
     if (error) return { ok: false, error: "Profile saved, but the email address could not be changed." };
     emailChangePending = true;
   }

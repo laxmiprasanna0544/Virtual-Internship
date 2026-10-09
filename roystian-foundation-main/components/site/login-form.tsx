@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { safeNext } from "@/lib/safe-next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,17 +22,15 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-/** Only same-origin paths are honoured, so `next` cannot redirect off-site. */
-function safeNext(value: string | null): string | null {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) return null;
-  return value;
-}
-
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = safeNext(searchParams.get("next"));
-  const [serverError, setServerError] = React.useState<string | null>(null);
+  const [serverError, setServerError] = React.useState<string | null>(
+    searchParams.get("error") === "link"
+      ? "That link is invalid or has expired. Sign in, or request a new link."
+      : null,
+  );
   const [showPassword, setShowPassword] = React.useState(false);
 
   const {
@@ -106,9 +105,15 @@ export function LoginForm() {
             </div>
 
             <div>
-              <Label htmlFor="password" className="mb-2 block">
-                Password
-              </Label>
+              <div className="mb-2 flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs font-medium text-primary hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <div className="relative">
                 <Input
                   id="password"

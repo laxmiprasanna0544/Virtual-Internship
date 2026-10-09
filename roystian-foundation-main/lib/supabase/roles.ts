@@ -22,8 +22,25 @@ export const PROTECTED_ROUTES: { prefix: string; allow: Role[] }[] = [
   { prefix: "/partner", allow: ["partner", "admin"] },
 ];
 
+/**
+ * The parts of /admin a trainer may open: their students, submission and
+ * project review, and the trainer directory. Finance, catalogue, leads,
+ * analytics and settings are admin-only.
+ */
+export const TRAINER_ADMIN_SECTIONS = [
+  "/admin/students",
+  "/admin/assignments",
+  "/admin/projects",
+  "/admin/trainers",
+] as const;
+
+const matches = (pathname: string, prefix: string) =>
+  pathname === prefix || pathname.startsWith(`${prefix}/`);
+
 export function protectionFor(pathname: string) {
-  return PROTECTED_ROUTES.find(
-    ({ prefix }) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-  );
+  const rule = PROTECTED_ROUTES.find(({ prefix }) => matches(pathname, prefix));
+  if (rule?.prefix === "/admin" && !TRAINER_ADMIN_SECTIONS.some((s) => matches(pathname, s))) {
+    return { prefix: rule.prefix, allow: ["admin"] as Role[] };
+  }
+  return rule;
 }

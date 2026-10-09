@@ -11,7 +11,7 @@ import type { SkillSignal } from "@/types";
 
 export function SkillGapView() {
   const { user } = useSession();
-  const campus = useCampusContext(user?.id ?? null);
+  const campus = useCampusContext(user?.collegeId ?? user?.id ?? null);
 
   if (!campus.ready) return <LoadingState label="Generating report" rows={3} />;
 

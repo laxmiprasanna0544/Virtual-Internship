@@ -17,3 +17,4 @@ next-env.d.ts
 
 # Local test evidence (videos/screenshots) — never deploy or commit
 test-evidence
+!.env.example

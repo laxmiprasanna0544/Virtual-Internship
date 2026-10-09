@@ -18,12 +18,12 @@ import { useCampusContext } from "@/lib/campus";
 import { useSession } from "@/lib/auth";
 
 /**
- * The college account id matches the seeded college record, so a placement
- * officer's session resolves directly to their institution.
+ * A placement officer's profile links to their college record (collegeId), so
+ * the session resolves directly to their institution.
  */
 export function CampusOverview() {
   const { user } = useSession();
-  const campus = useCampusContext(user?.id ?? null);
+  const campus = useCampusContext(user?.collegeId ?? user?.id ?? null);
 
   if (!campus.ready) return <LoadingState label="Loading your cohort" rows={3} />;
 

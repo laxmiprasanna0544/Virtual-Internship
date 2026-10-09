@@ -14,7 +14,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { QRCode } from "@/components/shared/qr-code";
 import { VerifyWidget } from "@/components/site/verify-widget";
-import { verifyCertificate, type VerificationResult } from "@/lib/certificates";
+import { verifyCertificatePublic, type VerificationResult } from "@/lib/certificates";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { getProgram } from "@/data/programs";
 import { EASE, STAGGER } from "@/lib/motion";
@@ -24,15 +24,35 @@ export function VerificationResultView({ certificateId }: { certificateId: strin
   const [result, setResult] = React.useState<VerificationResult | null>(null);
   const [checkedAt, setCheckedAt] = React.useState<string | null>(null);
   const [origin, setOrigin] = React.useState("");
+  const [lookupError, setLookupError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setOrigin(window.location.origin);
-    const timer = window.setTimeout(() => {
-      setResult(verifyCertificate(certificateId));
-      setCheckedAt(new Date().toISOString());
-    }, 550);
-    return () => window.clearTimeout(timer);
+    let active = true;
+    verifyCertificatePublic(certificateId)
+      .then((next) => {
+        if (!active) return;
+        setResult(next);
+        setCheckedAt(new Date().toISOString());
+      })
+      .catch((error) => {
+        if (active) setLookupError(error instanceof Error ? error.message : "Verification failed.");
+      });
+    return () => {
+      active = false;
+    };
   }, [certificateId]);
+
+  if (lookupError) {
+    return (
+      <div
+        role="alert"
+        className="rounded-2xl border border-destructive/30 bg-card p-7 text-sm text-destructive shadow-soft"
+      >
+        {lookupError} Please try again in a moment.
+      </div>
+    );
+  }
 
   if (!result) {
     return (

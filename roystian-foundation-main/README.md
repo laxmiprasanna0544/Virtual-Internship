@@ -99,12 +99,19 @@ required.
 
 ## Local setup
 
+Authentication runs on Supabase. Locally that is the Supabase CLI stack, which
+needs Docker Desktop running.
+
 ```bash
 npm install
+cp .env.example .env.local      # then fill in the values printed by the next step
+npx supabase start              # local Postgres, Auth, Storage, Studio (first run pulls images)
+npx supabase db reset           # applies supabase/migrations and supabase/seed.sql
 npm run dev
 ```
 
-Open <http://localhost:3000>.
+Open <http://localhost:3000>. Supabase Studio is at <http://127.0.0.1:54323>
+and local auth emails land in Mailpit at <http://127.0.0.1:54324>.
 
 | Script | What it does |
 | --- | --- |
@@ -114,20 +121,68 @@ Open <http://localhost:3000>.
 | `npm run lint` | ESLint via `next lint` |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run verify` | Compiles and runs the logic self-test (see [Verification](#verification)) |
+| `npm run test:rls` | Row level security checks against the local Supabase stack (run `npx supabase db reset` first) |
+
+After changing the schema, regenerate types with
+`npx supabase gen types typescript --local > types/supabase.ts`.
 
 Requires Node.js 18.18+ (tested on Node 26).
+
+### Database layout
+
+- `supabase/migrations/` — schema, row level security, and a temporary
+  `legacy_demo_id` bridge column (see below).
+- `supabase/seed.sql` — **local only**: one login per role. Never run it
+  against production.
+- `lib/supabase/` — browser, server and service-role clients, and the
+  middleware session refresh.
+- `middleware.ts` — server-side route protection by role.
+
+Every signup becomes a `student`. Staff roles (`admin`, `trainer`, `college`,
+`partner`) cannot be set from the client, not even by an admin; grant them in
+SQL or Studio:
+
+```sql
+update public.profiles set role = 'admin' where email = 'someone@example.org';
+```
+
+### Transition state
+
+**On Supabase:** sign-in and roles; the whole student journey — enrolment
+(`/api/enrolments`), module progress and notes, assessments (scored on the
+server, `/api/assessments/submit`), practical task submissions with file
+uploads to private Storage, certificate issue (`/api/certificates/issue`),
+notifications, and public certificate verification.
+
+**Still in the browser demo database (`lib/db.ts`):** the admin console,
+campus and partner dashboards, and the career tools (projects, readiness,
+badges, resume, interviews, challenges, fellowship, passport). Staff accounts
+reach that data through the temporary `profiles.legacy_demo_id` link; drop it
+once those screens move.
+
+**Payments are still simulated.** `/api/enrolments` only runs when
+`PAYMENT_MODE=simulated` (the default outside production) and refuses every
+request in production until the Cashfree webhook replaces it.
+
+| Script | What it checks |
+| --- | --- |
+| `npm run test:rls` | What each role can and cannot read or write |
+| `npm run test:journey` | Signup → enrolment → assessments → task → certificate → verification through the real API routes (needs `npm run dev` running; set `BASE_URL` if not on :3000) |
 
 ---
 
 ## Demo credentials
 
-They are also printed on `/login`, each with a one-click sign-in button.
+Local development only. `supabase/seed.sql` creates these accounts; they do
+not exist in production and are no longer shown on `/login`.
 
 | Role | Email | Password |
 | --- | --- | --- |
 | Student | `student@roystian.demo` | `student123` |
 | Admin | `admin@roystian.demo` | `admin123` |
 | Trainer | `trainer@roystian.demo` | `trainer123` |
+| College | `college@roystian.demo` | `college123` |
+| Partner | `partner@roystian.demo` | `partner123` |
 
 The demo student is **Rahul Sharma**, enrolled in the AI/ML Industry-Led
 internship at 4 of 10 modules complete — deliberately mid-journey so the locked

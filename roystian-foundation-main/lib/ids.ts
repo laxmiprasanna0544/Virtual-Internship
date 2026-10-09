@@ -1,6 +1,6 @@
 import { DOMAINS } from "@/data/domains";
 
-function domainCode(domainId: string | null | undefined): string {
+export function domainCode(domainId: string | null | undefined): string {
   const match = DOMAINS.find((d) => d.id === domainId);
   return match?.code ?? "GEN";
 }

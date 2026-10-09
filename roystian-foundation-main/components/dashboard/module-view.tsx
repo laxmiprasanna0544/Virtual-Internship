@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { getModule } from "@/data/domains";
 import { useStudentContext } from "@/lib/use-student";
-import { markModuleComplete, markModuleIncomplete, saveModuleNote } from "@/lib/progress";
+import { saveModuleNote, setModuleComplete } from "@/lib/student-data";
 
 export function ModuleView({ moduleId }: { moduleId: string }) {
   const router = useRouter();
@@ -61,22 +61,30 @@ export function ModuleView({ moduleId }: { moduleId: string }) {
   const previous = index > 0 ? domain.modules[index - 1] : null;
   const next = index < domain.modules.length - 1 ? domain.modules[index + 1] : null;
 
-  function toggleComplete() {
+  async function toggleComplete() {
     if (!student || !domain) return;
-    if (completed) {
-      markModuleIncomplete(student.id, domain.id, lesson!.id);
-      toast("Module marked incomplete");
-    } else {
-      markModuleComplete(student.id, domain.id, lesson!.id);
-      toast.success("Module marked complete", {
-        description: next ? `Next up: ${next.title}` : "That was the last lesson.",
-      });
+    try {
+      await setModuleComplete(domain.id, lesson!.id, !completed);
+      if (completed) {
+        toast("Module marked incomplete");
+      } else {
+        toast.success("Module marked complete", {
+          description: next ? `Next up: ${next.title}` : "That was the last lesson.",
+        });
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to update progress.");
     }
   }
 
-  function handleNoteBlur() {
+  async function handleNoteBlur() {
     if (!student || !domain) return;
-    saveModuleNote(student.id, domain.id, lesson!.id, note);
+    if (note === (progress?.notes?.[lesson!.id] ?? "")) return;
+    try {
+      await saveModuleNote(domain.id, lesson!.id, note);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to save your note.");
+    }
   }
 
   return (

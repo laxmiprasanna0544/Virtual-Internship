@@ -3,6 +3,7 @@
 import { getDomain } from "@/data/domains";
 import { getProgram } from "@/data/programs";
 import { getDB, updateDB } from "@/lib/db";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { buildCertificateId } from "@/lib/ids";
 import { runCompletionFlow } from "@/lib/communications";
 import { pushNotification } from "@/lib/notifications";
@@ -38,6 +39,38 @@ export type VerificationResult =
   | { status: "valid"; certificate: Certificate }
   | { status: "revoked"; certificate: Certificate }
   | { status: "not-found" };
+
+/**
+ * Public verification against Supabase. Works for anyone, signed in or not,
+ * and returns only the fields printed on the certificate.
+ */
+export async function verifyCertificatePublic(
+  certificateId: string,
+): Promise<VerificationResult> {
+  const { data, error } = await getSupabaseBrowserClient().rpc("verify_certificate", {
+    certificate_id: certificateId,
+  });
+  if (error) throw new Error("Verification is temporarily unavailable.");
+  const row = data?.[0];
+  if (!row) return { status: "not-found" };
+  const certificate: Certificate = {
+    id: row.id,
+    studentId: "",
+    studentName: row.student_name,
+    domainId: row.domain_id,
+    domainName: row.domain_name,
+    programId: row.program_id,
+    programName: row.program_name,
+    duration: row.duration,
+    issueDate: row.issue_date,
+    status: row.status,
+    registrationId: "",
+    finalScore: 0,
+  };
+  return row.status === "revoked"
+    ? { status: "revoked", certificate }
+    : { status: "valid", certificate };
+}
 
 export function verifyCertificate(certificateId: string): VerificationResult {
   const id = certificateId.trim().toUpperCase();

@@ -139,8 +139,8 @@ export function CampusShell({ children }: { children: React.ReactNode }) {
                       <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        onClick={() => {
-                          logout();
+                        onClick={async () => {
+                          await logout();
                           router.push("/login");
                         }}
                       >

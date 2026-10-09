@@ -24,9 +24,7 @@ import { Progress } from "@/components/ui/progress";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { getAssessment, getFinalAssessment } from "@/data/domains";
 import { useStudentContext } from "@/lib/use-student";
-import { submitAssessment } from "@/lib/progress";
-import { generateCertificate } from "@/lib/certificates";
-import { pushNotification } from "@/lib/notifications";
+import { requestCertificate, submitAssessment } from "@/lib/student-data";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { AssessmentAttempt } from "@/types";
@@ -37,6 +35,7 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
   const [answers, setAnswers] = React.useState<Record<string, number[]>>({});
   const [index, setIndex] = React.useState(0);
   const [result, setResult] = React.useState<AssessmentAttempt | null>(null);
+  const [submitting, setSubmitting] = React.useState(false);
 
   const reduce = useReducedMotion();
 
@@ -135,26 +134,26 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
     });
   }
 
-  function handleSubmit() {
-    if (!student || !domain || !assessment) return;
-    const attempt = submitAssessment(student.id, domain.id, assessment, answers);
+  async function handleSubmit() {
+    if (!student || !domain || !assessment || submitting) return;
+    setSubmitting(true);
+    let attempt: AssessmentAttempt;
+    try {
+      attempt = await submitAssessment(assessment.id, answers);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not submit your answers.");
+      return;
+    } finally {
+      setSubmitting(false);
+    }
     setResult(attempt);
 
     if (attempt.passed) {
       toast.success(`Passed with ${attempt.percentage}%`);
       if (isFinal) {
-        pushNotification(
-          student.id,
-          "assessment",
-          "Final Assessment Passed",
-          `You scored ${attempt.percentage}% on the ${domain.name} final assessment.`,
-          "/dashboard/certificate",
-        );
-        // Issue the certificate if every other requirement is already met.
-        window.setTimeout(() => {
-          const freshStudent = student;
-          generateCertificate(freshStudent);
-        }, 50);
+        // Issue the certificate if every other requirement is already met;
+        // the server re-checks and declines otherwise.
+        requestCertificate().catch(() => undefined);
       }
     } else {
       toast.error(`Scored ${attempt.percentage}% — 70% needed to pass`);
@@ -459,8 +458,8 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
             ) : (
               <ConfirmDialog
                 trigger={
-                  <Button>
-                    <CheckCircle2 /> Submit Assessment
+                  <Button disabled={submitting}>
+                    <CheckCircle2 /> {submitting ? "Submitting…" : "Submit Assessment"}
                   </Button>
                 }
                 title="Submit this assessment?"

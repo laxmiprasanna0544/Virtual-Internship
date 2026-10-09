@@ -28,28 +28,31 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useStudentContext } from "@/lib/use-student";
-import { generateCertificate } from "@/lib/certificates";
+import { requestCertificate } from "@/lib/student-data";
 
 export function CertificateView() {
   const ctx = useStudentContext();
   const [origin, setOrigin] = React.useState("");
   const [shareOpen, setShareOpen] = React.useState<"linkedin" | "instagram" | null>(null);
+  const requested = React.useRef(false);
 
   React.useEffect(() => {
     setOrigin(window.location.origin);
   }, []);
 
-  // Issue the certificate as soon as every requirement is satisfied.
+  // Ask the server to issue the certificate once every requirement looks
+  // satisfied. The server re-checks the rules and has the final say.
   React.useEffect(() => {
-    if (ctx.ready && ctx.student && ctx.certificateUnlocked && !ctx.certificate) {
-      const issued = generateCertificate(ctx.student);
-      if (issued) {
-        toast.success("Certificate issued", {
-          description: `Certificate ID ${issued.id}`,
-        });
-      }
-    }
-  }, [ctx.ready, ctx.student, ctx.certificateUnlocked, ctx.certificate]);
+    if (!ctx.ready || !ctx.certificateUnlocked || ctx.certificate || requested.current) return;
+    requested.current = true;
+    requestCertificate()
+      .then((issued) =>
+        toast.success("Certificate issued", { description: `Certificate ID ${issued.id}` }),
+      )
+      .catch((error) =>
+        toast.error(error instanceof Error ? error.message : "Could not issue the certificate."),
+      );
+  }, [ctx.ready, ctx.certificateUnlocked, ctx.certificate]);
 
   if (!ctx.ready) return <LoadingState label="Loading certificate" rows={3} />;
 

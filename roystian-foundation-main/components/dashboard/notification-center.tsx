@@ -18,8 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EmptyState } from "@/components/shared/states";
-import { listNotifications, markAllRead, markRead } from "@/lib/notifications";
-import { useDatabase } from "@/lib/db";
+import { useNotifications } from "@/lib/notifications-data";
 import { relativeTime, cn } from "@/lib/utils";
 import type { NotificationType } from "@/types";
 
@@ -32,12 +31,8 @@ const ICONS: Record<NotificationType, typeof Bell> = {
   system: Info,
 };
 
-export function NotificationCenter({ userId }: { userId: string }) {
-  const db = useDatabase();
-  const notifications = React.useMemo(
-    () => (db ? listNotifications(userId) : []),
-    [db, userId],
-  );
+export function NotificationCenter() {
+  const { notifications, markRead, markAllRead } = useNotifications();
   const unread = notifications.filter((n) => !n.read).length;
 
   return (
@@ -63,7 +58,7 @@ export function NotificationCenter({ userId }: { userId: string }) {
           {unread > 0 && (
             <button
               type="button"
-              onClick={() => markAllRead(userId)}
+              onClick={() => void markAllRead()}
               className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
             >
               <CheckCheck className="h-3.5 w-3.5" /> Mark all read
@@ -121,7 +116,7 @@ export function NotificationCenter({ userId }: { userId: string }) {
                     {notification.href ? (
                       <Link
                         href={notification.href}
-                        onClick={() => markRead(notification.id)}
+                        onClick={() => void markRead(notification.id)}
                         className="flex gap-3 px-4 py-3 transition-colors hover:bg-muted/60"
                       >
                         {body}
@@ -129,7 +124,7 @@ export function NotificationCenter({ userId }: { userId: string }) {
                     ) : (
                       <button
                         type="button"
-                        onClick={() => markRead(notification.id)}
+                        onClick={() => void markRead(notification.id)}
                         className="flex w-full gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/60"
                       >
                         {body}

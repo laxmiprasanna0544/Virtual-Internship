@@ -15,7 +15,7 @@ import { summariseProgress } from "@/lib/progress";
 
 export function CampusStudents() {
   const { user } = useSession();
-  const campus = useCampusContext(user?.id ?? null);
+  const campus = useCampusContext(user?.collegeId ?? user?.id ?? null);
   const db = useDatabase();
   const [query, setQuery] = React.useState("");
 

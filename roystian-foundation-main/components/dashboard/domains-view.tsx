@@ -46,11 +46,13 @@ import { PROGRAMS, getProgram } from "@/data/programs";
 import { EXPERIENCE_LEVELS, EDUCATION_LEVELS } from "@/data/content";
 import { buildRecommendation } from "@/lib/recommendation";
 import { useStudentContext } from "@/lib/use-student";
-import { createRegistration, switchActiveDomain, PAYMENT_METHODS } from "@/lib/payments";
-import { loginAs } from "@/lib/auth";
+import { PAYMENT_METHODS } from "@/lib/payments";
+import { updateOwnProfile } from "@/lib/auth";
+import { enrol, switchActiveDomain } from "@/lib/student-data";
 import { formatINR, formatDate, cn } from "@/lib/utils";
 import type {
   Domain,
+  EducationLevel,
   ExperienceLevel,
   PaymentMethod,
   ProgramId,
@@ -163,14 +165,18 @@ export function DomainsView() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function handleSwitchActive(domainId: string) {
+  async function handleSwitchActive(domainId: string) {
     if (!student) return;
     const targetDomain = getDomain(domainId);
-    const success = switchActiveDomain(student.id, domainId);
-    if (success) {
-      toast.success(
-        `Switched active internship to ${targetDomain?.name ?? domainId}!`,
-      );
+    try {
+      const success = await switchActiveDomain(domainId);
+      if (success) {
+        toast.success(`Switched active internship to ${targetDomain?.name ?? domainId}!`);
+      } else {
+        toast.error("That domain has no completed payment.");
+      }
+    } catch {
+      toast.error("Unable to switch domain. Please try again.");
     }
   }
 
@@ -183,7 +189,7 @@ export function DomainsView() {
     setIsProcessing(true);
   }
 
-  function handleSimulationComplete() {
+  async function handleSimulationComplete() {
     setIsProcessing(false);
     if (simulateFailure) {
       setFailureError(
@@ -196,29 +202,32 @@ export function DomainsView() {
     try {
       if (!selectedDomain || !selectedProgram) return;
 
-      const result = createRegistration({
+      const saved = await updateOwnProfile({
         name: name.trim(),
         email: email.trim().toLowerCase(),
         mobile: mobile.trim(),
         college: college.trim(),
         course: course.trim(),
         city: city.trim(),
-        educationLevel: educationLevel as any,
-        domainId: selectedDomain.id,
-        experience: selectedExperience,
-        programId: selectedProgram.id,
-        method: paymentMethod,
-        existingStudentId: student.id,
+        educationLevel: (educationLevel || student.educationLevel) as EducationLevel,
       });
+      if (!saved.ok) throw new Error(saved.error);
 
-      loginAs(result.student.id, "student");
-      setNewRegistration(result.registration);
+      const registration = await enrol({
+        domainId: selectedDomain.id,
+        programId: selectedProgram.id,
+        experience: selectedExperience,
+        method: paymentMethod,
+      });
+      setNewRegistration(registration);
       setStep("success");
       toast.success(`Enrolled in ${selectedDomain.name} successfully!`);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error("Enrolment error:", err);
-      setFailureError("Failed to complete registration. Please try again.");
+      setFailureError(
+        err instanceof Error && err.message ? err.message : "Failed to complete registration. Please try again.",
+      );
       toast.error("Registration failed");
     }
   }

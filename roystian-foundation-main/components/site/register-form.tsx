@@ -2,11 +2,11 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { AlertCircle, Loader2, UserPlus } from "lucide-react";
+import { AlertCircle, Loader2, MailCheck, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { registerStudent } from "@/lib/auth";
-import { delay } from "@/lib/api";
 import { EDUCATION_LEVELS } from "@/data/content";
 import type { EducationLevel } from "@/types";
 
@@ -32,7 +31,7 @@ const schema = z
     course: z.string().min(2, "Enter your course or degree."),
     city: z.string().min(2, "Enter your city."),
     educationLevel: z.string().min(1, "Select your education level."),
-    password: z.string().min(6, "Use at least 6 characters."),
+    password: z.string().min(8, "Use at least 8 characters."),
     confirmPassword: z.string(),
   })
   .refine((values) => values.password === values.confirmPassword, {
@@ -42,9 +41,18 @@ const schema = z
 
 type FormValues = z.infer<typeof schema>;
 
+/** Only same-origin paths are honoured, so `next` cannot redirect off-site. */
+function safeNext(value: string | null): string | null {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return null;
+  return value;
+}
+
 export function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = safeNext(searchParams.get("next"));
   const [serverError, setServerError] = React.useState<string | null>(null);
+  const [confirmEmail, setConfirmEmail] = React.useState<string | null>(null);
 
   const {
     register,
@@ -69,8 +77,7 @@ export function RegisterForm() {
 
   async function onSubmit(values: FormValues) {
     setServerError(null);
-    await delay(600);
-    const result = registerStudent({
+    const result = await registerStudent({
       name: values.name,
       email: values.email,
       password: values.password,
@@ -84,10 +91,33 @@ export function RegisterForm() {
       setServerError(result.error ?? "Unable to create the account.");
       return;
     }
+    if (result.needsConfirmation) {
+      setConfirmEmail(values.email);
+      return;
+    }
     toast.success("Account created", {
-      description: "Choose a domain to start your internship.",
+      description: redirectTo ? undefined : "Choose a domain to start your internship.",
     });
-    router.push("/start");
+    router.push(redirectTo ?? "/start");
+  }
+
+  if (confirmEmail) {
+    return (
+      <div
+        role="status"
+        className="rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8"
+      >
+        <MailCheck className="h-6 w-6 text-primary" aria-hidden="true" />
+        <h1 className="mt-4 font-display text-xl font-semibold text-foreground">
+          Confirm your email
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          We sent a confirmation link to{" "}
+          <span className="font-medium text-foreground">{confirmEmail}</span>. Open it to
+          activate your account, then sign in.
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -100,8 +130,8 @@ export function RegisterForm() {
         Create your account
       </h1>
       <p className="mt-1.5 text-sm text-muted-foreground">
-        You can also start an internship first — an account is created automatically at
-        checkout.
+        You need an account to complete checkout. Your onboarding choices are kept
+        while you sign up.
       </p>
 
       {serverError && (
@@ -231,7 +261,10 @@ export function RegisterForm() {
 
       <p className="mt-5 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-primary hover:underline">
+        <Link
+          href={redirectTo ? `/login?next=${encodeURIComponent(redirectTo)}` : "/login"}
+          className="font-medium text-primary hover:underline"
+        >
           Sign in
         </Link>
       </p>

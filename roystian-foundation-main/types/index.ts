@@ -24,6 +24,8 @@ export interface User {
   avatarColor: string;
   createdAt: string;
   isDemoSeed?: boolean;
+  /** College placement-cell accounts only: the linked college record. */
+  collegeId?: string | null;
 }
 
 export interface Student extends User {

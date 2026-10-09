@@ -32,8 +32,9 @@ import { getDomain } from "@/data/domains";
 import { getProgram } from "@/data/programs";
 import { EXPERIENCE_LEVELS } from "@/data/content";
 import { getDraft, saveDraft, clearDraft } from "@/lib/onboarding";
-import { PAYMENT_METHODS, createRegistration } from "@/lib/payments";
-import { getCurrentStudent, loginAs } from "@/lib/auth";
+import { PAYMENT_METHODS } from "@/lib/payments";
+import { updateOwnProfile } from "@/lib/auth";
+import { enrol } from "@/lib/student-data";
 import { formatINR, cn } from "@/lib/utils";
 import type { OnboardingDraft, PaymentMethod } from "@/types";
 
@@ -120,7 +121,7 @@ export function CheckoutView() {
     setProcessingOpen(true);
   }
 
-  function handleSimulationComplete() {
+  async function handleSimulationComplete() {
     setProcessingOpen(false);
     if (!draft || !domain || !program || !draft.experience) return;
 
@@ -134,30 +135,35 @@ export function CheckoutView() {
     }
 
     try {
-      setPhase("idle");
-      const existing = getCurrentStudent();
-      const result = createRegistration({
-        name: draft!.fullName,
-        email: draft!.email,
-        mobile: draft!.mobile,
-        college: draft!.college,
-        course: draft!.course,
-        city: draft!.city,
-        educationLevel: draft!.educationLevel || undefined,
+      // Checkout requires sign-in (middleware.ts), so the onboarding details
+      // are saved onto the signed-in student's own profile first.
+      const saved = await updateOwnProfile({
+        name: draft.fullName,
+        email: draft.email,
+        mobile: draft.mobile,
+        college: draft.college,
+        course: draft.course,
+        city: draft.city,
+        educationLevel: draft.educationLevel || "undergraduate",
+      });
+      if (!saved.ok) throw new Error(saved.error);
+
+      const registration = await enrol({
         domainId: domain.id,
-        experience: draft!.experience!,
         programId: program.id,
+        experience: draft.experience,
         method,
-        existingStudentId: existing?.id ?? null,
       });
 
-      loginAs(result.student.id, "student");
+      setPhase("idle");
       clearDraft();
-      router.push(`/payment/success?registrationId=${result.registration.id}`);
+      router.push(`/payment/success?registrationId=${encodeURIComponent(registration.id)}`);
     } catch (err) {
       console.error("Registration creation failed:", err);
       setPhase("failed");
-      setFailureError("Registration creation failed. Please try again.");
+      setFailureError(
+        err instanceof Error && err.message ? err.message : "Registration creation failed. Please try again.",
+      );
       toast.error("Registration failed");
     }
   }

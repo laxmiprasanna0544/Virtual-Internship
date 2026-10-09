@@ -4,13 +4,12 @@ import { useMemo } from "react";
 import { getDomain, getFinalAssessment } from "@/data/domains";
 import { getProgram } from "@/data/programs";
 import { getTrainerForDomain } from "@/data/trainers";
-import { useDatabase } from "@/lib/db";
-import { useSession } from "@/lib/auth";
+import { useStudentData } from "@/lib/student-data";
 import {
   completionRequirements,
   isCertificateUnlocked,
   summariseProgress,
-} from "@/lib/progress";
+} from "@/lib/rules";
 import { buildSchedule } from "@/lib/schedule";
 import type {
   Assessment,
@@ -26,10 +25,12 @@ import type {
   Submission,
   Trainer,
 } from "@/types";
-import type { ProgressSummary } from "@/lib/progress";
+import type { ProgressSummary } from "@/lib/rules";
 
 export interface StudentContext {
   ready: boolean;
+  /** Set when the student's records could not be loaded. */
+  error: string | null;
   student: Student | null;
   domain: Domain | null;
   program: Program | null;
@@ -61,15 +62,15 @@ const EMPTY_SUMMARY: ProgressSummary = {
   nextModuleId: null,
 };
 
-/** Everything a student-facing screen needs, derived from one database read. */
+/** Everything a student-facing screen needs, derived from the Supabase records. */
 export function useStudentContext(): StudentContext {
-  const db = useDatabase();
-  const { student: sessionStudent, ready } = useSession();
+  const { status, records, error } = useStudentData();
 
   return useMemo(() => {
-    if (!db || !ready || !sessionStudent) {
+    if (status !== "ready" || !records) {
       return {
         ready: false,
+        error,
         student: null,
         domain: null,
         program: null,
@@ -88,38 +89,24 @@ export function useStudentContext(): StudentContext {
       };
     }
 
-    const student =
-      db.students.find((s) => s.id === sessionStudent.id) ?? sessionStudent;
+    const { student, registrations, progress, submission, certificates } = records;
     const domain = getDomain(student.domainId) ?? null;
     const program = getProgram(student.programId) ?? null;
-    const registrations = db.registrations
-      .filter((r) => r.studentId === student.id)
-      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
     const registration =
+      registrations.find((r) => r.id === student.registrationId) ??
       registrations.find((r) => r.domainId === student.domainId) ??
       registrations[0] ??
       null;
-    const progress =
-      db.progress.find(
-        (p) => p.studentId === student.id && p.domainId === student.domainId,
-      ) ?? null;
-    const submission =
-      db.submissions.find(
-        (s) => s.studentId === student.id && s.domainId === student.domainId,
-      ) ?? null;
     const summary = summariseProgress(student, progress, submission);
     const requirements = completionRequirements(student, progress, submission);
     const certificate =
-      db.certificates.find(
-        (c) => c.studentId === student.id && c.domainId === student.domainId,
-      ) ??
-      db.certificates.find((c) => c.studentId === student.id) ??
-      null;
+      certificates.find((c) => c.domainId === student.domainId) ?? certificates[0] ?? null;
     const nextModule =
       domain?.modules.find((m) => m.id === summary.nextModuleId) ?? null;
 
     return {
       ready: true,
+      error: null,
       student,
       domain,
       program,
@@ -139,5 +126,5 @@ export function useStudentContext(): StudentContext {
           : [],
       trainer: domain ? getTrainerForDomain(domain.id) : null,
     };
-  }, [db, ready, sessionStudent]);
+  }, [status, records, error]);
 }

@@ -2,227 +2,63 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
-  AlertTriangle,
   ArrowRight,
   Bell,
   CheckCircle2,
   Copy,
   LayoutDashboard,
-  Loader2,
   Mail,
   MessageCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/states";
-import { useDatabase } from "@/lib/db";
 import { getDomain } from "@/data/domains";
 import { getProgram } from "@/data/programs";
-import { getDraft, clearDraft } from "@/lib/onboarding";
-import { createRegistration } from "@/lib/payments";
-import { getCurrentStudent, loginAs } from "@/lib/auth";
-import { readStorage, writeStorage, removeStorage, STORAGE_KEYS } from "@/lib/storage";
+import { useStudentContext } from "@/lib/use-student";
 import { formatDate, formatINR } from "@/lib/utils";
-import type { PaymentMethod } from "@/types";
 
 const AUTOMATED_STEPS = [
-  { icon: Mail, label: "Confirmation email sent" },
-  { icon: MessageCircle, label: "WhatsApp confirmation sent" },
+  { icon: Mail, label: "Confirmation email queued" },
+  { icon: MessageCircle, label: "WhatsApp confirmation queued" },
   { icon: LayoutDashboard, label: "Dashboard activated" },
   { icon: Bell, label: "Programme team notified" },
 ];
 
-type Status = "verifying" | "creating" | "ready" | "failed";
-
-interface PendingPayment {
-  cfOrderId: string;
-  method: PaymentMethod;
-}
-
-interface CompletedPayment {
-  cfOrderId: string;
-  registrationId: string;
-}
-
+/**
+ * Shows the registration the enrolment route just created, read back from
+ * Supabase. Payment confirmation itself happens on the server; this page
+ * only displays the result.
+ */
 export function PaymentSuccessView() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const db = useDatabase();
-  const [status, setStatus] = React.useState<Status>("verifying");
-  const [registrationId, setRegistrationId] = React.useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = React.useState<string>("");
+  const ctx = useStudentContext();
   const [visibleSteps, setVisibleSteps] = React.useState(0);
-
-  const cfOrderId = searchParams.get("order_id");
-  const regIdParam = searchParams.get("registrationId") || searchParams.get("id");
+  const registrationId = searchParams.get("registrationId") || searchParams.get("id");
 
   React.useEffect(() => {
-    if (regIdParam) {
-      setRegistrationId(regIdParam);
-      setStatus("ready");
-      return;
-    }
-
-    if (!cfOrderId) {
-      const current = getCurrentStudent();
-      if (current?.registrationId) {
-        setRegistrationId(current.registrationId);
-        setStatus("ready");
-        return;
-      }
-      setStatus("failed");
-      setErrorMessage("No payment order found. Please try again.");
-      return;
-    }
-
-    const completed = readStorage<CompletedPayment | null>(
-      STORAGE_KEYS.completedPayment,
-      null,
-    );
-    if (completed && completed.cfOrderId === cfOrderId) {
-      setRegistrationId(completed.registrationId);
-      setStatus("ready");
-      return;
-    }
-
-    async function verifyAndRegister() {
-      try {
-        const res = await fetch(
-          `/api/payment/verify?orderId=${encodeURIComponent(cfOrderId!)}`,
-        );
-        if (!res.ok) throw new Error("Verification request failed");
-
-        const { status: paymentStatus } = await res.json();
-
-        if (paymentStatus !== "PAID") {
-          setStatus("failed");
-          setErrorMessage(
-            paymentStatus === "ACTIVE"
-              ? "Payment was not completed. Please try again."
-              : `Payment ${paymentStatus?.toLowerCase() ?? "failed"}. No amount has been charged.`,
-          );
-          return;
-        }
-
-        setStatus("creating");
-
-        const pending = readStorage<PendingPayment | null>(
-          STORAGE_KEYS.pendingPayment,
-          null,
-        );
-        const draft = getDraft();
-
-        if (
-          !draft.fullName ||
-          !draft.email ||
-          !draft.mobile ||
-          !draft.college ||
-          !draft.course ||
-          !draft.domainId ||
-          !draft.programId ||
-          !draft.experience
-        ) {
-          setStatus("failed");
-          setErrorMessage(
-            "Registration data not found. Please contact support with your payment reference.",
-          );
-          return;
-        }
-
-        const existing = getCurrentStudent();
-        const result = createRegistration({
-          name: draft.fullName,
-          email: draft.email,
-          mobile: draft.mobile,
-          college: draft.college,
-          course: draft.course,
-          city: draft.city,
-          educationLevel: draft.educationLevel || undefined,
-          domainId: draft.domainId,
-          experience: draft.experience,
-          programId: draft.programId,
-          method: pending?.method ?? "upi",
-          existingStudentId: existing?.id ?? null,
-        });
-
-        loginAs(result.student.id, "student");
-        clearDraft();
-        removeStorage(STORAGE_KEYS.pendingPayment);
-
-        writeStorage<CompletedPayment>(STORAGE_KEYS.completedPayment, {
-          cfOrderId: cfOrderId!,
-          registrationId: result.registration.id,
-        });
-
-        setRegistrationId(result.registration.id);
-        setStatus("ready");
-      } catch (err) {
-        console.error("Payment verification error:", err);
-        setStatus("failed");
-        setErrorMessage("Could not verify your payment. Please contact support.");
-      }
-    }
-
-    verifyAndRegister();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cfOrderId]);
-
-  React.useEffect(() => {
-    if (status !== "ready") return;
+    if (!ctx.ready) return;
     const timers = AUTOMATED_STEPS.map((_, index) =>
       window.setTimeout(() => setVisibleSteps(index + 1), 350 * (index + 1)),
     );
     return () => timers.forEach((timer) => window.clearTimeout(timer));
-  }, [status]);
+  }, [ctx.ready]);
 
-  if (status === "verifying" || status === "creating") {
-    return (
-      <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm font-medium text-foreground">
-          {status === "verifying" ? "Verifying your payment…" : "Activating your dashboard…"}
-        </p>
-        <p className="text-xs text-muted-foreground">This will only take a moment.</p>
-      </div>
-    );
-  }
-
-  if (status === "failed") {
-    return (
-      <div className="flex flex-col items-center gap-6 py-16 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
-          <AlertTriangle className="h-6 w-6 text-destructive" />
-        </span>
-        <div>
-          <h2 className="font-display text-xl font-semibold text-foreground">
-            Payment not confirmed
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground">{errorMessage}</p>
-        </div>
-        <div className="flex flex-wrap justify-center gap-3">
-          <Button onClick={() => router.push("/checkout")}>Try again</Button>
-          <Button variant="outline" asChild>
-            <Link href="/start">Back to onboarding</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!db) {
+  if (!ctx.ready) {
     return <div className="skeleton h-72 rounded-2xl" />;
   }
 
-  const registration =
-    db.registrations.find((r) => r.id === registrationId) ?? db.registrations[0];
+  const registration = registrationId
+    ? ctx.registrations.find((r) => r.id === registrationId)
+    : ctx.registration;
 
-  if (!registration) {
+  if (!registration || registration.paymentStatus !== "successful") {
     return (
       <EmptyState
         title="No registration found"
-        description="We could not find a registration to show. Start the onboarding flow to create one."
+        description="We could not find a confirmed registration on your account. Start the onboarding flow to create one."
         actionLabel="Start my internship"
         actionHref="/start"
       />
@@ -232,9 +68,11 @@ export function PaymentSuccessView() {
   const domain = getDomain(registration.domainId);
   const program = getProgram(registration.programId);
 
+  const confirmedId = registration.id;
+
   function copyId() {
     navigator.clipboard
-      ?.writeText(registration.id)
+      ?.writeText(confirmedId)
       .then(() => toast.success("Registration ID copied"))
       .catch(() => toast.error("Could not copy the ID"));
   }

@@ -9,13 +9,11 @@ import { LoadingState } from "@/components/shared/states";
 import { DemoBadge } from "@/components/shared/demo-banner";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { ThemeToggle } from "@/components/shared/theme";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useDatabase, resetDB } from "@/lib/db";
 import { useSession } from "@/lib/auth";
-import { DEMO_ACCOUNTS } from "@/lib/auth";
 import { formatDateTime } from "@/lib/utils";
 
 export function AdminSettings() {
@@ -157,28 +155,10 @@ export function AdminSettings() {
           <span className="font-medium text-foreground">{user?.name}</span> (
           {user?.role}).
         </p>
-        <ul className="mt-4 space-y-2.5">
-          {DEMO_ACCOUNTS.map((account) => (
-            <li
-              key={account.email}
-              className="flex flex-col gap-2 rounded-lg border border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-foreground">{account.label}</p>
-                <p className="mt-0.5 font-mono text-xs text-muted-foreground">
-                  {account.email} · {account.password}
-                </p>
-              </div>
-              <Badge variant={account.role === user?.role ? "default" : "secondary"}>
-                {account.role}
-              </Badge>
-            </li>
-          ))}
-        </ul>
         <p className="mt-4 flex items-start gap-2 text-xs text-muted-foreground">
           <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          Demo credentials are published deliberately so reviewers can explore every
-          role. A production build would remove them and use a real identity provider.
+          Accounts are managed in Supabase Auth. Staff roles are granted by an
+          administrator and cannot be self-assigned.
         </p>
       </section>
     </div>

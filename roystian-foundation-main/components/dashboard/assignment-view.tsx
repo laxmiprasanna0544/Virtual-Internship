@@ -19,14 +19,13 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStudentContext } from "@/lib/use-student";
-import { submitAssignment } from "@/lib/submissions";
+import { submitPracticalTask } from "@/lib/student-data";
 import {
   ALLOWED_SUBMISSION_EXTENSIONS,
   MAX_SUBMISSION_FILE_BYTES,
   MIN_SUBMISSION_TEXT_LENGTH,
   validateSubmission,
 } from "@/lib/submission-validation";
-import { delay } from "@/lib/api";
 import { formatDateTime } from "@/lib/utils";
 
 export function AssignmentView() {
@@ -34,7 +33,7 @@ export function AssignmentView() {
   const [text, setText] = React.useState("");
   const [fileName, setFileName] = React.useState<string | null>(null);
   const [fileSize, setFileSize] = React.useState<number | null>(null);
-  const [uploading, setUploading] = React.useState(false);
+  const [file, setFile] = React.useState<File | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
   const [hydrated, setHydrated] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -66,10 +65,10 @@ export function AssignmentView() {
   const status = submission?.status ?? "pending";
   const locked = status === "approved";
 
-  async function handleFakeUpload(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+  function handleFileChosen(event: React.ChangeEvent<HTMLInputElement>) {
+    const chosen = event.target.files?.[0];
+    if (!chosen) return;
+    const ext = chosen.name.split(".").pop()?.toLowerCase() ?? "";
     if (!ALLOWED_SUBMISSION_EXTENSIONS.includes(ext)) {
       toast.error(
         `"${ext || "unknown"}" files aren't accepted. Upload one of: ${ALLOWED_SUBMISSION_EXTENSIONS.join(", ")}.`,
@@ -77,18 +76,16 @@ export function AssignmentView() {
       event.target.value = "";
       return;
     }
-    if (file.size > MAX_SUBMISSION_FILE_BYTES) {
+    if (chosen.size > MAX_SUBMISSION_FILE_BYTES) {
       toast.error("File is larger than the 20MB limit.");
       event.target.value = "";
       return;
     }
-    setUploading(true);
-    await delay(900);
-    setFileName(file.name);
-    setFileSize(file.size);
-    setUploading(false);
+    setFile(chosen);
+    setFileName(chosen.name);
+    setFileSize(chosen.size);
     toast.success("File attached", {
-      description: "In this demo only the file name is stored — no upload occurs.",
+      description: "It uploads when you submit.",
     });
     event.target.value = "";
   }
@@ -127,8 +124,19 @@ export function AssignmentView() {
       return;
     }
 
-    await delay(500);
-    submitAssignment(student, { responseText: text.trim(), fileName });
+    try {
+      await submitPracticalTask({
+        domainId: domain.id,
+        taskTitle: task.title,
+        responseText: text.trim(),
+        file,
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to submit your work.");
+      setSubmitting(false);
+      return;
+    }
+    setFile(null);
     setSubmitting(false);
     toast.success("Practical task submitted", {
       description: "It now moves to the review queue.",
@@ -235,32 +243,24 @@ export function AssignmentView() {
                       Attach your deliverable
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      PDF, notebook, spreadsheet, image or archive, up to 20MB. In this
-                      demo the upload is simulated and only the file name is recorded.
+                      PDF, notebook, spreadsheet, image or archive, up to 20MB. Files
+                      are stored privately and shared only with your reviewers.
                     </p>
                     <input
                       ref={fileInputRef}
                       type="file"
                       className="sr-only"
                       accept={ALLOWED_SUBMISSION_EXTENSIONS.map((ext) => `.${ext}`).join(",")}
-                      onChange={handleFakeUpload}
+                      onChange={handleFileChosen}
                       aria-label="Choose a file to attach"
                     />
                     <Button
                       variant="outline"
                       className="mt-4"
                       onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading}
+                      disabled={submitting}
                     >
-                      {uploading ? (
-                        <>
-                          <Loader2 className="animate-spin" /> Uploading…
-                        </>
-                      ) : (
-                        <>
-                          <Paperclip /> Choose file
-                        </>
-                      )}
+                      <Paperclip /> Choose file
                     </Button>
                   </div>
 
@@ -276,6 +276,7 @@ export function AssignmentView() {
                       <button
                         type="button"
                         onClick={() => {
+                          setFile(null);
                           setFileName(null);
                           setFileSize(null);
                         }}

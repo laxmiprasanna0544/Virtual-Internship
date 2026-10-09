@@ -22,7 +22,7 @@ export default function RegisterPage() {
             points={[
               "Your dashboard activates as soon as registration completes.",
               "You can change your domain and experience level before checkout.",
-              "Payments in this environment are simulated.",
+              "Your onboarding choices are kept while you sign up.",
             ]}
           >
             <div className="max-w-xl">

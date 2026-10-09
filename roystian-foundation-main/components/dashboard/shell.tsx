@@ -131,8 +131,8 @@ export function AppShell({
 
   React.useEffect(() => setMobileOpen(false), [pathname]);
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     router.push("/");
   }
 
@@ -222,7 +222,7 @@ export function AppShell({
 
             <div className="ml-auto flex items-center gap-1">
               <ThemeToggle />
-              <NotificationCenter userId={user.id} />
+              <NotificationCenter />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button

@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useStudentContext } from "@/lib/use-student";
-import { switchActiveDomain } from "@/lib/payments";
+import { switchActiveDomain } from "@/lib/student-data";
 import { getDomain } from "@/data/domains";
 import { getProgram } from "@/data/programs";
 import { formatDate, formatINR, cn } from "@/lib/utils";
@@ -186,10 +186,16 @@ export function DashboardOverview() {
                       <Button
                         size="sm"
                         variant="secondary"
-                        onClick={() => {
-                          const ok = switchActiveDomain(student.id, reg.domainId);
-                          if (ok) {
-                            toast.success(`Switched active internship to ${regDomain?.name ?? reg.domainId}!`);
+                        onClick={async () => {
+                          try {
+                            const ok = await switchActiveDomain(reg.domainId);
+                            if (ok) {
+                              toast.success(`Switched active internship to ${regDomain?.name ?? reg.domainId}!`);
+                            } else {
+                              toast.error("That domain has no completed payment.");
+                            }
+                          } catch {
+                            toast.error("Unable to switch domain. Please try again.");
                           }
                         }}
                       >

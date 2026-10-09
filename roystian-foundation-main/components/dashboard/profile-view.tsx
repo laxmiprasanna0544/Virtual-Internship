@@ -26,9 +26,8 @@ import { EDUCATION_LEVELS, EXPERIENCE_LEVELS } from "@/data/content";
 import { getDomain } from "@/data/domains";
 import { getProgram } from "@/data/programs";
 import { useStudentContext } from "@/lib/use-student";
-import { updateDB, resetDB } from "@/lib/db";
-import { logout } from "@/lib/auth";
-import { delay } from "@/lib/api";
+import { resetDB } from "@/lib/db";
+import { logout, updateOwnProfile } from "@/lib/auth";
 import { formatDate, formatINR } from "@/lib/utils";
 import type { EducationLevel } from "@/types";
 
@@ -89,31 +88,30 @@ export function ProfileView() {
   const { student, domain, program, registration, registrations } = ctx;
 
   async function onSubmit(values: FormValues) {
-    await delay(450);
-    updateDB((db) => {
-      db.students = db.students.map((s) =>
-        s.id === student!.id
-          ? {
-              ...s,
-              name: values.name,
-              email: values.email.toLowerCase(),
-              mobile: values.mobile,
-              college: values.college,
-              course: values.course,
-              city: values.city,
-              educationLevel: values.educationLevel as EducationLevel,
-            }
-          : s,
-      );
+    const result = await updateOwnProfile({
+      name: values.name,
+      email: values.email,
+      mobile: values.mobile,
+      college: values.college,
+      course: values.course,
+      city: values.city,
+      educationLevel: values.educationLevel as EducationLevel,
     });
-    toast.success("Profile updated");
+    if (!result.ok) {
+      toast.error(result.error ?? "Unable to save your profile.");
+      return;
+    }
+    toast.success("Profile updated", {
+      description: result.emailChangePending
+        ? "Check your new inbox to confirm the email change."
+        : undefined,
+    });
   }
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     router.push("/");
   }
-
   function handleReset() {
     resetDB();
     toast.success("Demo data reset", {

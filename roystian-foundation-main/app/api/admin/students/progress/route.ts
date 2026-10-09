@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
       const alreadyPassed = new Set((passedRows ?? []).map((r) => r.assessment_id));
       for (const assessment of getDomainAssessments(domain.id)) {
         if (!alreadyPassed.has(assessment.id)) {
-          await insertOverride(assessment.id, "module", assessment.questions.length);
+          await insertOverride(assessment.id, "module", assessment.questionCount);
         }
       }
     } else {
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
   const final = getFinalAssessment(domain.id);
   if (!final) return badRequest("This domain has no final assessment.");
   if (input.passed) {
-    const { error } = await insertOverride(final.id, "final", final.questions.length);
+    const { error } = await insertOverride(final.id, "final", final.questionCount);
     if (error) return badRequest("Could not record the result.", 500);
   } else {
     await removeOverrides("final");

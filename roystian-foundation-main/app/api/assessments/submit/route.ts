@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAssessment } from "@/data/domains";
+import { getAssessmentWithAnswers } from "@/data/assessment-bank";
 import { scoreAssessment } from "@/lib/rules";
 import { notify } from "@/lib/server/notify";
 import {
@@ -9,6 +9,7 @@ import {
   getSupabaseServerClient,
 } from "@/lib/supabase/server";
 import { toAttempt } from "@/lib/supabase/mappers";
+import type { QuestionReview } from "@/types";
 
 const body = z.object({
   assessmentId: z.string().min(1).max(200),
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid submission." }, { status: 400 });
   }
 
-  const assessment = getAssessment(parsed.data.assessmentId);
+  const assessment = getAssessmentWithAnswers(parsed.data.assessmentId);
   if (!assessment) {
     return NextResponse.json({ error: "Unknown assessment." }, { status: 404 });
   }
@@ -94,5 +95,18 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({ attempt: toAttempt(row) });
+  // Which questions were right is always returned. The correct options and
+  // explanations are revealed only once the attempt passes, so a failed
+  // attempt cannot simply be retaken with the answers copied over.
+  const review: QuestionReview[] = assessment.questions.map((question) => {
+    const given = [...(answers[question.id] ?? [])].sort((a, b) => a - b);
+    const expected = [...question.correct].sort((a, b) => a - b);
+    const correct =
+      given.length === expected.length && given.every((value, i) => value === expected[i]);
+    return scored.passed
+      ? { questionId: question.id, correct, correctOptions: question.correct, explanation: question.explanation }
+      : { questionId: question.id, correct };
+  });
+
+  return NextResponse.json({ attempt: toAttempt(row), review });
 }

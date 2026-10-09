@@ -123,7 +123,7 @@ export function AssessmentsList() {
               <div className="flex h-full flex-col rounded-2xl border border-border bg-card p-5 shadow-soft">
                 <div className="flex items-start justify-between gap-3">
                   <span className="font-mono text-xs font-semibold text-primary">
-                    {assessment.questions.length} questions
+                    {assessment.questionCount} questions
                   </span>
                   {attempt ? (
                     <Badge variant={attempt.passed ? "success" : "warning"}>

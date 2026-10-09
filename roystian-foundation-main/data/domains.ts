@@ -1,18 +1,17 @@
 import { rawDomains } from "./curriculum";
+import { seededInt } from "@/lib/random";
 import type { RawDomain, RawModule } from "./curriculum";
-import { seededInt, seededPick, seededShuffle } from "@/lib/random";
 import type {
-  Assessment,
+  AssessmentInfo,
   Concept,
   Domain,
   DomainCluster,
   Module,
-  Question,
   Resource,
 } from "@/types";
 import { careerDataFor, CLUSTER_OF, CLUSTERS } from "@/data/career-pathways";
 
-const PASSING_SCORE = 70;
+export const PASSING_SCORE = 70;
 
 function parseConcepts(raw: string[]): Concept[] {
   return raw.map((entry) => {
@@ -75,67 +74,6 @@ function buildReading(module: RawModule, concepts: Concept[]) {
   ];
 }
 
-function buildQuestions(
-  moduleId: string,
-  moduleTitle: string,
-  concepts: Concept[],
-  definitionPool: Concept[],
-): Question[] {
-  const questions: Question[] = concepts.map((concept, i) => {
-    const distractors = seededPick(
-      definitionPool.filter(
-        (candidate) =>
-          candidate.term !== concept.term &&
-          candidate.definition !== concept.definition,
-      ),
-      3,
-      `${moduleId}-q${i}-distractors`,
-    ).map((candidate) => candidate.definition);
-
-    const options = seededShuffle(
-      [concept.definition, ...distractors],
-      `${moduleId}-q${i}-options`,
-    );
-
-    return {
-      id: `${moduleId}-q${i + 1}`,
-      type: "single" as const,
-      prompt: `Which of the following best describes ${concept.term}?`,
-      options,
-      correct: [options.indexOf(concept.definition)],
-      explanation: `${concept.term} — ${concept.definition}`,
-    };
-  });
-
-  // One multi-select question that mixes correct and mismatched term/definition pairs.
-  if (concepts.length >= 3) {
-    const correctPairs = concepts
-      .slice(0, 2)
-      .map((c) => `${c.term} — ${c.definition}`);
-    const wrongPairs = [
-      `${concepts[2].term} — ${concepts[0].definition}`,
-      `${concepts[concepts.length - 1].term} — ${concepts[1].definition}`,
-    ];
-    const options = seededShuffle(
-      [...correctPairs, ...wrongPairs],
-      `${moduleId}-multi-options`,
-    );
-    questions.push({
-      id: `${moduleId}-q${concepts.length + 1}`,
-      type: "multiple",
-      prompt: `${moduleTitle}: select every statement below that pairs the term with the correct description.`,
-      options,
-      correct: correctPairs
-        .map((pair) => options.indexOf(pair))
-        .sort((a, b) => a - b),
-      explanation:
-        "Two of these pairings swap descriptions between terms. Read the term first, then check whether the description actually belongs to it.",
-    });
-  }
-
-  return questions;
-}
-
 function buildDomain(raw: RawDomain): Domain {
   const definitionPool: Concept[] = raw.modules.flatMap((m) => parseConcepts(m.c));
 
@@ -183,12 +121,17 @@ function buildDomain(raw: RawDomain): Domain {
 
 export const DOMAINS: Domain[] = rawDomains.map(buildDomain);
 
-function buildAssessments(): Assessment[] {
-  const all: Assessment[] = [];
+/**
+ * Assessment metadata for every screen. The questions themselves — and their
+ * answers — are built only on the server, in data/assessment-bank.ts.
+ */
+function questionCountFor(module: Module): number {
+  return module.concepts.length + (module.concepts.length >= 3 ? 1 : 0);
+}
 
+function buildAssessmentInfo(): AssessmentInfo[] {
+  const all: AssessmentInfo[] = [];
   for (const domain of DOMAINS) {
-    const definitionPool = domain.modules.flatMap((m) => m.concepts);
-
     for (const module of domain.modules) {
       all.push({
         id: module.assessmentId,
@@ -196,51 +139,28 @@ function buildAssessments(): Assessment[] {
         moduleId: module.id,
         kind: "module",
         title: `Module ${String(module.number).padStart(2, "0")} — ${module.title}`,
-        description: `A short demo assessment covering the key concepts from ${module.title}.`,
+        description: `A short assessment covering the key concepts from ${module.title}.`,
         passingScore: PASSING_SCORE,
         durationMinutes: 10,
-        questions: buildQuestions(
-          module.id,
-          module.title,
-          module.concepts,
-          definitionPool,
-        ),
+        questionCount: questionCountFor(module),
       });
     }
-
-    // Final assessment — one sampled question per module, ten in total.
-    const finalQuestions: Question[] = domain.modules.map((module, index) => {
-      const moduleQuestions = buildQuestions(
-        module.id,
-        module.title,
-        module.concepts,
-        definitionPool,
-      );
-      const picked =
-        moduleQuestions[
-          seededInt(`${domain.id}-final-${index}`, 0, moduleQuestions.length - 1)
-        ];
-      return { ...picked, id: `${domain.id}-final-q${index + 1}` };
-    });
-
     all.push({
       id: `${domain.id}-final`,
       domainId: domain.id,
       moduleId: null,
       kind: "final",
       title: `${domain.name} — Final Assessment`,
-      description:
-        "Demo Assessment. The live programme uses 25–50 questions; this demo environment uses 10 questions sampled across every module of the track.",
+      description: `${domain.modules.length} questions sampled across every module of the track.`,
       passingScore: PASSING_SCORE,
       durationMinutes: 30,
-      questions: finalQuestions,
+      questionCount: domain.modules.length,
     });
   }
-
   return all;
 }
 
-export const ASSESSMENTS: Assessment[] = buildAssessments();
+export const ASSESSMENTS: AssessmentInfo[] = buildAssessmentInfo();
 
 const domainIndex = new Map(DOMAINS.map((d) => [d.id, d]));
 const assessmentIndex = new Map(ASSESSMENTS.map((a) => [a.id, a]));
@@ -258,16 +178,16 @@ export function getModule(id: string | null | undefined): Module | undefined {
   return moduleIndex.get(id);
 }
 
-export function getAssessment(id: string | null | undefined): Assessment | undefined {
+export function getAssessment(id: string | null | undefined): AssessmentInfo | undefined {
   if (!id) return undefined;
   return assessmentIndex.get(id);
 }
 
-export function getDomainAssessments(domainId: string): Assessment[] {
+export function getDomainAssessments(domainId: string): AssessmentInfo[] {
   return ASSESSMENTS.filter((a) => a.domainId === domainId && a.kind === "module");
 }
 
-export function getFinalAssessment(domainId: string): Assessment | undefined {
+export function getFinalAssessment(domainId: string): AssessmentInfo | undefined {
   return assessmentIndex.get(`${domainId}-final`);
 }
 

@@ -12,7 +12,7 @@ import {
 } from "@/lib/rules";
 import { buildSchedule } from "@/lib/schedule";
 import type {
-  Assessment,
+  AssessmentInfo,
   Certificate,
   CompletionRequirement,
   Domain,
@@ -44,7 +44,7 @@ export interface StudentContext {
   certificateUnlocked: boolean;
   certificate: Certificate | null;
   nextModule: Module | null;
-  finalAssessment: Assessment | null;
+  finalAssessment: AssessmentInfo | null;
   schedule: ScheduleItem[];
   trainer: Trainer | null;
 }

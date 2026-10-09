@@ -108,6 +108,21 @@ export interface Assessment {
   questions: Question[];
 }
 
+/** An assessment without its questions — what every screen may see. */
+export type AssessmentInfo = Omit<Assessment, "questions"> & { questionCount: number };
+
+/** A question as sent to the browser: no answer, no explanation. */
+export type PublicQuestion = Omit<Question, "correct" | "explanation">;
+
+/** Per-question feedback returned after an attempt is scored. */
+export interface QuestionReview {
+  questionId: string;
+  correct: boolean;
+  /** Revealed only when the attempt passed. */
+  correctOptions?: number[];
+  explanation?: string;
+}
+
 export interface PracticalTask {
   title: string;
   brief: string;

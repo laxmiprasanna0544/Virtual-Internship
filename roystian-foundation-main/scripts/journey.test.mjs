@@ -33,7 +33,10 @@ if (!/127\.0\.0\.1|localhost/.test(SUPABASE_URL)) {
 execSync("npx tsc -p tsconfig.selftest.json", { stdio: "inherit" });
 const require = createRequire(import.meta.url);
 require("../.selftest-register.cjs");
-const { getDomain, getDomainAssessments, getFinalAssessment } = require("../.selftest/data/domains.js");
+const { getDomain, getDomainAssessments: domainAssessmentInfo } = require("../.selftest/data/domains.js");
+const { getAssessmentWithAnswers } = require("../.selftest/data/assessment-bank.js");
+const getDomainAssessments = (domainId) => domainAssessmentInfo(domainId).map((a) => getAssessmentWithAnswers(a.id));
+const getFinalAssessment = (domainId) => getAssessmentWithAnswers(`${domainId}-final`);
 const { getProgram } = require("../.selftest/data/programs.js");
 
 let failures = 0;
@@ -51,6 +54,11 @@ const supabase = createServerClient(SUPABASE_URL, ANON, {
   },
 });
 const cookieHeader = () => [...jar].map(([n, v]) => `${n}=${v}`).join("; ");
+
+async function apiGet(path) {
+  const res = await fetch(`${BASE_URL}${path}`, { headers: { cookie: cookieHeader() } });
+  return { status: res.status, body: await res.json().catch(() => ({})) };
+}
 
 async function api(path, body, { auth = true } = {}) {
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -130,9 +138,27 @@ const email = `journey-${Date.now()}@journey-test.example`;
 const moduleAssessments = getDomainAssessments(DOMAIN);
 {
   const first = moduleAssessments[0];
+
+  const served = await apiGet(`/api/assessments/${first.id}`);
+  check(
+    "questions are served without answers or explanations",
+    served.status === 200 &&
+      served.body.questions?.length === first.questions.length &&
+      served.body.questions.every((q) => !("correct" in q) && !("explanation" in q)),
+    JSON.stringify(served.body).slice(0, 200),
+  );
+  const unpaid = await apiGet(`/api/assessments/${getFinalAssessment("sustainability").id}`);
+  check("questions for unpaid domains are refused", unpaid.status === 403, unpaid.status);
+
   const wrong = Object.fromEntries(first.questions.map((q) => [q.id, []]));
   const failed = await api("/api/assessments/submit", { assessmentId: first.id, answers: wrong });
   check("wrong answers are scored as a fail", failed.status === 200 && failed.body.attempt?.passed === false);
+  check(
+    "a failed attempt does not reveal the correct answers",
+    failed.body.review?.length > 0 &&
+      failed.body.review.every((r) => !("correctOptions" in r) && !("explanation" in r)),
+    JSON.stringify(failed.body.review?.[0]),
+  );
 
   const otherDomain = getFinalAssessment("sustainability");
   const foreign = await api("/api/assessments/submit", {
@@ -148,6 +174,12 @@ const moduleAssessments = getDomainAssessments(DOMAIN);
       answers: correctAnswers(assessment),
     });
     allPassed &&= res.status === 200 && res.body.attempt?.passed === true;
+    if (assessment === moduleAssessments[0]) {
+      check(
+        "a passed attempt reveals answers and explanations",
+        res.body.review?.every((r) => r.correct && Array.isArray(r.correctOptions) && r.explanation),
+      );
+    }
   }
   check(`all ${moduleAssessments.length} module assessments pass with correct answers`, allPassed);
 

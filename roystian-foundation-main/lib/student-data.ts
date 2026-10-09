@@ -4,7 +4,13 @@ import { useEffect, useSyncExternalStore } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchStudentRecordRows } from "@/lib/supabase/student-records";
 import { toStudentRecords, type StudentRecords } from "@/lib/supabase/mappers";
-import type { AssessmentAttempt, Certificate, Registration } from "@/types";
+import type {
+  AssessmentAttempt,
+  Certificate,
+  PublicQuestion,
+  QuestionReview,
+  Registration,
+} from "@/types";
 
 /**
  * The signed-in student's records, loaded from Supabase.
@@ -215,17 +221,27 @@ async function postJSON<T>(url: string, body: unknown): Promise<T> {
   return data as T;
 }
 
-/** Scored on the server against the curriculum, so the stored score cannot be forged. */
+/** Questions for an assessment, without answers. */
+export async function fetchAssessmentQuestions(assessmentId: string): Promise<PublicQuestion[]> {
+  const res = await fetch(`/api/assessments/${encodeURIComponent(assessmentId)}`, { cache: "no-store" });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new StudentDataError(typeof data?.error === "string" ? data.error : "Could not load the assessment.");
+  }
+  return data.questions as PublicQuestion[];
+}
+
+/** Scored on the server against the question bank, so the stored score cannot be forged. */
 export async function submitAssessment(
   assessmentId: string,
   answers: Record<string, number[]>,
-): Promise<AssessmentAttempt> {
-  const { attempt } = await postJSON<{ attempt: AssessmentAttempt }>("/api/assessments/submit", {
-    assessmentId,
-    answers,
-  });
+): Promise<{ attempt: AssessmentAttempt; review: QuestionReview[] }> {
+  const result = await postJSON<{ attempt: AssessmentAttempt; review: QuestionReview[] }>(
+    "/api/assessments/submit",
+    { assessmentId, answers },
+  );
   await refreshStudentData();
-  return attempt;
+  return result;
 }
 
 /** Issues the certificate if, and only if, the server agrees every requirement is met. */

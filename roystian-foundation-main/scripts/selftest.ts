@@ -1,5 +1,9 @@
 /* Temporary verification harness for the demo's pure logic. */
-import { DOMAINS, ASSESSMENTS, getFinalAssessment, getDomain } from "../data/domains";
+import { DOMAINS, ASSESSMENTS as ASSESSMENT_INFO, getDomain } from "../data/domains";
+import { allAssessmentsWithAnswers, getAssessmentWithAnswers } from "../data/assessment-bank";
+
+const ASSESSMENTS = allAssessmentsWithAnswers();
+const getFinalAssessment = (domainId: string) => getAssessmentWithAnswers(`${domainId}-final`);
 import { buildSeedDatabase } from "../data/seed";
 import { scoreAssessment, summariseProgress, completionRequirements, isCertificateUnlocked } from "../lib/progress";
 import { computeKpis, registrationsOverTime, domainBreakdown, programSplit } from "../lib/analytics";
@@ -36,6 +40,14 @@ check(
 check(
   "final assessments have 10 questions",
   DOMAINS.every((d) => getFinalAssessment(d.id)?.questions.length === 10),
+);
+check(
+  "assessment metadata matches the question bank",
+  ASSESSMENT_INFO.length === ASSESSMENTS.length &&
+    ASSESSMENT_INFO.every((info) => {
+      const full = getAssessmentWithAnswers(info.id);
+      return full !== undefined && full.questions.length === info.questionCount && full.title === info.title;
+    }),
 );
 check(
   "every question has exactly one distinct correct set and 4 options",

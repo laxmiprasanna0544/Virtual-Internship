@@ -24,10 +24,10 @@ import { Progress } from "@/components/ui/progress";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { getAssessment, getFinalAssessment } from "@/data/domains";
 import { useStudentContext } from "@/lib/use-student";
-import { requestCertificate, submitAssessment } from "@/lib/student-data";
+import { fetchAssessmentQuestions, requestCertificate, submitAssessment } from "@/lib/student-data";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
-import type { AssessmentAttempt } from "@/types";
+import type { AssessmentAttempt, PublicQuestion, QuestionReview } from "@/types";
 
 export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
   const router = useRouter();
@@ -35,7 +35,10 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
   const [answers, setAnswers] = React.useState<Record<string, number[]>>({});
   const [index, setIndex] = React.useState(0);
   const [result, setResult] = React.useState<AssessmentAttempt | null>(null);
+  const [review, setReview] = React.useState<QuestionReview[]>([]);
   const [submitting, setSubmitting] = React.useState(false);
+  const [questions, setQuestions] = React.useState<PublicQuestion[] | null>(null);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
 
   const reduce = useReducedMotion();
 
@@ -46,8 +49,25 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
         : undefined
       : getAssessment(assessmentId);
 
-  const total = assessment?.questions.length ?? 0;
-  const activeQuestion = assessment?.questions[index];
+  const total = questions?.length ?? 0;
+  const activeQuestion = questions?.[index];
+
+  // Questions come from the server without their answers.
+  const loadId = ctx.ready && assessment && assessment.domainId === ctx.domain?.id ? assessment.id : null;
+  React.useEffect(() => {
+    if (!loadId) return;
+    let active = true;
+    setQuestions(null);
+    setLoadError(null);
+    fetchAssessmentQuestions(loadId)
+      .then((loaded) => active && setQuestions(loaded))
+      .catch((error) =>
+        active && setLoadError(error instanceof Error ? error.message : "Could not load the assessment."),
+      );
+    return () => {
+      active = false;
+    };
+  }, [loadId]);
 
   /**
    * Keyboard control: 1–9 picks an option, arrows move between questions.
@@ -115,8 +135,20 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
     );
   }
 
+  if (loadError) {
+    return (
+      <EmptyState
+        icon={ClipboardList}
+        title="Assessment unavailable"
+        description={loadError}
+        actionLabel="Back to assessments"
+        actionHref="/dashboard/assessments"
+      />
+    );
+  }
+  if (!questions) return <LoadingState label="Loading questions" rows={3} />;
+
   const { student, domain } = ctx;
-  const questions = assessment.questions;
   const question = questions[index];
   const answered = Object.keys(answers).filter((key) => answers[key]?.length).length;
   const isFinal = assessment.kind === "final";
@@ -139,7 +171,9 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
     setSubmitting(true);
     let attempt: AssessmentAttempt;
     try {
-      attempt = await submitAssessment(assessment.id, answers);
+      const scored = await submitAssessment(assessment.id, answers);
+      attempt = scored.attempt;
+      setReview(scored.review);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not submit your answers.");
       return;
@@ -165,6 +199,7 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
     setAnswers({});
     setIndex(0);
     setResult(null);
+    setReview([]);
   }
 
   /* ── Result view ───────────────────────────────────────────── */
@@ -274,12 +309,16 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
           <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             Review your answers
           </h3>
+          {!result.passed && (
+            <p className="rounded-lg bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+              Correct answers are shown once you pass. Re-read the module material for the
+              questions marked incorrect, then try again.
+            </p>
+          )}
           {questions.map((q, qIndex) => {
-            const given = [...(result.answers[q.id] ?? [])].sort((a, b) => a - b);
-            const expected = [...q.correct].sort((a, b) => a - b);
-            const correct =
-              given.length === expected.length &&
-              given.every((value, i) => value === expected[i]);
+            const given = result.answers[q.id] ?? [];
+            const feedback = review.find((r) => r.questionId === q.id);
+            const correct = Boolean(feedback?.correct);
 
             return (
               <article
@@ -297,7 +336,7 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
                 <p className="mt-2.5 text-sm font-medium text-foreground">{q.prompt}</p>
                 <ul className="mt-3.5 space-y-1.5">
                   {q.options.map((option, optionIndex) => {
-                    const isCorrect = q.correct.includes(optionIndex);
+                    const isCorrect = Boolean(feedback?.correctOptions?.includes(optionIndex));
                     const wasChosen = given.includes(optionIndex);
                     return (
                       <li
@@ -326,9 +365,11 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
                     );
                   })}
                 </ul>
-                <p className="mt-3 rounded-lg bg-muted/50 px-3.5 py-2.5 text-xs leading-relaxed text-muted-foreground">
-                  {q.explanation}
-                </p>
+                {feedback?.explanation && (
+                  <p className="mt-3 rounded-lg bg-muted/50 px-3.5 py-2.5 text-xs leading-relaxed text-muted-foreground">
+                    {feedback.explanation}
+                  </p>
+                )}
               </article>
             );
           })}

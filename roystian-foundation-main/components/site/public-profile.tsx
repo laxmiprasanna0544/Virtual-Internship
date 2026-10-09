@@ -18,11 +18,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getDomain, getDomainAssessments } from "@/data/domains";
 import { getProject } from "@/data/projects";
-import { badgeStates } from "@/lib/badges";
-import { useDatabase } from "@/lib/db";
-import { computeReadiness } from "@/lib/readiness";
 import { readinessBand } from "@/lib/readiness";
 import { cn, formatDate, initials } from "@/lib/utils";
+import type { CareerReadiness, PublicProfileView } from "@/types";
 
 /**
  * The public Career Passport.
@@ -33,16 +31,22 @@ import { cn, formatDate, initials } from "@/lib/utils";
  * guessing its URL.
  */
 export function PublicProfile({ slug }: { slug: string }) {
-  const db = useDatabase();
+  const [view, setView] = React.useState<PublicProfileView | null | undefined>(undefined);
 
-  if (!db) return <LoadingState label="Loading profile" rows={4} />;
+  React.useEffect(() => {
+    let active = true;
+    fetch(`/api/profiles/${encodeURIComponent(slug)}`)
+      .then((res) => (res.ok ? res.json() : { profile: null }))
+      .then((data) => active && setView(data.profile ?? null))
+      .catch(() => active && setView(null));
+    return () => {
+      active = false;
+    };
+  }, [slug]);
 
-  const passport = db.passports.find((p) => p.slug === slug) ?? null;
-  const student = passport
-    ? (db.students.find((s) => s.id === passport.studentId) ?? null)
-    : null;
+  if (view === undefined) return <LoadingState label="Loading profile" rows={4} />;
 
-  if (!passport || !passport.published || !student) {
+  if (!view) {
     return (
       <SiteShell>
         <div className="container py-28">
@@ -58,41 +62,26 @@ export function PublicProfile({ slug }: { slug: string }) {
     );
   }
 
+  // The server only includes the sections the student chose to share.
+  const { student, visibility, badges, certificate } = view;
+  const passport = { headline: view.headline, about: view.about };
+  const readiness: Pick<CareerReadiness, "score" | "breakdown"> = view.readiness ?? { score: 0, breakdown: [] };
   const domain = getDomain(student.domainId);
-  const progress =
-    db.progress.find(
-      (p) => p.studentId === student.id && p.domainId === student.domainId,
-    ) ?? null;
-  const submission = db.submissions.find((s) => s.studentId === student.id) ?? null;
-  const projects = db.projectSubmissions.filter((p) => p.studentId === student.id);
-  const interviews = db.interviews.filter((s) => s.studentId === student.id);
-  const challenges = db.challengeEntries.filter((c) => c.studentId === student.id);
-  const certificate = db.certificates.find((c) => c.studentId === student.id) ?? null;
-
-  const readiness = computeReadiness({
-    student,
-    progress,
-    submission,
-    projects,
-    interviews,
-    challenges,
-  });
-  const badges = badgeStates({
-    student,
-    progress,
-    submission,
-    projects,
-    challenges,
-    readiness,
-  }).filter((b) => b.earned);
-
   const assessments = student.domainId ? getDomainAssessments(student.domainId) : [];
-  const passedAssessments = assessments.filter(
-    (a) => progress?.moduleAttempts?.[a.id]?.passed,
+  const passedAssessments = assessments.filter((a) =>
+    view.assessments?.passed.some((p) => p.id === a.id),
   );
-  const evaluatedProjects = projects.filter((p) => p.status === "evaluated");
+  const progress = {
+    finalAttempt:
+      view.assessments?.finalPercentage != null
+        ? { passed: true, percentage: view.assessments.finalPercentage }
+        : null,
+    moduleAttempts: Object.fromEntries(
+      (view.assessments?.passed ?? []).map((p) => [p.id, { percentage: p.percentage }]),
+    ),
+  };
+  const evaluatedProjects = view.projects;
   const band = readinessBand(readiness.score);
-  const { visibility } = passport;
 
   return (
     <SiteShell>
@@ -124,7 +113,7 @@ export function PublicProfile({ slug }: { slug: string }) {
                   {student.course}
                 </span>
               )}
-              {visibility.contact && (
+              {student.email && (
                 <span className="flex items-center gap-1.5">
                   <Mail className="h-3.5 w-3.5" aria-hidden="true" />
                   {student.email}
@@ -141,7 +130,7 @@ export function PublicProfile({ slug }: { slug: string }) {
         )}
 
         {/* ── Readiness ──────────────────────────────────────────────── */}
-        {visibility.readiness && (
+        {visibility.readiness && view.readiness && (
           <section className="mt-12">
             <h2 className="eyebrow mb-4">Career Readiness</h2>
             <div className="grid gap-5 sm:grid-cols-[0.7fr_1.3fr]">

@@ -10,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { getProject } from "@/data/projects";
 import { linkedInFor, saveLinkedIn, useCareerContext } from "@/lib/career";
 import { useStudentContext } from "@/lib/use-student";
-import { delay } from "@/lib/api";
 import type { LinkedInSection } from "@/types";
 
 const SECTIONS: {
@@ -173,10 +172,14 @@ export function LinkedInView() {
   async function handleSave() {
     if (!student) return;
     setBusy(true);
-    await delay(350);
-    saveLinkedIn(student.id, drafts);
-    setBusy(false);
-    toast.success("LinkedIn draft saved");
+    try {
+      await saveLinkedIn(drafts);
+      toast.success("LinkedIn draft saved");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   function handleRegenerate() {

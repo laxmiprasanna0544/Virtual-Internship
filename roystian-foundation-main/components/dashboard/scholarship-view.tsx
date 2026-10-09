@@ -24,7 +24,6 @@ import {
 } from "@/data/opportunities";
 import { applyForScholarship, scholarshipFor } from "@/lib/opportunities";
 import { useStudentContext } from "@/lib/use-student";
-import { delay } from "@/lib/api";
 import { cn, formatDate } from "@/lib/utils";
 import type { ScholarshipApplication, ScholarshipTier } from "@/types";
 
@@ -65,15 +64,20 @@ export function ScholarshipView() {
     }
 
     setBusy(true);
-    await delay(600);
-    const created = applyForScholarship(student.id, {
-      requestedTier: tier,
-      householdIncomeBand: income,
-      category,
-      statement,
-    });
-    setApplication(created);
-    setBusy(false);
+    try {
+      await applyForScholarship({
+        requestedTier: tier,
+        householdIncomeBand: income,
+        category,
+        statement,
+      });
+      setApplication(scholarshipFor());
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+      return;
+    } finally {
+      setBusy(false);
+    }
     toast.success("Application submitted", {
       description: "Places are limited and an award is not guaranteed.",
     });

@@ -14,7 +14,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { challengesForDomain, getChallenge } from "@/data/challenges";
 import { submitChallengeEntry, useCareerContext } from "@/lib/career";
 import { useStudentContext } from "@/lib/use-student";
-import { delay } from "@/lib/api";
 import type { Challenge } from "@/types";
 
 const MIN_APPROACH = 120;
@@ -62,15 +61,14 @@ export function ChallengesView() {
     }
 
     setBusy(true);
-    await delay(500);
-    submitChallengeEntry(
-      student.id,
-      active.id,
-      approach,
-      solution,
-      repoUrl.trim() || null,
-    );
-    setBusy(false);
+    try {
+      await submitChallengeEntry(active.id, approach, solution, repoUrl.trim() || null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+      return;
+    } finally {
+      setBusy(false);
+    }
     setActive(null);
     toast.success("Entry submitted", {
       description: "It will be evaluated against the published criteria.",

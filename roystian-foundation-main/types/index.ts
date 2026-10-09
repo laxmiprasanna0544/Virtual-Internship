@@ -579,6 +579,32 @@ export interface CareerPassport {
   updatedAt: string;
 }
 
+/** A published passport as the public (and partners) see it. */
+export interface PublicProfileView {
+  slug: string;
+  headline: string;
+  about: string;
+  visibility: CareerPassport["visibility"];
+  student: {
+    name: string;
+    college: string;
+    course: string;
+    /** Only when the student made contact details visible. */
+    email: string | null;
+    domainId: string | null;
+  };
+  readiness: CareerReadiness | null;
+  /** Earned badges; empty when hidden. */
+  badges: (SkillBadge & { earned: boolean; earnedAt: string | null; evidence: string | null; displayName: string })[];
+  projects: { id: string; projectId: string; overallScore: number | null }[];
+  assessments: {
+    total: number;
+    passed: { id: string; percentage: number }[];
+    finalPercentage: number | null;
+  } | null;
+  certificate: Pick<Certificate, "id" | "domainName" | "programName" | "issueDate"> | null;
+}
+
 /* ------------------------ Opportunity engine ----------------------- */
 
 export type ChallengeKind =

@@ -11,9 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { getProject } from "@/data/projects";
-import { evaluateProject } from "@/lib/career";
-import { useDatabase } from "@/lib/db";
-import { delay } from "@/lib/api";
+import { evaluateProject, useAdminData } from "@/lib/admin-data";
 import { clamp, formatDate } from "@/lib/utils";
 import type { ProjectSubmission } from "@/types";
 
@@ -25,7 +23,7 @@ import type { ProjectSubmission } from "@/types";
  * before they started.
  */
 export function ProjectReview() {
-  const db = useDatabase();
+  const db = useAdminData();
   const [active, setActive] = React.useState<ProjectSubmission | null>(null);
   const [scores, setScores] = React.useState<Record<string, string>>({});
   const [feedback, setFeedback] = React.useState("");
@@ -69,13 +67,17 @@ export function ProjectReview() {
     }
 
     setBusy(true);
-    await delay(400);
-    evaluateProject(active.id, parsed, feedback);
-    setBusy(false);
-    setActive(null);
-    toast.success("Evaluation saved", {
-      description: "The student's readiness score updates immediately.",
-    });
+    try {
+      const { overallScore } = await evaluateProject(active.id, parsed, feedback);
+      setActive(null);
+      toast.success(`Evaluation saved — ${overallScore}/100`, {
+        description: "The student's readiness score updates immediately.",
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "The action failed.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   /* ---------------------------- Detail ---------------------------- */

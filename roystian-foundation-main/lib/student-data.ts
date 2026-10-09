@@ -40,6 +40,11 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
+/** The latest loaded records, for code that runs outside React render. */
+export function currentStudentRecords(): StudentRecords | null {
+  return state.records;
+}
+
 /** Reloads the student's records. Concurrent calls share one request. */
 export function refreshStudentData(): Promise<void> {
   if (inflight) return inflight;
@@ -206,7 +211,7 @@ export async function submitPracticalTask(input: {
 /*  Writes that must be decided by the server                          */
 /* ------------------------------------------------------------------ */
 
-async function postJSON<T>(url: string, body: unknown): Promise<T> {
+export async function postJSON<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

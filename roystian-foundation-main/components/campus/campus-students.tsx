@@ -7,16 +7,16 @@ import { LoadingState, EmptyState } from "@/components/shared/states";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { getDomain } from "@/data/domains";
-import { readinessForStudent } from "@/lib/career";
+import { readinessForStudent } from "@/lib/career-rules";
 import { useCampusContext } from "@/lib/campus";
 import { useSession } from "@/lib/auth";
-import { useDatabase } from "@/lib/db";
+import { useAdminData } from "@/lib/admin-data";
 import { summariseProgress } from "@/lib/progress";
 
 export function CampusStudents() {
   const { user } = useSession();
   const campus = useCampusContext(user?.collegeId ?? user?.id ?? null);
-  const db = useDatabase();
+  const db = useAdminData();
   const [query, setQuery] = React.useState("");
 
   if (!campus.ready || !db) {
@@ -43,12 +43,12 @@ export function CampusStudents() {
           (p) => p.studentId === student.id && p.domainId === student.domainId,
         ) ?? null;
       const submission =
-        db.submissions.find((s) => s.studentId === student.id) ?? null;
+        db.submissions.find((s) => s.studentId === student.id && s.domainId === student.domainId) ?? null;
       return {
         student,
         domain: getDomain(student.domainId),
         summary: summariseProgress(student, progress, submission),
-        readiness: readinessForStudent(student.id).score,
+        readiness: readinessForStudent(db, student.id).score,
       };
     })
     .filter((row) =>

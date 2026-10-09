@@ -35,7 +35,6 @@ import {
 import { applyForFellowship, fellowshipEligibility, fellowshipFor } from "@/lib/opportunities";
 import { useCareerContext } from "@/lib/career";
 import { useStudentContext } from "@/lib/use-student";
-import { delay } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 import type { FellowshipApplication } from "@/types";
 
@@ -96,15 +95,20 @@ export function FellowshipView() {
     }
 
     setBusy(true);
-    await delay(600);
-    const created = applyForFellowship(student.id, career.readiness.score, {
-      motivation,
-      availableFrom,
-      canRelocate,
-      preferredArea,
-    });
-    setApplication(created);
-    setBusy(false);
+    try {
+      const created = await applyForFellowship({
+        motivation,
+        availableFrom,
+        canRelocate,
+        preferredArea,
+      });
+      setApplication(created);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+      return;
+    } finally {
+      setBusy(false);
+    }
     toast.success("Application submitted", {
       description: "Selection is not guaranteed. You will be contacted if shortlisted.",
     });

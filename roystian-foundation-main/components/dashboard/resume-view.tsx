@@ -14,7 +14,6 @@ import { getProject } from "@/data/projects";
 import { resumeFor, saveResume, useCareerContext } from "@/lib/career";
 import { useStudentContext } from "@/lib/use-student";
 import { demonstratedSkills } from "@/lib/readiness";
-import { delay } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 
 /**
@@ -76,19 +75,21 @@ export function ResumeView() {
   async function handleSave() {
     if (!student) return;
     setBusy(true);
-    await delay(350);
-    saveResume({
-      studentId: student.id,
-      headline,
-      summary: summaryText,
-      skills: allSkills,
-      includeProjects,
-      includeAssessments,
-      includeCertificate,
-      updatedAt: new Date().toISOString(),
-    });
-    setBusy(false);
-    toast.success("Resume saved");
+    try {
+      await saveResume({
+        headline,
+        summary: summaryText,
+        skills: allSkills,
+        includeProjects,
+        includeAssessments,
+        includeCertificate,
+      });
+      toast.success("Resume saved");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   function buildPlainText(): string {

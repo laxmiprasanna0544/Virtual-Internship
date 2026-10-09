@@ -1,5 +1,3 @@
-"use client";
-
 import { BADGES } from "@/data/badges";
 import { getDomain, getDomainAssessments } from "@/data/domains";
 import type {

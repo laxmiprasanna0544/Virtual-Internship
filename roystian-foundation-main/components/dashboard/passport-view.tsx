@@ -22,7 +22,6 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ensurePassport, updatePassport, useCareerContext } from "@/lib/career";
 import { useStudentContext } from "@/lib/use-student";
-import { delay } from "@/lib/api";
 import type { CareerPassport } from "@/types";
 
 type VisibilityKey = keyof CareerPassport["visibility"];
@@ -71,11 +70,15 @@ export function PassportView() {
   React.useEffect(() => setOrigin(window.location.origin), []);
 
   // Create the passport on first visit so the student always has one to edit.
+  const creating = React.useRef(false);
   React.useEffect(() => {
-    if (ready && student && !career.passport) {
-      ensurePassport(student);
+    if (ready && career.ready && student && !career.passport && !creating.current) {
+      creating.current = true;
+      ensurePassport(student).catch((error) =>
+        toast.error(error instanceof Error ? error.message : "Could not create your passport."),
+      );
     }
-  }, [ready, student, career.passport]);
+  }, [ready, career.ready, student, career.passport]);
 
   React.useEffect(() => {
     if (hydrated || !career.passport) return;
@@ -97,15 +100,24 @@ export function PassportView() {
   async function handleSave() {
     if (!student) return;
     setBusy(true);
-    await delay(400);
-    updatePassport(student.id, { headline, about, slug });
-    setBusy(false);
-    toast.success("Passport updated");
+    try {
+      await updatePassport({ headline, about, slug });
+      toast.success("Passport updated");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
   }
 
-  function togglePublished(next: boolean) {
+  async function togglePublished(next: boolean) {
     if (!student) return;
-    updatePassport(student.id, { published: next });
+    try {
+      await updatePassport({ published: next });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+      return;
+    }
     toast.success(next ? "Passport published" : "Passport unpublished", {
       description: next
         ? "Anyone with the link can now view it."
@@ -115,9 +127,9 @@ export function PassportView() {
 
   function toggleVisibility(key: VisibilityKey, next: boolean) {
     if (!student) return;
-    updatePassport(student.id, {
-      visibility: { ...passport!.visibility, [key]: next },
-    });
+    updatePassport({ visibility: { ...passport!.visibility, [key]: next } }).catch((error) =>
+      toast.error(error instanceof Error ? error.message : "Something went wrong."),
+    );
   }
 
   async function copyLink() {

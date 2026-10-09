@@ -19,7 +19,6 @@ import {
 import { createLead } from "@/lib/leads";
 import type { InstitutionType } from "@/types";
 import { COLLEGE_OFFERINGS } from "@/data/content";
-import { delay } from "@/lib/api";
 import { toast } from "sonner";
 
 const schema = z.object({
@@ -103,8 +102,8 @@ export function CollegeEnquiryForm() {
   } = form;
 
   async function onSubmit(values: FormValues) {
-    await delay(700);
-    createLead({
+    try {
+      await createLead({
       collegeName: values.collegeName,
       city: values.city,
       state: values.state,
@@ -118,7 +117,11 @@ export function CollegeEnquiryForm() {
       studentCount: values.studentCount,
       interest: values.interest,
       message: values.message ?? "",
-    });
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Your enquiry could not be sent.");
+      return;
+    }
     setSubmitted(true);
     toast.success("Enquiry received", {
       description: "Our team will contact you.",

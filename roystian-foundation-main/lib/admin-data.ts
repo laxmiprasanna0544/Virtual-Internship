@@ -3,7 +3,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { fetchAdminData, type AdminData } from "@/lib/supabase/admin-records";
-import type { Certificate, CollegeLead } from "@/types";
+import type { Certificate, CollegeLead, FellowshipStage, ScholarshipTier } from "@/types";
 
 /**
  * Admin console data from Supabase, shared by every admin screen in the tab.
@@ -145,3 +145,30 @@ export async function submissionFileUrl(filePath: string): Promise<string> {
   if (error || !data) throw new Error("Could not open the file.");
   return data.signedUrl;
 }
+
+export const evaluateProject = (
+  submissionId: string,
+  criterionScores: Record<string, number>,
+  feedback: string,
+) =>
+  adminPost<{ ok: true; overallScore: number }>("projects/evaluate", {
+    submissionId,
+    criterionScores,
+    feedback,
+  });
+
+export const scoreChallengeEntry = (entryId: string, score: number, feedback: string) =>
+  adminPost("challenges/score", { entryId, score, feedback });
+
+export const setFellowshipStage = (applicationId: string, stage: FellowshipStage) =>
+  adminPost("fellowship/stage", { applicationId, stage });
+
+export const decideScholarship = (
+  applicationId: string,
+  status: "approved" | "declined" | "under-review",
+  awardedTier: ScholarshipTier | null,
+) =>
+  adminPost(
+    "scholarships/decide",
+    status === "approved" ? { applicationId, status, awardedTier } : { applicationId, status },
+  );

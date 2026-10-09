@@ -1,5 +1,3 @@
-"use client";
-
 import { questionsFor } from "@/data/interviews";
 import { clamp } from "@/lib/utils";
 import type { InterviewKind, InterviewQuestion, InterviewSession } from "@/types";

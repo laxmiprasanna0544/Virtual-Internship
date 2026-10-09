@@ -29,7 +29,6 @@ import {
   useCareerContext,
 } from "@/lib/career";
 import { useStudentContext } from "@/lib/use-student";
-import { delay } from "@/lib/api";
 
 /** A submission needs real substance before it can be sent for evaluation. */
 const MIN_ANALYSIS = 200;
@@ -78,25 +77,31 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
   async function handleStart() {
     if (!student || !brief) return;
     setBusy(true);
-    await delay(300);
-    startProject(student.id, brief);
-    setBusy(false);
-    toast.success("Project started", {
-      description: "Your draft is saved as you work.",
-    });
+    try {
+      await startProject(brief);
+      toast.success("Project started", { description: "Save your draft as you work." });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function handleSaveDraft() {
     if (!submission) return;
     setBusy(true);
-    await delay(250);
-    saveProjectDraft(submission.id, {
-      analysis,
-      recommendations,
-      repoUrl: repoUrl.trim() || null,
-    });
-    setBusy(false);
-    toast.success("Draft saved");
+    try {
+      await saveProjectDraft(submission.id, {
+        analysis,
+        recommendations,
+        repoUrl: repoUrl.trim() || null,
+      });
+      toast.success("Draft saved");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function handleSubmit() {
@@ -115,14 +120,19 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
     }
 
     setBusy(true);
-    await delay(500);
-    saveProjectDraft(submission.id, {
-      analysis,
-      recommendations,
-      repoUrl: repoUrl.trim() || null,
-    });
-    submitProject(submission.id);
-    setBusy(false);
+    try {
+      await saveProjectDraft(submission.id, {
+        analysis,
+        recommendations,
+        repoUrl: repoUrl.trim() || null,
+      });
+      await submitProject(submission.id);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+      return;
+    } finally {
+      setBusy(false);
+    }
     toast.success("Project submitted", {
       description: "It will be evaluated against the published criteria.",
     });

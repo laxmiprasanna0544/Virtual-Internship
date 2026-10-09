@@ -2,10 +2,11 @@
 
 import { useMemo } from "react";
 import { getDomain } from "@/data/domains";
-import { useDatabase, type Database } from "@/lib/db";
-import { readinessForStudent } from "@/lib/career";
+import { useAdminData } from "@/lib/admin-data";
+import { readinessForStudent as readinessIn } from "@/lib/career-rules";
+import type { AdminData } from "@/lib/supabase/admin-records";
 import { READINESS_LABEL } from "@/lib/readiness";
-import { summariseProgress } from "@/lib/progress";
+import { summariseProgress } from "@/lib/rules";
 import type {
   CampusMetrics,
   College,
@@ -22,7 +23,7 @@ import type {
  */
 
 /** A college's cohort is matched on the student's recorded college name. */
-export function cohortFor(db: Database, college: College): Student[] {
+export function cohortFor(db: AdminData, college: College): Student[] {
   const needle = college.name.trim().toLowerCase();
   return db.students.filter(
     (s) => s.college.trim().toLowerCase() === needle,
@@ -32,7 +33,7 @@ export function cohortFor(db: Database, college: College): Student[] {
 /** Career-ready is the same threshold the Career Ready badge uses. */
 const CAREER_READY_FLOOR = 75;
 
-export function campusMetrics(db: Database, cohort: Student[]): CampusMetrics {
+export function campusMetrics(db: AdminData, cohort: Student[]): CampusMetrics {
   const ids = new Set(cohort.map((s) => s.id));
 
   const enrolled = cohort.length;
@@ -54,7 +55,7 @@ export function campusMetrics(db: Database, cohort: Student[]): CampusMetrics {
     const attempts = Object.values(progress?.moduleAttempts ?? {});
     for (const attempt of attempts) assessmentScores.push(attempt.percentage);
 
-    if (readinessForStudent(student.id).score >= CAREER_READY_FLOOR) {
+    if (readinessIn(db, student.id).score >= CAREER_READY_FLOOR) {
       careerReady += 1;
     }
   }
@@ -113,7 +114,7 @@ const INTERVENTIONS: Record<
 };
 
 export function skillGapReport(
-  db: Database,
+  db: AdminData,
   college: College,
   cohort: Student[],
 ): SkillGapReport {
@@ -122,7 +123,7 @@ export function skillGapReport(
   const totals = new Map<string, { sum: number; count: number }>();
 
   for (const student of cohort) {
-    const readiness = readinessForStudent(student.id);
+    const readiness = readinessIn(db, student.id);
     for (const area of readiness.breakdown) {
       if (!area.hasEvidence) continue;
       const entry = totals.get(area.label) ?? { sum: 0, count: 0 };
@@ -203,7 +204,8 @@ const EMPTY_METRICS: CampusMetrics = {
 };
 
 export function useCampusContext(collegeId: string | null): CampusContext {
-  const db = useDatabase();
+  // RLS limits this to the college's own cohort for placement-cell accounts.
+  const db = useAdminData();
 
   return useMemo(() => {
     if (!db || !collegeId) {
@@ -244,7 +246,7 @@ export function useCampusContext(collegeId: string | null): CampusContext {
         const avg = students.length
           ? Math.round(
               students.reduce(
-                (sum, s) => sum + readinessForStudent(s.id).score,
+                (sum, s) => sum + readinessIn(db, s.id).score,
                 0,
               ) / students.length,
             )
@@ -271,7 +273,7 @@ export function useCampusContext(collegeId: string | null): CampusContext {
 
 /** Cohort completion rate, used in a couple of headline tiles. */
 export function completionRate(
-  db: Database,
+  db: AdminData,
   cohort: Student[],
 ): number {
   if (cohort.length === 0) return 0;

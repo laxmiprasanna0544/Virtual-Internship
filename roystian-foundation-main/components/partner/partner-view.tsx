@@ -28,9 +28,8 @@ import {
 } from "@/components/ui/select";
 import { RouteGuard } from "@/components/dashboard/guard";
 import { DOMAINS, getDomain } from "@/data/domains";
-import { readinessForStudent } from "@/lib/career";
-import { useDatabase } from "@/lib/db";
 import { logout } from "@/lib/auth";
+import type { PublicProfileView } from "@/types";
 
 /**
  * Partner / employer talent view.
@@ -80,40 +79,45 @@ export function PartnerView() {
 }
 
 function TalentDirectory({ partnerName }: { partnerName: string }) {
-  const db = useDatabase();
+  const [profiles, setProfiles] = React.useState<PublicProfileView[] | null>(null);
+  const [loadError, setLoadError] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const [domainFilter, setDomainFilter] = React.useState("all");
   const [minReadiness, setMinReadiness] = React.useState("0");
 
-  if (!db) return <LoadingState label="Loading talent" rows={4} />;
+  React.useEffect(() => {
+    fetch("/api/partner/talent", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
+      .then((data) => setProfiles(data.profiles))
+      .catch(() => setLoadError(true));
+  }, []);
 
-  const published = db.passports.filter((p) => p.published);
+  if (loadError) {
+    return (
+      <EmptyState
+        icon={Users}
+        title="Talent could not be loaded"
+        description="Refresh the page to try again."
+      />
+    );
+  }
+  if (!profiles) return <LoadingState label="Loading talent" rows={4} />;
 
-  const candidates = published
-    .map((passport) => {
-      const student = db.students.find((s) => s.id === passport.studentId);
-      if (!student) return null;
-      const readiness = readinessForStudent(student.id);
-      const projects = db.projectSubmissions.filter(
-        (p) => p.studentId === student.id && p.status === "evaluated",
-      );
-      return { passport, student, readiness, projects };
-    })
-    .filter((c): c is NonNullable<typeof c> => Boolean(c))
-    .filter((c) => {
-      if (domainFilter !== "all" && c.student.domainId !== domainFilter) {
-        return false;
-      }
-      if (c.readiness.score < Number(minReadiness)) return false;
+  // Readiness is shown only where the student chose to share it; a hidden
+  // score never passes a minimum-readiness filter.
+  const candidates = profiles
+    .filter((profile) => {
+      if (domainFilter !== "all" && profile.student.domainId !== domainFilter) return false;
+      if ((profile.readiness?.score ?? -1) < Number(minReadiness)) return false;
       const needle = query.trim().toLowerCase();
       if (!needle) return true;
       return (
-        c.student.name.toLowerCase().includes(needle) ||
-        c.passport.headline.toLowerCase().includes(needle) ||
-        (getDomain(c.student.domainId)?.name ?? "").toLowerCase().includes(needle)
+        profile.student.name.toLowerCase().includes(needle) ||
+        profile.headline.toLowerCase().includes(needle) ||
+        (getDomain(profile.student.domainId)?.name ?? "").toLowerCase().includes(needle)
       );
     })
-    .sort((a, b) => b.readiness.score - a.readiness.score);
+    .sort((a, b) => (b.readiness?.score ?? -1) - (a.readiness?.score ?? -1));
 
   return (
     <div>
@@ -173,11 +177,12 @@ function TalentDirectory({ partnerName }: { partnerName: string }) {
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {candidates.map(({ passport, student, readiness, projects }) => {
+          {candidates.map((profile) => {
+            const { student, readiness, projects } = profile;
             const domain = getDomain(student.domainId);
             return (
               <div
-                key={passport.studentId}
+                key={profile.slug}
                 className="lift-card flex flex-col rounded-2xl border border-border bg-card p-6 shadow-soft"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -189,20 +194,22 @@ function TalentDirectory({ partnerName }: { partnerName: string }) {
                       {domain?.name ?? "—"}
                     </p>
                   </div>
-                  <Badge
-                    variant={readiness.score >= 75 ? "success" : "outline"}
-                    className="shrink-0 font-mono"
-                  >
-                    {readiness.score}
-                  </Badge>
+                  {readiness && (
+                    <Badge
+                      variant={readiness.score >= 75 ? "success" : "outline"}
+                      className="shrink-0 font-mono"
+                    >
+                      {readiness.score}
+                    </Badge>
+                  )}
                 </div>
 
                 <p className="mt-3 flex-1 text-[0.82rem] leading-relaxed text-muted-foreground">
-                  {passport.headline}
+                  {profile.headline}
                 </p>
 
                 <div className="mt-4 flex flex-wrap gap-1.5">
-                  {readiness.strengths.slice(0, 3).map((strength) => (
+                  {(readiness?.strengths ?? []).slice(0, 3).map((strength) => (
                     <span
                       key={strength}
                       className="rounded-full border border-border px-2.5 py-1 text-[0.7rem] text-muted-foreground"
@@ -218,7 +225,7 @@ function TalentDirectory({ partnerName }: { partnerName: string }) {
                 </p>
 
                 <Button asChild variant="outline" size="sm" className="mt-5">
-                  <Link href={`/profile/${passport.slug}`} target="_blank">
+                  <Link href={`/profile/${profile.slug}`} target="_blank">
                     View Career Passport{" "}
                     <ExternalLink className="h-3.5 w-3.5" />
                   </Link>

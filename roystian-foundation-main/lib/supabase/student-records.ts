@@ -11,8 +11,23 @@ export async function fetchStudentRecordRows(
   supabase: SupabaseClient<Database>,
   studentId: string,
 ): Promise<StudentRecordRows | null> {
-  const [profile, student, registrations, progress, attempts, submissions, certificates] =
-    await Promise.all([
+  const [
+    profile,
+    student,
+    registrations,
+    progress,
+    attempts,
+    submissions,
+    certificates,
+    projects,
+    interviews,
+    challenges,
+    passport,
+    resume,
+    linkedin,
+    fellowship,
+    scholarships,
+  ] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", studentId).maybeSingle(),
       supabase.from("students").select("*").eq("id", studentId).maybeSingle(),
       supabase.from("registrations").select("*").eq("student_id", studentId),
@@ -20,11 +35,33 @@ export async function fetchStudentRecordRows(
       supabase.from("assessment_attempts").select("*").eq("student_id", studentId),
       supabase.from("submissions").select("*").eq("student_id", studentId),
       supabase.from("certificates").select("*").eq("student_id", studentId),
+      supabase.from("project_submissions").select("*").eq("student_id", studentId),
+      supabase.from("interview_sessions").select("*").eq("student_id", studentId),
+      supabase.from("challenge_entries").select("*").eq("student_id", studentId),
+      supabase.from("career_passports").select("*").eq("student_id", studentId).maybeSingle(),
+      supabase.from("resume_drafts").select("*").eq("student_id", studentId).maybeSingle(),
+      supabase.from("linkedin_drafts").select("*").eq("student_id", studentId).maybeSingle(),
+      supabase.from("fellowship_applications").select("*").eq("student_id", studentId).maybeSingle(),
+      supabase.from("scholarship_applications").select("*").eq("student_id", studentId),
     ]);
 
-  const failed = [profile, student, registrations, progress, attempts, submissions, certificates].find(
-    (result) => result.error,
-  );
+  const failed = [
+    profile,
+    student,
+    registrations,
+    progress,
+    attempts,
+    submissions,
+    certificates,
+    projects,
+    interviews,
+    challenges,
+    passport,
+    resume,
+    linkedin,
+    fellowship,
+    scholarships,
+  ].find((result) => result.error);
   if (failed?.error) throw new Error(`Loading student records failed: ${failed.error.message}`);
   if (!profile.data || !student.data) return null;
 
@@ -36,5 +73,13 @@ export async function fetchStudentRecordRows(
     attempts: attempts.data ?? [],
     submissions: submissions.data ?? [],
     certificates: certificates.data ?? [],
+    projects: projects.data ?? [],
+    interviews: interviews.data ?? [],
+    challenges: challenges.data ?? [],
+    passport: passport.data,
+    resume: resume.data,
+    linkedin: linkedin.data,
+    fellowship: fellowship.data,
+    scholarships: scholarships.data ?? [],
   };
 }

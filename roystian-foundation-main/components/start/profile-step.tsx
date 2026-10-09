@@ -20,7 +20,6 @@ import {
 import { EDUCATION_LEVELS } from "@/data/content";
 import { getDraft, saveDraft } from "@/lib/onboarding";
 import { useSession } from "@/lib/auth";
-import { delay } from "@/lib/api";
 import type { EducationLevel, ExperienceLevel, ProgramId } from "@/types";
 import { getDomain } from "@/data/domains";
 
@@ -136,7 +135,6 @@ export function ProfileStep() {
   }, [reset, searchParams, student]);
 
   async function onSubmit(values: FormValues) {
-    await delay(350);
     const draft = getDraft();
     saveDraft({
       ...values,

@@ -1,8 +1,6 @@
-"use client";
-
 import { getDomain, getDomainAssessments } from "@/data/domains";
 import { projectsForDomain } from "@/data/projects";
-import { summariseProgress } from "@/lib/progress";
+import { summariseProgress } from "@/lib/rules";
 import { clamp } from "@/lib/utils";
 import type {
   CareerReadiness,

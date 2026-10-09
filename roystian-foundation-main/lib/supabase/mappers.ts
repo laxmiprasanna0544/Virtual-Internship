@@ -7,10 +7,36 @@
  */
 
 import type { Database } from "@/types/supabase";
+import {
+  toChallengeEntry,
+  toFellowship,
+  toInterviewSession,
+  toLinkedIn,
+  toPassport,
+  toProjectSubmission,
+  toResume,
+  toScholarship,
+  type ChallengeRow,
+  type FellowshipRow,
+  type InterviewRow,
+  type LinkedInRow,
+  type PassportRow,
+  type ProjectRow,
+  type ResumeRow,
+  type ScholarshipRow,
+} from "@/lib/supabase/career-mappers";
 import type {
   AppNotification,
   AssessmentAttempt,
+  CareerPassport,
   Certificate,
+  ChallengeEntry,
+  FellowshipApplication,
+  InterviewSession,
+  LinkedInDraft,
+  ProjectSubmission,
+  ResumeDraft,
+  ScholarshipApplication,
   CollegeLead,
   CommunicationLog,
   Payment,
@@ -237,6 +263,14 @@ export interface StudentRecordRows {
   attempts: AttemptRow[];
   submissions: SubmissionRow[];
   certificates: CertificateRow[];
+  projects: ProjectRow[];
+  interviews: InterviewRow[];
+  challenges: ChallengeRow[];
+  passport: PassportRow | null;
+  resume: ResumeRow | null;
+  linkedin: LinkedInRow | null;
+  fellowship: FellowshipRow | null;
+  scholarships: ScholarshipRow[];
 }
 
 export interface StudentRecords {
@@ -247,6 +281,15 @@ export interface StudentRecords {
   /** Practical submission for the active domain. */
   submission: Submission | null;
   certificates: Certificate[];
+  projects: ProjectSubmission[];
+  interviews: InterviewSession[];
+  challenges: ChallengeEntry[];
+  passport: CareerPassport | null;
+  resume: ResumeDraft | null;
+  linkedin: LinkedInDraft | null;
+  fellowship: FellowshipApplication | null;
+  /** Most recent application first. */
+  scholarships: ScholarshipApplication[];
 }
 
 export function toStudentRecords(rows: StudentRecordRows): StudentRecords {
@@ -265,5 +308,17 @@ export function toStudentRecords(rows: StudentRecordRows): StudentRecords {
     certificates: rows.certificates
       .map(toCertificate)
       .sort((a, b) => (a.issueDate < b.issueDate ? 1 : -1)),
+    projects: rows.projects.map(toProjectSubmission),
+    interviews: rows.interviews
+      .map(toInterviewSession)
+      .sort((a, b) => (a.completedAt < b.completedAt ? 1 : -1)),
+    challenges: rows.challenges.map(toChallengeEntry),
+    passport: rows.passport ? toPassport(rows.passport) : null,
+    resume: rows.resume ? toResume(rows.resume) : null,
+    linkedin: rows.linkedin ? toLinkedIn(rows.linkedin) : null,
+    fellowship: rows.fellowship ? toFellowship(rows.fellowship) : null,
+    scholarships: rows.scholarships
+      .map(toScholarship)
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)),
   };
 }

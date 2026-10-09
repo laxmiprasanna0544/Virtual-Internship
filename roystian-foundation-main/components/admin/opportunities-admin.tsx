@@ -23,9 +23,8 @@ import {
   decideScholarship,
   scoreChallengeEntry,
   setFellowshipStage,
-} from "@/lib/opportunities";
-import { useDatabase } from "@/lib/db";
-import { delay } from "@/lib/api";
+  useAdminData,
+} from "@/lib/admin-data";
 import { formatDate } from "@/lib/utils";
 import type { FellowshipStage, ScholarshipTier } from "@/types";
 
@@ -38,7 +37,7 @@ const STAGES: FellowshipStage[] = [
 ];
 
 export function OpportunitiesAdmin() {
-  const db = useDatabase();
+  const db = useAdminData();
 
   if (!db) return <LoadingState label="Loading opportunities" rows={4} />;
 
@@ -79,7 +78,7 @@ export function OpportunitiesAdmin() {
 /* ---------------------------- Challenges --------------------------- */
 
 function ChallengeQueue() {
-  const db = useDatabase();
+  const db = useAdminData();
   const [scores, setScores] = React.useState<Record<string, string>>({});
   const [notes, setNotes] = React.useState<Record<string, string>>({});
   const [busy, setBusy] = React.useState<string | null>(null);
@@ -107,10 +106,14 @@ function ChallengeQueue() {
       return;
     }
     setBusy(entryId);
-    await delay(350);
-    scoreChallengeEntry(entryId, raw, notes[entryId] ?? "");
-    setBusy(null);
-    toast.success("Entry scored");
+    try {
+      await scoreChallengeEntry(entryId, raw, notes[entryId] ?? "");
+      toast.success("Entry scored");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "The action failed.");
+    } finally {
+      setBusy(null);
+    }
   }
 
   return (
@@ -219,7 +222,7 @@ function ChallengeQueue() {
 /* ---------------------------- Fellowship --------------------------- */
 
 function FellowshipQueue() {
-  const db = useDatabase();
+  const db = useAdminData();
   if (!db) return null;
 
   const applications = [...db.fellowshipApplications].sort((a, b) =>
@@ -266,7 +269,10 @@ function FellowshipQueue() {
               <Select
                 value={application.stage}
                 onValueChange={(next) =>
-                  setFellowshipStage(application.id, next as FellowshipStage)
+                  setFellowshipStage(application.id, next as FellowshipStage).then(
+                    () => toast.success("Stage updated"),
+                    (error) => toast.error(error instanceof Error ? error.message : "The action failed."),
+                  )
                 }
               >
                 <SelectTrigger className="w-[13rem]">
@@ -295,7 +301,7 @@ function FellowshipQueue() {
 /* --------------------------- Scholarship --------------------------- */
 
 function ScholarshipQueue() {
-  const db = useDatabase();
+  const db = useAdminData();
   if (!db) return null;
 
   const applications = [...db.scholarshipApplications].sort((a, b) =>
@@ -355,10 +361,12 @@ function ScholarshipQueue() {
                   key={tier}
                   size="sm"
                   variant={application.awardedTier === tier ? "default" : "outline"}
-                  onClick={() => {
-                    decideScholarship(application.id, "approved", tier);
-                    toast.success(`Awarded ${tier}% support`);
-                  }}
+                  onClick={() =>
+                    decideScholarship(application.id, "approved", tier).then(
+                      () => toast.success(`Awarded ${tier}% support`),
+                      (error) => toast.error(error instanceof Error ? error.message : "The action failed."),
+                    )
+                  }
                 >
                   Award {tier}%
                 </Button>
@@ -366,10 +374,12 @@ function ScholarshipQueue() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => {
-                  decideScholarship(application.id, "declined", null);
-                  toast.success("Application declined");
-                }}
+                onClick={() =>
+                  decideScholarship(application.id, "declined", null).then(
+                    () => toast.success("Application declined"),
+                    (error) => toast.error(error instanceof Error ? error.message : "The action failed."),
+                  )
+                }
               >
                 Decline
               </Button>

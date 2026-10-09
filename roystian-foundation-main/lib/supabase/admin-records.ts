@@ -12,11 +12,21 @@ import {
   toSubmission,
   type AttemptRow,
 } from "@/lib/supabase/mappers";
+import {
+  toChallengeEntry,
+  toCollege,
+  toFellowship,
+  toInterviewSession,
+  toPassport,
+  toProjectSubmission,
+  toScholarship,
+} from "@/lib/supabase/career-mappers";
 
 /**
- * Everything the admin console shows, in the same shape the screens used to
- * read from the demo database. RLS decides what is in it: admins get every
- * row, trainers only the students in their domains.
+ * Everything the staff screens show — admin console, trainer views and the
+ * campus dashboard — in the same shape the screens used to read from the
+ * demo database. RLS decides what is in it: admins get every row, trainers
+ * only students in their domains, a college only its own cohort.
  */
 export type AdminData = Pick<
   DemoDatabase,
@@ -28,6 +38,13 @@ export type AdminData = Pick<
   | "progress"
   | "communications"
   | "leads"
+  | "projectSubmissions"
+  | "interviews"
+  | "challengeEntries"
+  | "passports"
+  | "fellowshipApplications"
+  | "scholarshipApplications"
+  | "colleges"
 >;
 
 type Client = SupabaseClient<SupabaseSchema>;
@@ -69,6 +86,13 @@ export async function fetchAdminData(supabase: Client): Promise<AdminData> {
     certificateRows,
     communicationRows,
     leadRows,
+    projectRows,
+    interviewRows,
+    challengeRows,
+    passportRows,
+    fellowshipRows,
+    scholarshipRows,
+    collegeRows,
   ] = await Promise.all([
     fetchAll(supabase, "profiles"),
     fetchAll(supabase, "students"),
@@ -80,6 +104,13 @@ export async function fetchAdminData(supabase: Client): Promise<AdminData> {
     fetchAll(supabase, "certificates"),
     fetchAll(supabase, "communication_logs"),
     fetchAll(supabase, "college_leads"),
+    fetchAll(supabase, "project_submissions"),
+    fetchAll(supabase, "interview_sessions"),
+    fetchAll(supabase, "challenge_entries"),
+    fetchAll(supabase, "career_passports", ["student_id"]),
+    fetchAll(supabase, "fellowship_applications"),
+    fetchAll(supabase, "scholarship_applications"),
+    fetchAll(supabase, "colleges"),
   ]);
 
   const profileById = new Map(profiles.map((p) => [p.id, p]));
@@ -118,5 +149,12 @@ export async function fetchAdminData(supabase: Client): Promise<AdminData> {
       .sort((a, b) => (a.issueDate < b.issueDate ? 1 : -1)),
     communications: communicationRows.map(toCommunication).sort(newestFirst),
     leads: leadRows.map(toLead).sort(newestFirst),
+    projectSubmissions: projectRows.map(toProjectSubmission),
+    interviews: interviewRows.map(toInterviewSession),
+    challengeEntries: challengeRows.map(toChallengeEntry),
+    passports: passportRows.map(toPassport),
+    fellowshipApplications: fellowshipRows.map(toFellowship),
+    scholarshipApplications: scholarshipRows.map(toScholarship).sort(newestFirst),
+    colleges: collegeRows.map(toCollege),
   };
 }

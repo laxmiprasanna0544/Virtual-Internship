@@ -18,11 +18,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { INTERVIEW_KINDS, questionsFor } from "@/data/interviews";
-import { saveInterview, useCareerContext } from "@/lib/career";
+import { completeInterview, useCareerContext } from "@/lib/career";
 import { useStudentContext } from "@/lib/use-student";
-import { buildSession, evaluateInterview, type InterviewFeedback } from "@/lib/interviews";
-import { uid } from "@/lib/ids";
-import { delay } from "@/lib/api";
+import type { InterviewFeedback } from "@/lib/interviews";
 import { cn, formatDate } from "@/lib/utils";
 import type { InterviewKind } from "@/types";
 
@@ -53,12 +51,15 @@ export function InterviewView() {
   async function finish(kind: InterviewKind) {
     if (!student || !domain) return;
     setBusy(true);
-    await delay(650);
-    const feedback = evaluateInterview(kind, domainName, answers);
-    saveInterview(
-      buildSession(uid("intv"), student.id, kind, domain.id, answers, feedback),
-    );
-    setBusy(false);
+    let feedback: InterviewFeedback;
+    try {
+      ({ feedback } = await completeInterview(kind, answers));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+      return;
+    } finally {
+      setBusy(false);
+    }
     setStage({ name: "result", kind, feedback });
     toast.success("Session complete", {
       description: `Overall score ${feedback.overallScore}/100.`,

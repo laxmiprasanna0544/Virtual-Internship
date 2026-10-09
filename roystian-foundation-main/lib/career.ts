@@ -2,17 +2,24 @@
 
 import { useMemo } from "react";
 import { getDomain } from "@/data/domains";
-import { getProject, projectsForDomain } from "@/data/projects";
-import { getDB, updateDB, useDatabase } from "@/lib/db";
-import { useSession } from "@/lib/auth";
-import { badgeStates, type BadgeState } from "@/lib/badges";
-import { uid } from "@/lib/ids";
-import { computeReadiness } from "@/lib/readiness";
+import { projectsForDomain } from "@/data/projects";
+import type { BadgeState } from "@/lib/badges";
+import { careerSnapshot } from "@/lib/career-rules";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import {
+  currentStudentRecords,
+  postJSON,
+  refreshStudentData,
+  StudentDataError,
+  useStudentData,
+} from "@/lib/student-data";
+import type { InterviewFeedback } from "@/lib/interviews";
 import { useStudentContext } from "@/lib/use-student";
 import type {
   CareerPassport,
   CareerReadiness,
   ChallengeEntry,
+  InterviewKind,
   InterviewSession,
   LinkedInDraft,
   LinkedInSection,
@@ -22,284 +29,231 @@ import type {
   Student,
 } from "@/types";
 
-/* ------------------------------------------------------------------ */
-/*  Reads                                                              */
-/* ------------------------------------------------------------------ */
+/**
+ * The student's career tools, on Supabase. Reads come from the shared
+ * student-data store; writes go to Supabase (RLS-limited to the student's own
+ * rows) or, where they feed the readiness score, through the server.
+ */
 
-export function projectSubmissionsFor(studentId: string): ProjectSubmission[] {
-  return getDB().projectSubmissions.filter((p) => p.studentId === studentId);
+const supabase = () => getSupabaseBrowserClient();
+
+async function userId(): Promise<string> {
+  const {
+    data: { user },
+  } = await supabase().auth.getUser();
+  if (!user) throw new StudentDataError("Your session has expired. Sign in again.");
+  return user.id;
 }
 
-export function interviewsFor(studentId: string): InterviewSession[] {
-  return getDB().interviews.filter((s) => s.studentId === studentId);
-}
-
-export function challengeEntriesFor(studentId: string): ChallengeEntry[] {
-  return getDB().challengeEntries.filter((c) => c.studentId === studentId);
-}
-
-export function passportFor(studentId: string): CareerPassport | null {
-  return getDB().passports.find((p) => p.studentId === studentId) ?? null;
-}
-
-export function passportBySlug(slug: string): CareerPassport | null {
-  return getDB().passports.find((p) => p.slug === slug) ?? null;
+function fail(message: string): never {
+  throw new StudentDataError(message);
 }
 
 /* ------------------------------------------------------------------ */
-/*  Project submissions                                                */
+/*  Reads (from the loaded records)                                    */
 /* ------------------------------------------------------------------ */
 
-export function startProject(
-  studentId: string,
-  brief: ProjectBrief,
-): ProjectSubmission {
-  const existing = getDB().projectSubmissions.find(
-    (p) => p.studentId === studentId && p.projectId === brief.id,
-  );
-  if (existing) return existing;
-
-  const created: ProjectSubmission = {
-    id: uid("projsub"),
-    studentId,
-    projectId: brief.id,
-    domainId: brief.domainId,
-    status: "in-progress",
-    analysis: "",
-    recommendations: "",
-    reportFileName: null,
-    repoUrl: null,
-    criterionScores: {},
-    overallScore: null,
-    feedback: null,
-    startedAt: new Date().toISOString(),
-    submittedAt: null,
-    evaluatedAt: null,
-  };
-
-  updateDB((db) => {
-    db.projectSubmissions = [...db.projectSubmissions, created];
-  });
-  return created;
+export function passportFor(_studentId?: string): CareerPassport | null {
+  return currentStudentRecords()?.passport ?? null;
 }
 
-export function saveProjectDraft(
+export function resumeFor(_studentId?: string): ResumeDraft | null {
+  return currentStudentRecords()?.resume ?? null;
+}
+
+export function linkedInFor(_studentId?: string): LinkedInDraft | null {
+  return currentStudentRecords()?.linkedin ?? null;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Projects                                                           */
+/* ------------------------------------------------------------------ */
+
+export async function startProject(brief: ProjectBrief): Promise<void> {
+  const { error } = await supabase()
+    .from("project_submissions")
+    .upsert(
+      {
+        student_id: await userId(),
+        project_id: brief.id,
+        domain_id: brief.domainId,
+        status: "in-progress",
+        started_at: new Date().toISOString(),
+      },
+      { onConflict: "student_id,project_id", ignoreDuplicates: true },
+    );
+  if (error) fail("Could not start the project.");
+  await refreshStudentData();
+}
+
+export async function saveProjectDraft(
   submissionId: string,
   patch: Partial<Pick<ProjectSubmission, "analysis" | "recommendations" | "repoUrl" | "reportFileName">>,
-): void {
-  updateDB((db) => {
-    db.projectSubmissions = db.projectSubmissions.map((p) =>
-      p.id === submissionId ? { ...p, ...patch } : p,
-    );
-  });
+): Promise<void> {
+  const { error } = await supabase()
+    .from("project_submissions")
+    .update({
+      ...(patch.analysis !== undefined ? { analysis: patch.analysis } : {}),
+      ...(patch.recommendations !== undefined ? { recommendations: patch.recommendations } : {}),
+      ...(patch.repoUrl !== undefined ? { repo_url: patch.repoUrl } : {}),
+      ...(patch.reportFileName !== undefined ? { report_file_name: patch.reportFileName } : {}),
+    })
+    .eq("id", submissionId);
+  if (error) fail("Could not save your draft.");
+  await refreshStudentData();
 }
 
-export function submitProject(submissionId: string): void {
-  updateDB((db) => {
-    db.projectSubmissions = db.projectSubmissions.map((p) =>
-      p.id === submissionId
-        ? { ...p, status: "submitted", submittedAt: new Date().toISOString() }
-        : p,
-    );
-  });
-}
-
-/**
- * Trainer/admin evaluation. Criterion scores are weighted by the brief's own
- * weights so the overall score reflects what the brief said would matter.
- */
-export function evaluateProject(
-  submissionId: string,
-  criterionScores: Record<string, number>,
-  feedback: string,
-): void {
-  updateDB((db) => {
-    db.projectSubmissions = db.projectSubmissions.map((p) => {
-      if (p.id !== submissionId) return p;
-      const brief = getProject(p.projectId);
-      const overall = brief
-        ? Math.round(
-            brief.evaluationCriteria.reduce(
-              (sum, c) => sum + (criterionScores[c.label] ?? 0) * (c.weight / 100),
-              0,
-            ),
-          )
-        : Math.round(
-            Object.values(criterionScores).reduce((a, b) => a + b, 0) /
-              Math.max(Object.keys(criterionScores).length, 1),
-          );
-      return {
-        ...p,
-        status: "evaluated",
-        criterionScores,
-        overallScore: overall,
-        feedback,
-        evaluatedAt: new Date().toISOString(),
-      };
-    });
-  });
+export async function submitProject(submissionId: string): Promise<void> {
+  const { error } = await supabase()
+    .from("project_submissions")
+    .update({ status: "submitted", submitted_at: new Date().toISOString() })
+    .eq("id", submissionId);
+  if (error) fail("Could not submit the project.");
+  await refreshStudentData();
 }
 
 /* ------------------------------------------------------------------ */
-/*  Interviews                                                         */
+/*  Interviews (scored on the server)                                  */
 /* ------------------------------------------------------------------ */
 
-export function saveInterview(session: InterviewSession): void {
-  updateDB((db) => {
-    db.interviews = [...db.interviews, session];
-  });
+export async function completeInterview(
+  kind: InterviewKind,
+  answers: Record<string, string>,
+): Promise<{ session: InterviewSession; feedback: InterviewFeedback }> {
+  const result = await postJSON<{ session: InterviewSession; feedback: InterviewFeedback }>(
+    "/api/interviews",
+    { kind, answers },
+  );
+  await refreshStudentData();
+  return result;
 }
 
 /* ------------------------------------------------------------------ */
 /*  Challenges                                                         */
 /* ------------------------------------------------------------------ */
 
-export function submitChallengeEntry(
-  studentId: string,
+export async function submitChallengeEntry(
   challengeId: string,
   approach: string,
   solution: string,
   repoUrl: string | null,
-): ChallengeEntry {
-  const existing = getDB().challengeEntries.find(
-    (c) => c.studentId === studentId && c.challengeId === challengeId,
-  );
-
-  const entry: ChallengeEntry = {
-    id: existing?.id ?? uid("chal"),
-    studentId,
-    challengeId,
-    status: "submitted",
-    approach,
-    solution,
-    repoUrl,
-    score: null,
-    feedback: null,
-    submittedAt: new Date().toISOString(),
-    evaluatedAt: null,
-  };
-
-  updateDB((db) => {
-    db.challengeEntries = existing
-      ? db.challengeEntries.map((c) => (c.id === existing.id ? entry : c))
-      : [...db.challengeEntries, entry];
-  });
-  return entry;
+): Promise<void> {
+  const { error } = await supabase()
+    .from("challenge_entries")
+    .upsert(
+      {
+        student_id: await userId(),
+        challenge_id: challengeId,
+        status: "submitted",
+        approach,
+        solution,
+        repo_url: repoUrl,
+        submitted_at: new Date().toISOString(),
+      },
+      { onConflict: "student_id,challenge_id" },
+    );
+  if (error) {
+    fail(
+      error.message.includes("evaluate")
+        ? "This entry has already been evaluated."
+        : "Could not submit your entry.",
+    );
+  }
+  await refreshStudentData();
 }
 
 /* ------------------------------------------------------------------ */
 /*  Career Passport                                                    */
 /* ------------------------------------------------------------------ */
 
-function slugify(name: string): string {
+export function slugify(name: string): string {
   return name
     .toLowerCase()
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
+    .replace(/^-|-$/g, "")
+    .slice(0, 60);
 }
 
-/** Slugs must stay unique — the public profile route resolves on them. */
-function uniqueSlug(base: string, studentId: string): string {
-  const existing = getDB().passports;
-  let candidate = base;
-  let suffix = 2;
-  while (existing.some((p) => p.slug === candidate && p.studentId !== studentId)) {
-    candidate = `${base}-${suffix}`;
-    suffix += 1;
-  }
-  return candidate;
-}
+const UNIQUE_VIOLATION = "23505";
 
-export function ensurePassport(student: Student): CareerPassport {
-  const existing = passportFor(student.id);
-  if (existing) return existing;
-
+/** Creates the student's passport, finding a free slug if theirs is taken. */
+export async function ensurePassport(student: Student): Promise<void> {
+  if (passportFor()) return;
   const domain = getDomain(student.domainId);
-  const created: CareerPassport = {
-    studentId: student.id,
-    slug: uniqueSlug(slugify(student.name) || student.id, student.id),
-    published: false,
-    headline: domain
-      ? `${domain.shortName} intern · Roystian Foundation`
-      : "Roystian Foundation intern",
-    about: "",
-    visibility: {
-      readiness: true,
-      projects: true,
-      assessments: true,
-      badges: true,
-      certificate: true,
-      contact: false,
-    },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+  const base = slugify(student.name).padEnd(3, "0") || "student";
 
-  updateDB((db) => {
-    db.passports = [...db.passports, created];
-  });
-  return created;
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const slug = attempt === 0 ? base : `${base}-${attempt + 1}`;
+    const { error } = await supabase()
+      .from("career_passports")
+      .insert({
+        student_id: student.id,
+        slug,
+        headline: domain
+          ? `${domain.shortName} intern · Roystian Foundation`
+          : "Roystian Foundation intern",
+      });
+    if (!error) break;
+    // Another passport has this slug: try the next suffix. If the student
+    // already has a passport (another tab created it), stop.
+    if (error.code !== UNIQUE_VIOLATION) fail("Could not create your passport.");
+    if (error.message.includes("career_passports_pkey")) break;
+  }
+  await refreshStudentData();
 }
 
-export function updatePassport(
-  studentId: string,
-  patch: Partial<Omit<CareerPassport, "studentId" | "createdAt">>,
-): void {
-  updateDB((db) => {
-    db.passports = db.passports.map((p) => {
-      if (p.studentId !== studentId) return p;
-      const nextSlug = patch.slug
-        ? uniqueSlug(slugify(patch.slug) || p.slug, studentId)
-        : p.slug;
-      return {
-        ...p,
-        ...patch,
-        slug: nextSlug,
-        updatedAt: new Date().toISOString(),
-      };
-    });
-  });
+export async function updatePassport(
+  patch: Partial<Pick<CareerPassport, "headline" | "about" | "slug" | "published" | "visibility">>,
+): Promise<void> {
+  const slug = patch.slug !== undefined ? slugify(patch.slug) : undefined;
+  if (slug !== undefined && slug.length < 3) {
+    fail("Use at least 3 letters or numbers for your profile address.");
+  }
+  const { error } = await supabase()
+    .from("career_passports")
+    .update({
+      ...(patch.headline !== undefined ? { headline: patch.headline } : {}),
+      ...(patch.about !== undefined ? { about: patch.about } : {}),
+      ...(slug !== undefined ? { slug } : {}),
+      ...(patch.published !== undefined ? { published: patch.published } : {}),
+      ...(patch.visibility !== undefined ? { visibility: patch.visibility } : {}),
+    })
+    .eq("student_id", await userId());
+  if (error) {
+    fail(error.code === UNIQUE_VIOLATION ? "That profile address is already taken." : "Could not save your passport.");
+  }
+  await refreshStudentData();
 }
 
 /* ------------------------------------------------------------------ */
 /*  Resume & LinkedIn drafts                                           */
 /* ------------------------------------------------------------------ */
 
-export function resumeFor(studentId: string): ResumeDraft | null {
-  return getDB().resumes.find((r) => r.studentId === studentId) ?? null;
+export async function saveResume(draft: Omit<ResumeDraft, "updatedAt" | "studentId">): Promise<void> {
+  const { error } = await supabase()
+    .from("resume_drafts")
+    .upsert({
+      student_id: await userId(),
+      headline: draft.headline,
+      summary: draft.summary,
+      skills: draft.skills,
+      include_projects: draft.includeProjects,
+      include_assessments: draft.includeAssessments,
+      include_certificate: draft.includeCertificate,
+      updated_at: new Date().toISOString(),
+    });
+  if (error) fail("Could not save your resume.");
+  await refreshStudentData();
 }
 
-export function saveResume(draft: ResumeDraft): void {
-  updateDB((db) => {
-    const exists = db.resumes.some((r) => r.studentId === draft.studentId);
-    const next = { ...draft, updatedAt: new Date().toISOString() };
-    db.resumes = exists
-      ? db.resumes.map((r) => (r.studentId === draft.studentId ? next : r))
-      : [...db.resumes, next];
-  });
-}
-
-export function linkedInFor(studentId: string): LinkedInDraft | null {
-  return getDB().linkedInDrafts.find((d) => d.studentId === studentId) ?? null;
-}
-
-export function saveLinkedIn(
-  studentId: string,
-  sections: Record<LinkedInSection, string>,
-): void {
-  updateDB((db) => {
-    const next: LinkedInDraft = {
-      studentId,
-      sections,
-      updatedAt: new Date().toISOString(),
-    };
-    const exists = db.linkedInDrafts.some((d) => d.studentId === studentId);
-    db.linkedInDrafts = exists
-      ? db.linkedInDrafts.map((d) => (d.studentId === studentId ? next : d))
-      : [...db.linkedInDrafts, next];
-  });
+export async function saveLinkedIn(sections: Record<LinkedInSection, string>): Promise<void> {
+  const { error } = await supabase()
+    .from("linkedin_drafts")
+    .upsert({ student_id: await userId(), sections, updated_at: new Date().toISOString() });
+  if (error) fail("Could not save your LinkedIn drafts.");
+  await refreshStudentData();
 }
 
 /* ------------------------------------------------------------------ */
@@ -328,16 +282,15 @@ const EMPTY_READINESS: CareerReadiness = {
 };
 
 /**
- * Career-system state for the signed-in student, derived from one database
- * read. Everything here is computed from real activity — there is no stored
- * readiness score to drift out of date.
+ * Career-system state for the signed-in student. Everything is computed from
+ * real activity — there is no stored readiness score to drift out of date.
  */
 export function useCareerContext(): CareerContext {
-  const db = useDatabase();
+  const { records } = useStudentData();
   const { student, progress, submission, ready } = useStudentContext();
 
   return useMemo(() => {
-    if (!db || !ready || !student) {
+    if (!ready || !student || !records) {
       return {
         ready: false,
         readiness: EMPTY_READINESS,
@@ -351,30 +304,14 @@ export function useCareerContext(): CareerContext {
       };
     }
 
-    const projects = db.projectSubmissions.filter(
-      (p) => p.studentId === student.id,
-    );
-    const interviews = db.interviews.filter((s) => s.studentId === student.id);
-    const challenges = db.challengeEntries.filter(
-      (c) => c.studentId === student.id,
-    );
-
-    const readiness = computeReadiness({
+    const { projects, interviews, challenges, passport } = records;
+    const { readiness, badges } = careerSnapshot({
       student,
       progress,
       submission,
       projects,
       interviews,
       challenges,
-    });
-
-    const badges = badgeStates({
-      student,
-      progress,
-      submission,
-      projects,
-      challenges,
-      readiness,
     });
 
     return {
@@ -386,27 +323,7 @@ export function useCareerContext(): CareerContext {
       briefs: student.domainId ? projectsForDomain(student.domainId) : [],
       interviews,
       challenges,
-      passport: db.passports.find((p) => p.studentId === student.id) ?? null,
+      passport,
     };
-  }, [db, ready, student, progress, submission]);
-}
-
-/** Readiness for an arbitrary student — used by admin and college views. */
-export function readinessForStudent(studentId: string): CareerReadiness {
-  const db = getDB();
-  const student = db.students.find((s) => s.id === studentId) ?? null;
-  const progress =
-    db.progress.find(
-      (p) => p.studentId === studentId && p.domainId === student?.domainId,
-    ) ?? null;
-  const submission = db.submissions.find((s) => s.studentId === studentId) ?? null;
-
-  return computeReadiness({
-    student,
-    progress,
-    submission,
-    projects: db.projectSubmissions.filter((p) => p.studentId === studentId),
-    interviews: db.interviews.filter((s) => s.studentId === studentId),
-    challenges: db.challengeEntries.filter((c) => c.studentId === studentId),
-  });
+  }, [records, ready, student, progress, submission]);
 }

@@ -1,30 +1,31 @@
 "use client";
 
-import { getDB, updateDB } from "@/lib/db";
-import { uid } from "@/lib/ids";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { CollegeLead } from "@/types";
 
-export function listLeads(): CollegeLead[] {
-  return [...getDB().leads].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
-}
-
-export function createLead(
+/**
+ * Submits the public college enquiry form. Anyone may insert a lead (RLS),
+ * but only admins can read them.
+ */
+export async function createLead(
   input: Omit<CollegeLead, "id" | "status" | "createdAt">,
-): CollegeLead {
-  const lead: CollegeLead = {
-    ...input,
-    id: uid("lead"),
-    status: "new",
-    createdAt: new Date().toISOString(),
-  };
-  updateDB((db) => {
-    db.leads = [lead, ...db.leads];
-  });
-  return lead;
-}
-
-export function setLeadStatus(id: string, status: CollegeLead["status"]): void {
-  updateDB((db) => {
-    db.leads = db.leads.map((l) => (l.id === id ? { ...l, status } : l));
-  });
+): Promise<void> {
+  const { error } = await getSupabaseBrowserClient()
+    .from("college_leads")
+    .insert({
+      college_name: input.collegeName,
+      city: input.city,
+      state: input.state,
+      institution_type: input.institutionType || null,
+      departments: input.departments,
+      year_batch: input.yearBatch,
+      contact_person: input.contactPerson,
+      designation: input.designation,
+      email: input.email,
+      phone: input.phone,
+      student_count: input.studentCount,
+      interest: input.interest,
+      message: input.message,
+    });
+  if (error) throw new Error("Your enquiry could not be sent. Please try again.");
 }

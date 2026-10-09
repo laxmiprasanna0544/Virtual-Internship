@@ -15,7 +15,8 @@
     "test:rls": "node scripts/rls.test.mjs",
     "test:journey": "node scripts/journey.test.mjs",
     "test:admin": "node scripts/admin.test.mjs",
-    "test:auth": "node scripts/auth.test.mjs"
+    "test:auth": "node scripts/auth.test.mjs",
+    "test:career": "node scripts/career.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

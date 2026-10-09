@@ -9,14 +9,14 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { DataTable, type Column } from "@/components/admin/data-table";
 import { FilterBar } from "@/components/admin/filters";
 import { Button } from "@/components/ui/button";
-import { useDatabase } from "@/lib/db";
+import { useAdminData } from "@/lib/admin-data";
 import { DOMAINS, getDomain } from "@/data/domains";
 import { PROGRAMS } from "@/data/programs";
 import { formatDate, formatINR } from "@/lib/utils";
 import type { Registration } from "@/types";
 
 export function AdminRegistrations() {
-  const db = useDatabase();
+  const db = useAdminData();
   const [query, setQuery] = React.useState("");
   const [domainFilter, setDomainFilter] = React.useState("all");
   const [programFilter, setProgramFilter] = React.useState("all");

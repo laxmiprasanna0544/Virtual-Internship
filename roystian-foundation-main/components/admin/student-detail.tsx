@@ -22,23 +22,23 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useDatabase, updateDB } from "@/lib/db";
-import { getDomain, getDomainAssessments, getFinalAssessment } from "@/data/domains";
-import { getProgram } from "@/data/programs";
 import {
-  completionRequirements,
-  ensureProgress,
-  markModuleComplete,
-  markModuleIncomplete,
-  summariseProgress,
-  updateProgress,
-} from "@/lib/progress";
-import { generateCertificate } from "@/lib/certificates";
-import { reviewSubmission } from "@/lib/submissions";
+  issueCertificate as issueCertificateRequest,
+  reviewSubmission,
+  setAllModules as setAllModulesRequest,
+  setFinalPassed,
+  setModuleProgress,
+  setStudentStatus,
+  useAdminData,
+} from "@/lib/admin-data";
+import { SubmissionFileLink } from "@/components/admin/submission-file-link";
+import { getDomain, getDomainAssessments } from "@/data/domains";
+import { getProgram } from "@/data/programs";
+import { completionRequirements, summariseProgress } from "@/lib/rules";
 import { formatDate, formatDateTime, formatINR } from "@/lib/utils";
 
 export function AdminStudentDetail({ studentId }: { studentId: string }) {
-  const db = useDatabase();
+  const db = useAdminData();
 
   if (!db) return <LoadingState label="Loading student" rows={3} />;
 
@@ -47,7 +47,7 @@ export function AdminStudentDetail({ studentId }: { studentId: string }) {
     return (
       <EmptyState
         title="Student not found"
-        description="This student record does not exist in the demo dataset."
+        description="No student with this ID was found."
         actionLabel="Back to students"
         actionHref="/admin/students"
       />
@@ -56,14 +56,25 @@ export function AdminStudentDetail({ studentId }: { studentId: string }) {
 
   const domain = getDomain(student.domainId);
   const program = getProgram(student.programId);
-  const registration = db.registrations.find((r) => r.studentId === student.id) ?? null;
-  const payment = db.payments.find((p) => p.studentId === student.id) ?? null;
+  const registration =
+    db.registrations.find((r) => r.id === student.registrationId) ??
+    db.registrations.find((r) => r.studentId === student.id) ??
+    null;
+  const payment =
+    db.payments.find((p) => p.registrationId === registration?.id) ??
+    db.payments.find((p) => p.studentId === student.id) ??
+    null;
   const progress =
     db.progress.find(
       (p) => p.studentId === student.id && p.domainId === student.domainId,
     ) ?? null;
-  const submission = db.submissions.find((s) => s.studentId === student.id) ?? null;
-  const certificate = db.certificates.find((c) => c.studentId === student.id) ?? null;
+  const submission =
+    db.submissions.find((s) => s.studentId === student.id && s.domainId === student.domainId) ??
+    null;
+  const certificate =
+    db.certificates.find((c) => c.registrationId === registration?.id) ??
+    db.certificates.find((c) => c.studentId === student.id) ??
+    null;
   const summary = summariseProgress(student, progress, submission);
   const requirements = completionRequirements(student, progress, submission);
   const communications = db.communications.filter(
@@ -71,81 +82,55 @@ export function AdminStudentDetail({ studentId }: { studentId: string }) {
   );
   const moduleAssessments = domain ? getDomainAssessments(domain.id) : [];
 
-  function toggleModule(moduleId: string, done: boolean) {
-    if (!student?.domainId) return;
-    if (done) {
-      markModuleIncomplete(student.id, student.domainId, moduleId);
-    } else {
-      markModuleComplete(student.id, student.domainId, moduleId);
+  /** Runs an admin action and reports the outcome; the store refreshes itself. */
+  async function run(action: () => Promise<unknown>, success: string) {
+    try {
+      const result = await action();
+      const notice = (result as { notice?: string } | undefined)?.notice;
+      if (notice) toast(notice);
+      else toast.success(success);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "The action failed.");
     }
   }
 
+  function toggleModule(moduleId: string, done: boolean) {
+    void run(
+      () => setModuleProgress(student!.id, moduleId, !done),
+      done ? "Module marked incomplete" : "Module marked complete",
+    );
+  }
+
   function setAllModules(complete: boolean) {
-    if (!student?.domainId || !domain) return;
-    ensureProgress(student.id, student.domainId);
-    updateProgress(student.id, student.domainId, (p) => {
-      p.completedModules = complete ? domain.modules.map((m) => m.id) : [];
-      if (complete) {
-        for (const assessment of moduleAssessments) {
-          p.moduleAttempts[assessment.id] = {
-            assessmentId: assessment.id,
-            score: assessment.questions.length,
-            total: assessment.questions.length,
-            percentage: 100,
-            passed: true,
-            answers: {},
-            submittedAt: new Date().toISOString(),
-          };
-        }
-      } else {
-        p.moduleAttempts = {};
-      }
-    });
-    toast.success(
-      complete ? "All modules and assessments marked complete" : "Module progress reset",
+    void run(
+      () => setAllModulesRequest(student!.id, complete),
+      complete
+        ? "All modules complete; missing assessment results recorded as admin overrides"
+        : "Module progress reset; admin overrides removed",
     );
   }
 
   function toggleFinal() {
-    if (!student?.domainId || !domain) return;
-    const finalAssessment = getFinalAssessment(domain.id);
-    if (!finalAssessment) return;
-    ensureProgress(student.id, student.domainId);
-    updateProgress(student.id, student.domainId, (p) => {
-      p.finalAttempt = p.finalAttempt?.passed
-        ? null
-        : {
-            assessmentId: finalAssessment.id,
-            score: 9,
-            total: 10,
-            percentage: 90,
-            passed: true,
-            answers: {},
-            submittedAt: new Date().toISOString(),
-          };
-    });
-    toast.success("Final assessment status updated");
+    const passed = Boolean(progress?.finalAttempt?.passed);
+    void run(
+      () => setFinalPassed(student!.id, !passed),
+      passed ? "Final assessment override removed" : "Final assessment recorded as passed (admin override)",
+    );
   }
 
   function issueCertificate() {
-    if (!student) return;
-    const issued = generateCertificate(student);
-    if (issued) {
-      toast.success(`Certificate ${issued.id} issued`);
-    } else {
-      toast.error("Completion requirements are not satisfied yet");
-    }
+    void run(async () => {
+      const { certificate: issued } = await issueCertificateRequest(student!.id);
+      return { notice: `Certificate ${issued.id} issued` };
+    }, "");
   }
 
   function toggleSuspend() {
-    if (!student) return;
-    const next = student.status === "suspended" ? "active" : "suspended";
-    updateDB((draft) => {
-      draft.students = draft.students.map((s) =>
-        s.id === student.id ? { ...s, status: next } : s,
-      );
-    });
-    toast.success(next === "suspended" ? "Student suspended" : "Student reactivated");
+    const next = student!.status === "suspended" ? "active" : "suspended";
+    void run(
+      () => setStudentStatus(student!.id, next),
+      next === "suspended" ? "Student suspended" : "Student reactivated",
+    );
   }
 
   return (
@@ -258,11 +243,13 @@ export function AdminStudentDetail({ studentId }: { studentId: string }) {
                 <RotateCcw /> Reset module progress
               </Button>
               <Button size="sm" variant="outline" onClick={toggleFinal}>
-                <Award /> Toggle final assessment pass
+                <Award />{" "}
+                {progress?.finalAttempt?.passed ? "Remove final pass override" : "Record final as passed"}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Changes here are reflected immediately on the student's dashboard.
+              Assessment results entered here are recorded as admin overrides, logged, and
+              shown as such. Results the student earned themselves are never removed.
             </p>
 
             {domain ? (
@@ -323,7 +310,7 @@ export function AdminStudentDetail({ studentId }: { studentId: string }) {
                     </p>
                     {attempt ? (
                       <Badge variant={attempt.passed ? "success" : "warning"}>
-                        {attempt.percentage}%
+                        {attempt.percentage}%{attempt.overriddenBy ? " · admin" : ""}
                       </Badge>
                     ) : (
                       <Badge variant="secondary">Not attempted</Badge>
@@ -336,6 +323,7 @@ export function AdminStudentDetail({ studentId }: { studentId: string }) {
                 {progress?.finalAttempt ? (
                   <Badge variant={progress.finalAttempt.passed ? "success" : "warning"}>
                     {progress.finalAttempt.percentage}%
+                    {progress.finalAttempt.overriddenBy ? " · admin" : ""}
                   </Badge>
                 ) : (
                   <Badge variant="secondary">Not attempted</Badge>
@@ -359,9 +347,9 @@ export function AdminStudentDetail({ studentId }: { studentId: string }) {
                   {submission.responseText || "No written response submitted."}
                 </p>
                 {submission.fileName && (
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    Attached file: <span className="font-mono">{submission.fileName}</span>
-                  </p>
+                  <div className="mt-3">
+                    <SubmissionFileLink filePath={submission.filePath} fileName={submission.fileName} />
+                  </div>
                 )}
                 <p className="mt-3 text-xs text-muted-foreground">
                   Submitted {formatDateTime(submission.submittedAt)} · Reviewed{" "}
@@ -377,28 +365,36 @@ export function AdminStudentDetail({ studentId }: { studentId: string }) {
               <div className="flex flex-wrap gap-2.5">
                 <Button
                   size="sm"
-                  onClick={() => {
-                    reviewSubmission(
-                      submission.id,
-                      "approved",
-                      "Clear structure and correct use of terminology. Approved.",
-                    );
-                    toast.success("Submission approved");
-                  }}
+                  disabled={submission.status === "pending"}
+                  onClick={() =>
+                    void run(
+                      () =>
+                        reviewSubmission(
+                          submission.id,
+                          "approved",
+                          "Clear structure and correct use of terminology. Approved.",
+                        ),
+                      "Submission approved",
+                    )
+                  }
                 >
                   <CheckCircle2 /> Approve
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => {
-                    reviewSubmission(
-                      submission.id,
-                      "needs-revision",
-                      "Add more detail against each requirement and resubmit.",
-                    );
-                    toast("Marked as needs revision");
-                  }}
+                  disabled={submission.status === "pending"}
+                  onClick={() =>
+                    void run(
+                      () =>
+                        reviewSubmission(
+                          submission.id,
+                          "needs-revision",
+                          "Add more detail against each requirement and resubmit.",
+                        ),
+                      "Marked as needs revision",
+                    )
+                  }
                 >
                   Needs revision
                 </Button>

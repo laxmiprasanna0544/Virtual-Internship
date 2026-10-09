@@ -179,10 +179,13 @@ export interface Payment {
   studentId: string;
   studentName: string;
   amount: number;
-  method: PaymentMethod;
+  /** Null until the gateway reports how the student paid. */
+  method: PaymentMethod | null;
   status: PaymentStatus;
   createdAt: string;
   reference: string;
+  /** "simulated" or the gateway name. */
+  provider?: string;
 }
 
 export type InternshipStatus =
@@ -216,6 +219,8 @@ export interface AssessmentAttempt {
   passed: boolean;
   answers: Record<string, number[]>;
   submittedAt: string;
+  /** Set when an admin recorded this result on the student's behalf. */
+  overriddenBy?: string | null;
 }
 
 export type SubmissionStatus =
@@ -233,6 +238,8 @@ export interface Submission {
   taskTitle: string;
   responseText: string;
   fileName: string | null;
+  /** Private storage path of the uploaded file, when there is one. */
+  filePath?: string | null;
   status: SubmissionStatus;
   feedback: string | null;
   submittedAt: string | null;
@@ -337,7 +344,7 @@ export interface CommunicationLog {
   recipient: string;
   subject: string;
   body: string;
-  status: "sent" | "queued";
+  status: "sent" | "queued" | "failed";
   createdAt: string;
 }
 

@@ -152,13 +152,23 @@ update public.profiles set role = 'admin' where email = 'someone@example.org';
 (`/api/enrolments`), module progress and notes, assessments (scored on the
 server, `/api/assessments/submit`), practical task submissions with file
 uploads to private Storage, certificate issue (`/api/certificates/issue`),
-notifications, and public certificate verification.
+notifications, and public certificate verification. The admin console's
+overview, students, student detail, registrations, payments, assignments,
+certificates, communications, college leads, analytics and settings.
 
-**Still in the browser demo database (`lib/db.ts`):** the admin console,
-campus and partner dashboards, and the career tools (projects, readiness,
-badges, resume, interviews, challenges, fellowship, passport). Staff accounts
-reach that data through the temporary `profiles.legacy_demo_id` link; drop it
-once those screens move.
+Admin actions go through role-checked routes under `/api/admin/*` and are
+written to `admin_audit_log`. Trainers use the same console, limited by RLS to
+students in their domains; they can review submissions but not refund,
+suspend, override progress or change certificates. Assessment results an admin
+enters are stored as override attempts (`overridden_by`), shown as such, and
+never replace results the student earned.
+
+**Still in the browser demo database (`lib/db.ts`):** the campus and partner
+dashboards, catalogue editing (programmes, domains, trainers), project review,
+opportunities, and the student career tools (projects, readiness, badges,
+resume, interviews, challenges, fellowship, passport). Staff accounts reach
+that data through the temporary `profiles.legacy_demo_id` link; drop it once
+those screens move.
 
 **Payments are still simulated.** `/api/enrolments` only runs when
 `PAYMENT_MODE=simulated` (the default outside production) and refuses every
@@ -168,6 +178,7 @@ request in production until the Cashfree webhook replaces it.
 | --- | --- |
 | `npm run test:rls` | What each role can and cannot read or write |
 | `npm run test:journey` | Signup → enrolment → assessments → task → certificate → verification through the real API routes (needs `npm run dev` running; set `BASE_URL` if not on :3000) |
+| `npm run test:admin` | Every `/api/admin` route: role enforcement, trainer domain limits, reviews, overrides, certificate issue/revoke, suspension, refunds and the audit log (same setup as `test:journey`) |
 
 ---
 

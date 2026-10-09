@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useDatabase } from "@/lib/db";
+import { useAdminData } from "@/lib/admin-data";
 import {
   completionSplit,
   computeKpis,
@@ -32,7 +32,7 @@ import {
 import { formatINR } from "@/lib/utils";
 
 export function AdminAnalytics() {
-  const db = useDatabase();
+  const db = useAdminData();
 
   if (!db) return <LoadingState label="Loading analytics" rows={4} />;
 

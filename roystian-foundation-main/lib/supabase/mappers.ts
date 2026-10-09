@@ -11,6 +11,9 @@ import type {
   AppNotification,
   AssessmentAttempt,
   Certificate,
+  CollegeLead,
+  CommunicationLog,
+  Payment,
   Progress,
   Registration,
   Student,
@@ -26,6 +29,9 @@ export type AttemptRow = Tables["assessment_attempts"]["Row"];
 export type SubmissionRow = Tables["submissions"]["Row"];
 export type CertificateRow = Tables["certificates"]["Row"];
 export type NotificationRow = Tables["notifications"]["Row"];
+export type PaymentRow = Tables["payments"]["Row"];
+export type CommunicationRow = Tables["communication_logs"]["Row"];
+export type LeadRow = Tables["college_leads"]["Row"];
 
 export const paiseToRupees = (paise: number) => paise / 100;
 export const rupeesToPaise = (rupees: number) => Math.round(rupees * 100);
@@ -81,6 +87,7 @@ export function toAttempt(row: AttemptRow): AssessmentAttempt {
     passed: row.passed,
     answers: (row.answers ?? {}) as Record<string, number[]>,
     submittedAt: row.submitted_at,
+    overriddenBy: row.overridden_by,
   };
 }
 
@@ -134,6 +141,7 @@ export function toSubmission(row: SubmissionRow, studentName: string): Submissio
     taskTitle: row.task_title,
     responseText: row.response_text,
     fileName: row.file_name,
+    filePath: row.file_path,
     status: row.status,
     feedback: row.feedback,
     submittedAt: row.submitted_at,
@@ -168,6 +176,55 @@ export function toNotification(row: NotificationRow): AppNotification {
     createdAt: row.created_at,
     read: row.read,
     href: row.href ?? undefined,
+  };
+}
+
+export function toPayment(row: PaymentRow, studentName: string): Payment {
+  return {
+    id: row.id,
+    registrationId: row.registration_id ?? "",
+    studentId: row.student_id,
+    studentName,
+    amount: paiseToRupees(row.amount_paise),
+    method: row.method,
+    status: row.status,
+    createdAt: row.created_at,
+    reference: row.provider_payment_id ?? row.provider_order_id,
+    provider: row.provider,
+  };
+}
+
+export function toCommunication(row: CommunicationRow): CommunicationLog {
+  return {
+    id: row.id,
+    event: row.event as CommunicationLog["event"],
+    channel: row.channel as CommunicationLog["channel"],
+    recipient: row.recipient,
+    subject: row.subject,
+    body: row.body,
+    status: row.status as CommunicationLog["status"],
+    createdAt: row.created_at,
+  };
+}
+
+export function toLead(row: LeadRow): CollegeLead {
+  return {
+    id: row.id,
+    collegeName: row.college_name,
+    city: row.city,
+    state: row.state,
+    institutionType: row.institution_type ?? "",
+    departments: row.departments,
+    yearBatch: row.year_batch,
+    contactPerson: row.contact_person,
+    designation: row.designation,
+    email: row.email,
+    phone: row.phone,
+    studentCount: row.student_count,
+    interest: row.interest,
+    message: row.message,
+    status: row.status as CollegeLead["status"],
+    createdAt: row.created_at,
   };
 }
 

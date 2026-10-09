@@ -6,12 +6,11 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, LogOut, RefreshCw, Save, Trash2 } from "lucide-react";
+import { Loader2, LogOut, Save } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingState } from "@/components/shared/states";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,7 +25,6 @@ import { EDUCATION_LEVELS, EXPERIENCE_LEVELS } from "@/data/content";
 import { getDomain } from "@/data/domains";
 import { getProgram } from "@/data/programs";
 import { useStudentContext } from "@/lib/use-student";
-import { resetDB } from "@/lib/db";
 import { logout, updateOwnProfile } from "@/lib/auth";
 import { formatDate, formatINR } from "@/lib/utils";
 import type { EducationLevel } from "@/types";
@@ -112,14 +110,6 @@ export function ProfileView() {
     await logout();
     router.push("/");
   }
-  function handleReset() {
-    resetDB();
-    toast.success("Demo data reset", {
-      description: "All local demo records have been restored to their seeded state.",
-    });
-    router.push("/");
-  }
-
   return (
     <div className="space-y-6">
       <PageHeader
@@ -294,24 +284,7 @@ export function ProfileView() {
               <Button variant="outline" className="w-full" onClick={handleLogout}>
                 <LogOut /> Logout
               </Button>
-              <ConfirmDialog
-                trigger={
-                  <Button variant="outline" className="w-full">
-                    <RefreshCw /> Reset demo data
-                  </Button>
-                }
-                title="Reset all demo data?"
-                description="This restores every student, registration, payment and certificate in this browser to the seeded demo state. Your own progress in this demo will be lost."
-                confirmLabel="Reset demo data"
-                destructive
-                onConfirm={handleReset}
-              />
             </div>
-            <p className="mt-4 flex items-start gap-2 text-xs text-muted-foreground">
-              <Trash2 className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-              All demo data lives in this browser's local storage. Clearing site data
-              removes it completely.
-            </p>
           </section>
         </div>
       </div>

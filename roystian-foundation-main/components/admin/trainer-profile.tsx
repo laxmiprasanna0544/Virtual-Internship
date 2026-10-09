@@ -16,6 +16,7 @@ import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAdminData } from "@/lib/admin-data";
 import { useDatabase } from "@/lib/db";
 import { catalogTrainers } from "@/lib/catalog";
 import { DOMAINS, getDomain } from "@/data/domains";
@@ -23,11 +24,14 @@ import { buildSchedule } from "@/lib/schedule";
 import { formatDate, initials as toInitials } from "@/lib/utils";
 
 export function AdminTrainerProfile({ trainerId }: { trainerId: string }) {
-  const db = useDatabase();
+  const db = useAdminData();
+  // The trainer catalogue (with admin edits) still lives in the browser demo
+  // database until catalogue management moves to Supabase.
+  const catalog = useDatabase();
 
-  if (!db) return <LoadingState label="Loading trainer" rows={3} />;
+  if (!db || !catalog) return <LoadingState label="Loading trainer" rows={3} />;
 
-  const trainer = catalogTrainers(db).find((t) => t.id === trainerId);
+  const trainer = catalogTrainers(catalog).find((t) => t.id === trainerId);
   if (!trainer) {
     return (
       <EmptyState

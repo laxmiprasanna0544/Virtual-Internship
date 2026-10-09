@@ -15,7 +15,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { DataTable, type Column } from "@/components/admin/data-table";
 import { FilterBar } from "@/components/admin/filters";
 import { DemoNote } from "@/components/shared/demo-banner";
-import { useDatabase } from "@/lib/db";
+import { useAdminData } from "@/lib/admin-data";
 import { COMMUNICATION_FLOWS } from "@/lib/communications";
 import { formatDateTime } from "@/lib/utils";
 import type { CommunicationChannel, CommunicationLog } from "@/types";
@@ -28,7 +28,7 @@ const CHANNEL_ICON: Record<CommunicationChannel, typeof Mail> = {
 };
 
 export function AdminCommunications() {
-  const db = useDatabase();
+  const db = useAdminData();
   const [query, setQuery] = React.useState("");
   const [channelFilter, setChannelFilter] = React.useState("all");
   const [eventFilter, setEventFilter] = React.useState("all");

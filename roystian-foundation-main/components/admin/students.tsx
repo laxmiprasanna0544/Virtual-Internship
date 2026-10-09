@@ -12,7 +12,7 @@ import { FilterBar } from "@/components/admin/filters";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { useDatabase, updateDB } from "@/lib/db";
+import { setStudentStatus, useAdminData } from "@/lib/admin-data";
 import { studentProgressPercent } from "@/lib/analytics";
 import { DOMAINS, getDomain } from "@/data/domains";
 import { PROGRAMS } from "@/data/programs";
@@ -20,7 +20,7 @@ import { formatDate } from "@/lib/utils";
 import type { Student } from "@/types";
 
 export function AdminStudents() {
-  const db = useDatabase();
+  const db = useAdminData();
   const [query, setQuery] = React.useState("");
   const [domainFilter, setDomainFilter] = React.useState("all");
   const [programFilter, setProgramFilter] = React.useState("all");
@@ -45,13 +45,14 @@ export function AdminStudents() {
 
   if (!db) return <LoadingState label="Loading students" rows={4} />;
 
-  function toggleSuspend(student: Student) {
+  async function toggleSuspend(student: Student) {
     const next = student.status === "suspended" ? "active" : "suspended";
-    updateDB((draft) => {
-      draft.students = draft.students.map((s) =>
-        s.id === student.id ? { ...s, status: next } : s,
-      );
-    });
+    try {
+      await setStudentStatus(student.id, next);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not update the student.");
+      return;
+    }
     toast.success(
       next === "suspended"
         ? `${student.name} suspended`

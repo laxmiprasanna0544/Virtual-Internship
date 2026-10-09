@@ -1,7 +1,7 @@
 "use client";
 
 import { DOMAINS, getDomain } from "@/data/domains";
-import type { Database } from "@/lib/db";
+import type { AdminData } from "@/lib/supabase/admin-records";
 import { summariseProgress } from "@/lib/progress";
 
 export interface Kpis {
@@ -19,7 +19,7 @@ export interface Kpis {
   newLeads: number;
 }
 
-export function computeKpis(db: Database): Kpis {
+export function computeKpis(db: AdminData): Kpis {
   const today = new Date().toDateString();
   const successfulPayments = db.payments.filter((p) => p.status === "successful");
   const revenue = successfulPayments.reduce((sum, p) => sum + p.amount, 0);
@@ -65,7 +65,7 @@ export interface TimePoint {
 }
 
 /** Registrations and revenue bucketed into the last `weeks` weekly periods. */
-export function registrationsOverTime(db: Database, weeks = 8): TimePoint[] {
+export function registrationsOverTime(db: AdminData, weeks = 8): TimePoint[] {
   const buckets: TimePoint[] = [];
   const now = new Date();
 
@@ -98,7 +98,7 @@ export interface DomainPoint {
   certificates: number;
 }
 
-export function domainBreakdown(db: Database): DomainPoint[] {
+export function domainBreakdown(db: AdminData): DomainPoint[] {
   return DOMAINS.map((domain) => {
     const regs = db.registrations.filter((r) => r.domainId === domain.id);
     return {
@@ -118,7 +118,7 @@ export interface SplitPoint {
   value: number;
 }
 
-export function programSplit(db: Database): SplitPoint[] {
+export function programSplit(db: AdminData): SplitPoint[] {
   return [
     {
       name: "Self-Paced ₹1,500",
@@ -131,7 +131,7 @@ export function programSplit(db: Database): SplitPoint[] {
   ];
 }
 
-export function completionSplit(db: Database): SplitPoint[] {
+export function completionSplit(db: AdminData): SplitPoint[] {
   const counts = { "Not started": 0, "In progress": 0, Completed: 0 };
   for (const registration of db.registrations) {
     if (
@@ -148,7 +148,7 @@ export function completionSplit(db: Database): SplitPoint[] {
   return Object.entries(counts).map(([name, value]) => ({ name, value }));
 }
 
-export function studentProgressPercent(db: Database, studentId: string): number {
+export function studentProgressPercent(db: AdminData, studentId: string): number {
   const student = db.students.find((s) => s.id === studentId);
   if (!student) return 0;
   const progress =

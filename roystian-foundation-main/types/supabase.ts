@@ -23,19 +23,45 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "assessment_attempts": {
+            "admin_audit_log": {
                   Row: {
-                    "answers": NonNullable<Json>,"assessment_id": string,"domain_id": string,"id": string,"kind": string,"passed": boolean,"percentage": number,"score": number,"student_id": string,"submitted_at": string,"total": number
+                    "action": string,"actor_id": string | null,"created_at": string,"details": NonNullable<Json>,"id": string,"target_id": string,"target_type": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "answers"?: NonNullable<Json>,"assessment_id": string,"domain_id": string,"id"?: string,"kind": string,"passed": boolean,"percentage": number,"score": number,"student_id": string,"submitted_at"?: string,"total": number
+                    "action": string,"actor_id"?: string | null,"created_at"?: string,"details"?: NonNullable<Json>,"id"?: string,"target_id": string,"target_type": string
                   }
                   Update: {
-                    "answers"?: NonNullable<Json>,"assessment_id"?: string,"domain_id"?: string,"id"?: string,"kind"?: string,"passed"?: boolean,"percentage"?: number,"score"?: number,"student_id"?: string,"submitted_at"?: string,"total"?: number
+                    "action"?: string,"actor_id"?: string | null,"created_at"?: string,"details"?: NonNullable<Json>,"id"?: string,"target_id"?: string,"target_type"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "admin_audit_log_actor_id_fkey"
+      columns: ["actor_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"assessment_attempts": {
+                  Row: {
+                    "answers": NonNullable<Json>,"assessment_id": string,"domain_id": string,"id": string,"kind": string,"overridden_by": string | null,"passed": boolean,"percentage": number,"score": number,"student_id": string,"submitted_at": string,"total": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "answers"?: NonNullable<Json>,"assessment_id": string,"domain_id": string,"id"?: string,"kind": string,"overridden_by"?: string | null,"passed": boolean,"percentage": number,"score": number,"student_id": string,"submitted_at"?: string,"total": number
+                  }
+                  Update: {
+                    "answers"?: NonNullable<Json>,"assessment_id"?: string,"domain_id"?: string,"id"?: string,"kind"?: string,"overridden_by"?: string | null,"passed"?: boolean,"percentage"?: number,"score"?: number,"student_id"?: string,"submitted_at"?: string,"total"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "assessment_attempts_overridden_by_fkey"
+      columns: ["overridden_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "assessment_attempts_student_id_fkey"
       columns: ["student_id"]
 isOneToOne: false

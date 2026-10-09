@@ -12,14 +12,13 @@ import { DataTable, type Column } from "@/components/admin/data-table";
 import { FilterBar } from "@/components/admin/filters";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Button } from "@/components/ui/button";
-import { useDatabase } from "@/lib/db";
-import { setCertificateStatus } from "@/lib/certificates";
+import { setCertificateStatus, useAdminData } from "@/lib/admin-data";
 import { DOMAINS, getDomain } from "@/data/domains";
 import { formatDate } from "@/lib/utils";
 import type { Certificate } from "@/types";
 
 export function AdminCertificates() {
-  const db = useDatabase();
+  const db = useAdminData();
   const [query, setQuery] = React.useState("");
   const [domainFilter, setDomainFilter] = React.useState("all");
   const [statusFilter, setStatusFilter] = React.useState("all");
@@ -115,18 +114,26 @@ export function AdminCertificates() {
               description="The public verification page will immediately report this certificate as revoked. This can be undone."
               confirmLabel="Revoke certificate"
               destructive
-              onConfirm={() => {
-                setCertificateStatus(row.id, "revoked");
-                toast.success("Certificate revoked");
+              onConfirm={async () => {
+                try {
+                  await setCertificateStatus(row.id, "revoked");
+                  toast.success("Certificate revoked");
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "Could not revoke.");
+                }
               }}
             />
           ) : (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => {
-                setCertificateStatus(row.id, "valid");
-                toast.success("Certificate restored");
+              onClick={async () => {
+                try {
+                  await setCertificateStatus(row.id, "valid");
+                  toast.success("Certificate restored");
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "Could not restore.");
+                }
               }}
             >
               <RotateCcw /> Restore

@@ -15,15 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useDatabase } from "@/lib/db";
-import { setLeadStatus } from "@/lib/leads";
+import { setLeadStatus, useAdminData } from "@/lib/admin-data";
 import { formatDate } from "@/lib/utils";
 import type { CollegeLead } from "@/types";
 
 const STATUSES: CollegeLead["status"][] = ["new", "contacted", "scheduled", "closed"];
 
 export function AdminLeads() {
-  const db = useDatabase();
+  const db = useAdminData();
   const [query, setQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("all");
 
@@ -140,9 +139,13 @@ export function AdminLeads() {
                   </label>
                   <Select
                     value={lead.status}
-                    onValueChange={(value) => {
-                      setLeadStatus(lead.id, value as CollegeLead["status"]);
-                      toast.success("Lead status updated");
+                    onValueChange={async (value) => {
+                      try {
+                        await setLeadStatus(lead.id, value as CollegeLead["status"]);
+                        toast.success("Lead status updated");
+                      } catch (error) {
+                        toast.error(error instanceof Error ? error.message : "Update failed.");
+                      }
                     }}
                   >
                     <SelectTrigger id={`lead-${lead.id}`} className="h-9">

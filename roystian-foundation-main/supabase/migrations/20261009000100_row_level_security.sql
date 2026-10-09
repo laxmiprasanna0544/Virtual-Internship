@@ -142,9 +142,9 @@ create policy "assessment_attempts: read"
 on public.assessment_attempts for select to authenticated
 using (public.can_see_student(student_id));
 
-create policy "certificates: own or admin"
+create policy "certificates: read"
 on public.certificates for select to authenticated
-using (student_id = (select auth.uid()) or public.is_admin());
+using (public.can_see_student(student_id));
 
 -- Learning progress ---------------------------------------------------------------
 

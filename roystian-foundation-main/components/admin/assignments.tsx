@@ -18,19 +18,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useDatabase } from "@/lib/db";
-import { reviewSubmission } from "@/lib/submissions";
+import { reviewSubmission, useAdminData } from "@/lib/admin-data";
+import { SubmissionFileLink } from "@/components/admin/submission-file-link";
 import { DOMAINS, getDomain } from "@/data/domains";
 import { formatDateTime } from "@/lib/utils";
 import type { Submission } from "@/types";
 
 export function AdminAssignments() {
-  const db = useDatabase();
+  const db = useAdminData();
   const [query, setQuery] = React.useState("");
   const [domainFilter, setDomainFilter] = React.useState("all");
   const [statusFilter, setStatusFilter] = React.useState("all");
   const [active, setActive] = React.useState<Submission | null>(null);
   const [feedback, setFeedback] = React.useState("");
+  const [reviewing, setReviewing] = React.useState(false);
 
   const rows = React.useMemo(() => {
     if (!db) return [];
@@ -55,20 +56,25 @@ export function AdminAssignments() {
     setFeedback(submission.feedback ?? "");
   }
 
-  function submitReview(status: "approved" | "needs-revision") {
-    if (!active) return;
-    reviewSubmission(
-      active.id,
-      status,
-      feedback.trim() ||
-        (status === "approved"
-          ? "Approved. Requirements addressed correctly."
-          : "Please expand your response against each requirement and resubmit."),
-    );
-    toast.success(
-      status === "approved" ? "Submission approved" : "Marked as needs revision",
-    );
-    setActive(null);
+  async function submitReview(status: "approved" | "needs-revision") {
+    if (!active || reviewing) return;
+    setReviewing(true);
+    try {
+      await reviewSubmission(
+        active.id,
+        status,
+        feedback.trim() ||
+          (status === "approved"
+            ? "Approved. Requirements addressed correctly."
+            : "Please expand your response against each requirement and resubmit."),
+      );
+      toast.success(status === "approved" ? "Submission approved" : "Marked as needs revision");
+      setActive(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save the review.");
+    } finally {
+      setReviewing(false);
+    }
   }
 
   const counts = {
@@ -158,9 +164,9 @@ export function AdminAssignments() {
               </p>
 
               {submission.fileName && (
-                <p className="mt-2.5 truncate font-mono text-xs text-muted-foreground">
-                  {submission.fileName}
-                </p>
+                <div className="mt-2.5">
+                  <SubmissionFileLink filePath={submission.filePath} fileName={submission.fileName} />
+                </div>
               )}
 
               <p className="mt-3 text-xs text-muted-foreground">
@@ -198,6 +204,9 @@ export function AdminAssignments() {
           <div className="max-h-48 overflow-y-auto rounded-lg border border-border bg-muted/40 p-3.5 text-sm leading-relaxed text-muted-foreground">
             {active?.responseText || "No written response submitted."}
           </div>
+          {active?.fileName && (
+            <SubmissionFileLink filePath={active.filePath} fileName={active.fileName} />
+          )}
 
           <div>
             <label htmlFor="review-feedback" className="mb-2 block text-sm font-medium">
@@ -213,10 +222,14 @@ export function AdminAssignments() {
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-            <Button variant="outline" onClick={() => submitReview("needs-revision")}>
+            <Button
+              variant="outline"
+              disabled={reviewing}
+              onClick={() => submitReview("needs-revision")}
+            >
               Needs revision
             </Button>
-            <Button onClick={() => submitReview("approved")}>
+            <Button disabled={reviewing} onClick={() => submitReview("approved")}>
               <CheckCircle2 /> Approve
             </Button>
           </div>

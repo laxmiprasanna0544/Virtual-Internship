@@ -54,11 +54,26 @@ export function updateDB(
   return next;
 }
 
+/**
+ * Restores the seeded browser data that not-yet-migrated screens read. The
+ * signed-in user's mirrored record (see lib/auth.ts) is kept so the session
+ * survives; their real records live in Supabase and are untouched.
+ */
 export function resetDB(): Database {
   const seeded = buildSeedDatabase();
+  const session = readStorage<{ userId: string } | null>(STORAGE_KEYS.session, null);
+  if (session && cache) {
+    const student = cache.students.find((s) => s.id === session.userId);
+    const staff = cache.staff.find((u) => u.id === session.userId);
+    if (student && !seeded.students.some((s) => s.id === student.id)) {
+      seeded.students = [student, ...seeded.students];
+    }
+    if (staff && !seeded.staff.some((u) => u.id === staff.id)) {
+      seeded.staff = [staff, ...seeded.staff];
+    }
+  }
   cache = seeded;
   writeStorage(STORAGE_KEYS.db, seeded);
-  removeStorage(STORAGE_KEYS.session);
   removeStorage(STORAGE_KEYS.onboarding);
   notifyChange();
   return seeded;

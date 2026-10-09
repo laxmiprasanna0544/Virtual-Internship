@@ -26,7 +26,7 @@ import {
   SplitDonut,
 } from "@/components/admin/charts";
 import { Button } from "@/components/ui/button";
-import { useDatabase } from "@/lib/db";
+import { useAdminData } from "@/lib/admin-data";
 import {
   completionSplit,
   computeKpis,
@@ -38,7 +38,7 @@ import { getDomain } from "@/data/domains";
 import { formatDate, formatINR } from "@/lib/utils";
 
 export function AdminOverview() {
-  const db = useDatabase();
+  const db = useAdminData();
 
   if (!db) return <LoadingState label="Loading admin data" rows={4} />;
 

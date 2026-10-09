@@ -1,27 +1,21 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { Database, Download, Info, RefreshCw, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingState } from "@/components/shared/states";
-import { DemoBadge } from "@/components/shared/demo-banner";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { ThemeToggle } from "@/components/shared/theme";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { useDatabase, resetDB } from "@/lib/db";
+import { useAdminData } from "@/lib/admin-data";
+import { resetDB } from "@/lib/db";
 import { useSession } from "@/lib/auth";
-import { formatDateTime } from "@/lib/utils";
 
 export function AdminSettings() {
-  const db = useDatabase();
-  const router = useRouter();
+  const db = useAdminData();
   const { user } = useSession();
-  const [emailSim, setEmailSim] = React.useState(true);
-  const [whatsappSim, setWhatsappSim] = React.useState(true);
 
   if (!db) return <LoadingState label="Loading settings" rows={3} />;
 
@@ -32,12 +26,12 @@ export function AdminSettings() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "roystian-demo-data.json";
+    link.download = `roystian-export-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    toast.success("Demo dataset exported");
+    toast.success("Data exported");
   }
 
   const counts = [
@@ -48,26 +42,18 @@ export function AdminSettings() {
     { label: "Submissions", value: db.submissions.length },
     { label: "Communications", value: db.communications.length },
     { label: "College leads", value: db.leads.length },
-    { label: "Notifications", value: db.notifications.length },
   ];
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Settings"
-        description="Environment configuration, demo data and account information."
+        description="Platform data, messaging and account information."
       />
 
       <section className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-sm font-semibold text-foreground">Environment</h2>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              Seeded {formatDateTime(db.seededAt)} · schema v{db.version}
-            </p>
-          </div>
-          <DemoBadge />
-        </div>
+        <h2 className="text-sm font-semibold text-foreground">Records</h2>
+        <p className="mt-0.5 text-sm text-muted-foreground">Live counts from the database.</p>
 
         <dl className="mt-5 grid gap-4 border-t border-border pt-5 sm:grid-cols-2 lg:grid-cols-4">
           {counts.map((item) => (
@@ -85,65 +71,51 @@ export function AdminSettings() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-          <h2 className="text-sm font-semibold text-foreground">Communication simulation</h2>
+          <h2 className="text-sm font-semibold text-foreground">Messaging</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Toggle which simulated channels are written to the communication log.
+            Enrolment and certificate emails and WhatsApp messages are recorded in the
+            communication log as <span className="font-medium text-foreground">queued</span>.
           </p>
-          <div className="mt-4 space-y-2.5">
-            <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
-              <Label htmlFor="sim-email">Email notifications</Label>
-              <Switch id="sim-email" checked={emailSim} onCheckedChange={setEmailSim} />
-            </div>
-            <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
-              <Label htmlFor="sim-whatsapp">WhatsApp notifications</Label>
-              <Switch
-                id="sim-whatsapp"
-                checked={whatsappSim}
-                onCheckedChange={setWhatsappSim}
-              />
-            </div>
-            <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
-              <Label htmlFor="sim-theme">Appearance</Label>
-              <ThemeToggle />
-            </div>
+          <div className="mt-4 flex items-center justify-between rounded-lg border border-border px-4 py-3">
+            <Label htmlFor="theme-toggle">Appearance</Label>
+            <ThemeToggle />
           </div>
           <p className="mt-4 flex items-start gap-2 text-xs text-muted-foreground">
             <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            No provider is connected in this demo, so both channels write to the local
-            communication log rather than sending anything.
+            No email or WhatsApp provider is connected yet, so queued messages are not
+            delivered.
           </p>
         </section>
 
         <section className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-          <h2 className="text-sm font-semibold text-foreground">Demo data</h2>
+          <h2 className="text-sm font-semibold text-foreground">Data</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            All records live in this browser's local storage.
+            The export contains students' personal details. Store it securely.
           </p>
           <div className="mt-4 space-y-2.5">
             <Button variant="outline" className="w-full" onClick={exportData}>
-              <Download /> Export dataset as JSON
+              <Download /> Export records as JSON
             </Button>
             <ConfirmDialog
               trigger={
                 <Button variant="outline" className="w-full">
-                  <RefreshCw /> Reset demo data
+                  <RefreshCw /> Reset browser demo data
                 </Button>
               }
-              title="Reset all demo data?"
-              description="Every student, registration, payment, submission and certificate in this browser returns to its seeded state. Any changes made during this session are lost."
-              confirmLabel="Reset demo data"
+              title="Reset browser demo data?"
+              description="Restores the sample data that career tools, catalogue edits, projects and opportunities still read from this browser. Database records are not affected."
+              confirmLabel="Reset browser data"
               destructive
               onConfirm={() => {
                 resetDB();
-                toast.success("Demo data reset");
-                router.push("/login");
+                toast.success("Browser demo data reset");
               }}
             />
           </div>
           <p className="mt-4 flex items-start gap-2 text-xs text-muted-foreground">
             <Database className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            Production deployments would replace this layer with a database behind the
-            same service interface.
+            Students, enrolments, payments, submissions, certificates and leads are stored
+            in Supabase.
           </p>
         </section>
       </div>

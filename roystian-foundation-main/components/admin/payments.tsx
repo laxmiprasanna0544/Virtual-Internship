@@ -11,13 +11,12 @@ import { DataTable, type Column } from "@/components/admin/data-table";
 import { FilterBar } from "@/components/admin/filters";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Button } from "@/components/ui/button";
-import { useDatabase } from "@/lib/db";
-import { setPaymentStatus } from "@/lib/payments";
+import { refundPayment, useAdminData } from "@/lib/admin-data";
 import { formatDateTime, formatINR } from "@/lib/utils";
 import type { Payment } from "@/types";
 
 export function AdminPayments() {
-  const db = useDatabase();
+  const db = useAdminData();
   const [query, setQuery] = React.useState("");
   const [methodFilter, setMethodFilter] = React.useState("all");
   const [statusFilter, setStatusFilter] = React.useState("all");
@@ -75,7 +74,7 @@ export function AdminPayments() {
       key: "method",
       header: "Method",
       render: (row) => (
-        <span className="uppercase text-muted-foreground">{row.method}</span>
+        <span className="uppercase text-muted-foreground">{row.method ?? "—"}</span>
       ),
     },
     {
@@ -105,12 +104,18 @@ export function AdminPayments() {
               </Button>
             }
             title="Mark this payment as refunded?"
-            description={`${formatINR(row.amount)} for ${row.studentName} will be marked refunded and the registration payment status updated. No real refund is processed in this demo.`}
+            description={`${formatINR(row.amount)} for ${row.studentName} will be marked refunded and the registration payment status updated. This records the refund and removes access to the domain; the money must also be refunded in the payment gateway.`}
             confirmLabel="Mark refunded"
             destructive
-            onConfirm={() => {
-              setPaymentStatus(row.id, "refunded");
-              toast.success("Payment marked as refunded");
+            onConfirm={async () => {
+              try {
+                await refundPayment(row.id);
+                toast.success("Payment marked as refunded", {
+                  description: "Refund the money in the payment gateway as well.",
+                });
+              } catch (error) {
+                toast.error(error instanceof Error ? error.message : "Refund failed.");
+              }
             }}
           />
         ) : null,
@@ -121,7 +126,7 @@ export function AdminPayments() {
     <div className="space-y-5">
       <PageHeader
         title="Payments"
-        description="Simulated payment records for every registration in the demo dataset."
+        description="Payment records for every registration."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

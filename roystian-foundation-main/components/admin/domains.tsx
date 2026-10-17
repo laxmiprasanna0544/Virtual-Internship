@@ -2,44 +2,20 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Check, ExternalLink, Pencil, RotateCcw } from "lucide-react";
-import { toast } from "sonner";
+import { ExternalLink } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
-import { LoadingState } from "@/components/shared/states";
-import { DemoNote } from "@/components/shared/demo-banner";
+import { InfoNote } from "@/components/admin/info-note";
 import { DynamicIcon } from "@/components/shared/icon";
 import { FilterBar } from "@/components/admin/filters";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { useDatabase, updateDB } from "@/lib/db";
-import { catalogDomains, type CatalogDomain } from "@/lib/catalog";
-
-interface Draft {
-  id: string;
-  description: string;
-  practicalBrief: string;
-  active: boolean;
-}
+import { DOMAINS } from "@/data/domains";
 
 export function AdminDomains() {
-  const db = useDatabase();
   const [query, setQuery] = React.useState("");
   const [categoryFilter, setCategoryFilter] = React.useState("all");
-  const [draft, setDraft] = React.useState<Draft | null>(null);
 
-  if (!db) return <LoadingState label="Loading domains" rows={4} />;
-
-  const domains = catalogDomains(db).filter((domain) => {
+  const domains = DOMAINS.filter((domain) => {
     if (categoryFilter !== "all" && domain.category !== categoryFilter) return false;
     const q = query.trim().toLowerCase();
     if (!q) return true;
@@ -49,52 +25,6 @@ export function AdminDomains() {
     );
   });
 
-  function openEdit(domain: CatalogDomain) {
-    setDraft({
-      id: domain.id,
-      description: domain.description,
-      practicalBrief: domain.practicalTask.brief,
-      active: domain.active,
-    });
-  }
-
-  function save() {
-    if (!draft) return;
-    updateDB((next) => {
-      next.domainOverrides = {
-        ...next.domainOverrides,
-        [draft.id]: {
-          description: draft.description.trim(),
-          practicalBrief: draft.practicalBrief.trim(),
-          active: draft.active,
-        },
-      };
-    });
-    toast.success("Domain updated");
-    setDraft(null);
-  }
-
-  function toggleActive(domain: CatalogDomain) {
-    updateDB((next) => {
-      next.domainOverrides = {
-        ...next.domainOverrides,
-        [domain.id]: {
-          ...(next.domainOverrides?.[domain.id] ?? {}),
-          active: !domain.active,
-        },
-      };
-    });
-    toast.success(domain.active ? "Domain deactivated" : "Domain activated");
-  }
-
-  function reset(domain: CatalogDomain) {
-    updateDB((next) => {
-      const { [domain.id]: _removed, ...rest } = next.domainOverrides ?? {};
-      next.domainOverrides = rest;
-    });
-    toast.success("Domain reset to its published values");
-  }
-
   return (
     <div className="space-y-5">
       <PageHeader
@@ -102,10 +32,11 @@ export function AdminDomains() {
         description="The twelve internship domains, their descriptions, modules and practical activities."
       />
 
-      <DemoNote>
-        Domain edits are stored locally and shown across the admin catalogue. Module
-        content is authored in the curriculum files, so module lists are read-only here.
-      </DemoNote>
+      <InfoNote>
+        The domain catalogue — descriptions, modules, assessments and practical tasks — is
+        maintained in the codebase and released with the application, so every change is
+        reviewed and versioned. This view is read-only.
+      </InfoNote>
 
       <FilterBar
         query={query}
@@ -156,7 +87,7 @@ export function AdminDomains() {
                   {domain.active ? "Active" : "Inactive"}
                 </Badge>
                 {domain.curriculumSource === "demo" && (
-                  <Badge variant="warning">Demo curriculum</Badge>
+                  <Badge variant="warning">Curriculum in draft</Badge>
                 )}
               </div>
             </div>
@@ -194,17 +125,6 @@ export function AdminDomains() {
             </details>
 
             <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-4">
-              <Button size="sm" variant="outline" onClick={() => openEdit(domain)}>
-                <Pencil /> Edit
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => toggleActive(domain)}>
-                {domain.active ? "Deactivate" : "Activate"}
-              </Button>
-              {domain.overridden && (
-                <Button size="sm" variant="ghost" onClick={() => reset(domain)}>
-                  <RotateCcw /> Reset
-                </Button>
-              )}
               <Button asChild size="sm" variant="ghost">
                 <Link href={`/internships/${domain.id}`}>
                   <ExternalLink /> Public page
@@ -215,60 +135,6 @@ export function AdminDomains() {
         ))}
       </div>
 
-      <Dialog open={draft !== null} onOpenChange={(open) => !open && setDraft(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Edit domain</DialogTitle>
-            <DialogDescription>
-              Update the summary shown on cards and the practical task brief.
-            </DialogDescription>
-          </DialogHeader>
-
-          {draft && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="d-description" className="mb-2 block">
-                  Description
-                </Label>
-                <Textarea
-                  id="d-description"
-                  rows={3}
-                  value={draft.description}
-                  onChange={(e) => setDraft({ ...draft, description: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="d-brief" className="mb-2 block">
-                  Practical task brief
-                </Label>
-                <Textarea
-                  id="d-brief"
-                  rows={4}
-                  value={draft.practicalBrief}
-                  onChange={(e) => setDraft({ ...draft, practicalBrief: e.target.value })}
-                />
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
-                <Label htmlFor="d-active">Active</Label>
-                <Switch
-                  id="d-active"
-                  checked={draft.active}
-                  onCheckedChange={(checked) => setDraft({ ...draft, active: checked })}
-                />
-              </div>
-            </div>
-          )}
-
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-            <Button variant="outline" onClick={() => setDraft(null)}>
-              Cancel
-            </Button>
-            <Button onClick={save}>
-              <Check /> Save domain
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

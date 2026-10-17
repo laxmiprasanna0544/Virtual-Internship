@@ -42,7 +42,7 @@ const TOOLS = [
     id: "assessments",
     icon: ClipboardCheck,
     title: "Assessments",
-    body: "A short assessment after every module and a final assessment, each passed at 70% or above, with unlimited retakes.",
+    body: "A short assessment after every module and a final assessment, each passed at 70% or above, with up to five attempts a day.",
   },
   {
     id: "resume",

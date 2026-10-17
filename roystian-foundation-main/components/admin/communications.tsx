@@ -14,7 +14,7 @@ import { LoadingState } from "@/components/shared/states";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { DataTable, type Column } from "@/components/admin/data-table";
 import { FilterBar } from "@/components/admin/filters";
-import { DemoNote } from "@/components/shared/demo-banner";
+import { InfoNote } from "@/components/admin/info-note";
 import { useAdminData } from "@/lib/admin-data";
 import { COMMUNICATION_FLOWS } from "@/lib/communications";
 import { formatDateTime } from "@/lib/utils";
@@ -115,11 +115,11 @@ export function AdminCommunications() {
         description="Automated messages triggered by programme events, and the log of everything sent."
       />
 
-      <DemoNote>
-        Messages are simulated in this environment — nothing is emailed or sent over
-        WhatsApp. In production these would be dispatched by a provider integration
-        behind the same interface.
-      </DemoNote>
+      <InfoNote>
+        Emails are sent through Resend, and every message is recorded in the log below
+        as sent or failed. WhatsApp is not connected, so WhatsApp steps in these flows are
+        not sent.
+      </InfoNote>
 
       {/* Flows */}
       <section className="grid gap-4 lg:grid-cols-3">

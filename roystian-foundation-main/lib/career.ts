@@ -1,16 +1,15 @@
 "use client";
 
 import { useMemo } from "react";
-import { getDomain } from "@/data/domains";
 import { projectsForDomain } from "@/data/projects";
 import type { BadgeState } from "@/lib/badges";
 import { careerSnapshot } from "@/lib/career-rules";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   currentStudentRecords,
   postJSON,
   refreshStudentData,
   StudentDataError,
+  uploadFile,
   useStudentData,
 } from "@/lib/student-data";
 import type { InterviewFeedback } from "@/lib/interviews";
@@ -30,20 +29,11 @@ import type {
 } from "@/types";
 
 /**
- * The student's career tools, on Supabase. Reads come from the shared
- * student-data store; writes go to Supabase (RLS-limited to the student's own
- * rows) or, where they feed the readiness score, through the server.
+ * The student's career tools. Reads come from the shared student-data store;
+ * writes go through /api/career/* (row level security and the review guards
+ * apply on the server) or, where they feed the readiness score, through
+ * server-scored routes.
  */
-
-const supabase = () => getSupabaseBrowserClient();
-
-async function userId(): Promise<string> {
-  const {
-    data: { user },
-  } = await supabase().auth.getUser();
-  if (!user) throw new StudentDataError("Your session has expired. Sign in again.");
-  return user.id;
-}
 
 function fail(message: string): never {
   throw new StudentDataError(message);
@@ -70,45 +60,30 @@ export function linkedInFor(_studentId?: string): LinkedInDraft | null {
 /* ------------------------------------------------------------------ */
 
 export async function startProject(brief: ProjectBrief): Promise<void> {
-  const { error } = await supabase()
-    .from("project_submissions")
-    .upsert(
-      {
-        student_id: await userId(),
-        project_id: brief.id,
-        domain_id: brief.domainId,
-        status: "in-progress",
-        started_at: new Date().toISOString(),
-      },
-      { onConflict: "student_id,project_id", ignoreDuplicates: true },
-    );
-  if (error) fail("Could not start the project.");
+  await postJSON("/api/career/projects", { action: "start", projectId: brief.id });
   await refreshStudentData();
 }
 
 export async function saveProjectDraft(
   submissionId: string,
-  patch: Partial<Pick<ProjectSubmission, "analysis" | "recommendations" | "repoUrl" | "reportFileName">>,
+  patch: Partial<Pick<ProjectSubmission, "analysis" | "recommendations" | "repoUrl">> & { report?: File },
 ): Promise<void> {
-  const { error } = await supabase()
-    .from("project_submissions")
-    .update({
-      ...(patch.analysis !== undefined ? { analysis: patch.analysis } : {}),
-      ...(patch.recommendations !== undefined ? { recommendations: patch.recommendations } : {}),
-      ...(patch.repoUrl !== undefined ? { repo_url: patch.repoUrl } : {}),
-      ...(patch.reportFileName !== undefined ? { report_file_name: patch.reportFileName } : {}),
-    })
-    .eq("id", submissionId);
-  if (error) fail("Could not save your draft.");
+  const projectId = currentStudentRecords()?.projects.find((p) => p.id === submissionId)?.projectId;
+  const reportKey =
+    patch.report && projectId ? await uploadFile({ purpose: "project-report", projectId }, patch.report) : undefined;
+  await postJSON("/api/career/projects", {
+    action: "draft",
+    submissionId,
+    analysis: patch.analysis,
+    recommendations: patch.recommendations,
+    repoUrl: patch.repoUrl,
+    ...(reportKey ? { reportKey, reportFileName: patch.report!.name } : {}),
+  });
   await refreshStudentData();
 }
 
 export async function submitProject(submissionId: string): Promise<void> {
-  const { error } = await supabase()
-    .from("project_submissions")
-    .update({ status: "submitted", submitted_at: new Date().toISOString() })
-    .eq("id", submissionId);
-  if (error) fail("Could not submit the project.");
+  await postJSON("/api/career/projects", { action: "submit", submissionId });
   await refreshStudentData();
 }
 
@@ -138,27 +113,7 @@ export async function submitChallengeEntry(
   solution: string,
   repoUrl: string | null,
 ): Promise<void> {
-  const { error } = await supabase()
-    .from("challenge_entries")
-    .upsert(
-      {
-        student_id: await userId(),
-        challenge_id: challengeId,
-        status: "submitted",
-        approach,
-        solution,
-        repo_url: repoUrl,
-        submitted_at: new Date().toISOString(),
-      },
-      { onConflict: "student_id,challenge_id" },
-    );
-  if (error) {
-    fail(
-      error.message.includes("evaluate")
-        ? "This entry has already been evaluated."
-        : "Could not submit your entry.",
-    );
-  }
+  await postJSON("/api/career/challenges", { challengeId, approach, solution, repoUrl });
   await refreshStudentData();
 }
 
@@ -176,31 +131,10 @@ export function slugify(name: string): string {
     .slice(0, 60);
 }
 
-const UNIQUE_VIOLATION = "23505";
-
-/** Creates the student's passport, finding a free slug if theirs is taken. */
-export async function ensurePassport(student: Student): Promise<void> {
+/** Creates the student's passport; the server picks a free profile address. */
+export async function ensurePassport(_student?: Student): Promise<void> {
   if (passportFor()) return;
-  const domain = getDomain(student.domainId);
-  const base = slugify(student.name).padEnd(3, "0") || "student";
-
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    const slug = attempt === 0 ? base : `${base}-${attempt + 1}`;
-    const { error } = await supabase()
-      .from("career_passports")
-      .insert({
-        student_id: student.id,
-        slug,
-        headline: domain
-          ? `${domain.shortName} intern · Roystian Foundation`
-          : "Roystian Foundation intern",
-      });
-    if (!error) break;
-    // Another passport has this slug: try the next suffix. If the student
-    // already has a passport (another tab created it), stop.
-    if (error.code !== UNIQUE_VIOLATION) fail("Could not create your passport.");
-    if (error.message.includes("career_passports_pkey")) break;
-  }
+  await postJSON("/api/career/passport", { action: "ensure" });
   await refreshStudentData();
 }
 
@@ -211,19 +145,7 @@ export async function updatePassport(
   if (slug !== undefined && slug.length < 3) {
     fail("Use at least 3 letters or numbers for your profile address.");
   }
-  const { error } = await supabase()
-    .from("career_passports")
-    .update({
-      ...(patch.headline !== undefined ? { headline: patch.headline } : {}),
-      ...(patch.about !== undefined ? { about: patch.about } : {}),
-      ...(slug !== undefined ? { slug } : {}),
-      ...(patch.published !== undefined ? { published: patch.published } : {}),
-      ...(patch.visibility !== undefined ? { visibility: patch.visibility } : {}),
-    })
-    .eq("student_id", await userId());
-  if (error) {
-    fail(error.code === UNIQUE_VIOLATION ? "That profile address is already taken." : "Could not save your passport.");
-  }
+  await postJSON("/api/career/passport", { action: "update", ...patch, ...(slug !== undefined ? { slug } : {}) });
   await refreshStudentData();
 }
 
@@ -232,27 +154,19 @@ export async function updatePassport(
 /* ------------------------------------------------------------------ */
 
 export async function saveResume(draft: Omit<ResumeDraft, "updatedAt" | "studentId">): Promise<void> {
-  const { error } = await supabase()
-    .from("resume_drafts")
-    .upsert({
-      student_id: await userId(),
-      headline: draft.headline,
-      summary: draft.summary,
-      skills: draft.skills,
-      include_projects: draft.includeProjects,
-      include_assessments: draft.includeAssessments,
-      include_certificate: draft.includeCertificate,
-      updated_at: new Date().toISOString(),
-    });
-  if (error) fail("Could not save your resume.");
+  await postJSON("/api/career/resume", {
+    headline: draft.headline,
+    summary: draft.summary,
+    skills: draft.skills,
+    includeProjects: draft.includeProjects,
+    includeAssessments: draft.includeAssessments,
+    includeCertificate: draft.includeCertificate,
+  });
   await refreshStudentData();
 }
 
 export async function saveLinkedIn(sections: Record<LinkedInSection, string>): Promise<void> {
-  const { error } = await supabase()
-    .from("linkedin_drafts")
-    .upsert({ student_id: await userId(), sections, updated_at: new Date().toISOString() });
-  if (error) fail("Could not save your LinkedIn drafts.");
+  await postJSON("/api/career/linkedin", { sections });
   await refreshStudentData();
 }
 

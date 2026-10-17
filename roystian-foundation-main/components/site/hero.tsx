@@ -186,12 +186,12 @@ export function Hero() {
               Certificate verified
             </p>
             <p className="truncate font-mono text-[0.68rem] text-white/55">
-              RF-AIML-2026-000184
+              RF-AIML-2026-001234
             </p>
           </div>
         </div>
         <p className="mt-3 border-t border-white/10 pt-3 text-[0.7rem] leading-relaxed text-white/55">
-          Every certificate resolves to a public verification page. Demo record.
+          Every certificate resolves to a public verification page.
         </p>
       </motion.div>
 

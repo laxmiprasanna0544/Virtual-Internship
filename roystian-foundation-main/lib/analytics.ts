@@ -1,7 +1,7 @@
 "use client";
 
 import { DOMAINS, getDomain } from "@/data/domains";
-import type { AdminData } from "@/lib/supabase/admin-records";
+import type { AdminData } from "@/lib/records/admin";
 import { summariseProgress } from "@/lib/progress";
 
 export interface Kpis {

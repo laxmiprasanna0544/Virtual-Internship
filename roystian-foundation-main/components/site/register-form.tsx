@@ -7,7 +7,7 @@ import { safeNext } from "@/lib/safe-next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { AlertCircle, Loader2, MailCheck, UserPlus } from "lucide-react";
+import { AlertCircle, Loader2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { registerStudent } from "@/lib/auth";
+import { ConfirmEmailStep } from "@/components/account/confirm-email-step";
+import { login, registerStudent } from "@/lib/auth";
+import { homeForRole } from "@/lib/roles";
 import { EDUCATION_LEVELS } from "@/data/content";
 import type { EducationLevel } from "@/types";
 
@@ -32,7 +34,12 @@ const schema = z
     course: z.string().min(2, "Enter your course or degree."),
     city: z.string().min(2, "Enter your city."),
     educationLevel: z.string().min(1, "Select your education level."),
-    password: z.string().min(8, "Use at least 8 characters."),
+    password: z
+      .string()
+      .min(10, "Use at least 10 characters.")
+      .regex(/[a-z]/, "Include a lower case letter.")
+      .regex(/[A-Z]/, "Include an upper case letter.")
+      .regex(/[0-9]/, "Include a number."),
     confirmPassword: z.string(),
   })
   .refine((values) => values.password === values.confirmPassword, {
@@ -47,7 +54,8 @@ export function RegisterForm() {
   const searchParams = useSearchParams();
   const redirectTo = safeNext(searchParams.get("next"));
   const [serverError, setServerError] = React.useState<string | null>(null);
-  const [confirmEmail, setConfirmEmail] = React.useState<string | null>(null);
+  // Held in memory only, to sign in straight after the email is confirmed.
+  const [pending, setPending] = React.useState<{ email: string; password: string } | null>(null);
 
   const {
     register,
@@ -86,33 +94,25 @@ export function RegisterForm() {
       setServerError(result.error ?? "Unable to create the account.");
       return;
     }
-    if (result.needsConfirmation) {
-      setConfirmEmail(values.email);
+    setPending({ email: values.email, password: values.password });
+  }
+
+  async function signInAfterConfirm() {
+    if (!pending) return;
+    const result = await login(pending.email, pending.password);
+    if (!result.ok || !result.user) {
+      toast.success("Email confirmed. Sign in to continue.");
+      router.push(redirectTo ? `/login?next=${encodeURIComponent(redirectTo)}` : "/login");
       return;
     }
     toast.success("Account created", {
       description: redirectTo ? undefined : "Choose a domain to start your internship.",
     });
-    router.push(redirectTo ?? "/start");
+    router.push(redirectTo ?? (result.user.role === "student" ? "/start" : homeForRole(result.user.role)));
   }
 
-  if (confirmEmail) {
-    return (
-      <div
-        role="status"
-        className="rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8"
-      >
-        <MailCheck className="h-6 w-6 text-primary" aria-hidden="true" />
-        <h1 className="mt-4 font-display text-xl font-semibold text-foreground">
-          Confirm your email
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          We sent a confirmation link to{" "}
-          <span className="font-medium text-foreground">{confirmEmail}</span>. Open it to
-          activate your account, then sign in.
-        </p>
-      </div>
-    );
+  if (pending) {
+    return <ConfirmEmailStep email={pending.email} onConfirmed={signInAfterConfirm} />;
   }
 
   return (
@@ -216,9 +216,13 @@ export function RegisterForm() {
             aria-invalid={Boolean(errors.password)}
             {...register("password")}
           />
-          {errors.password && (
+          {errors.password ? (
             <p role="alert" className="mt-1.5 text-xs text-destructive">
               {errors.password.message}
+            </p>
+          ) : (
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              At least 10 characters, with upper and lower case letters and a number.
             </p>
           )}
         </div>

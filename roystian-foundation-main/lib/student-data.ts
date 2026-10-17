@@ -1,19 +1,13 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { fetchStudentRecordRows } from "@/lib/supabase/student-records";
-import { toStudentRecords, type StudentRecords } from "@/lib/supabase/mappers";
-import type {
-  AssessmentAttempt,
-  Certificate,
-  PublicQuestion,
-  QuestionReview,
-  Registration,
-} from "@/types";
+import { isSignOutEvent } from "@/lib/auth";
+import type { StudentRecords } from "@/lib/records/mappers";
+import type { AssessmentAttempt, Certificate, PublicQuestion, QuestionReview } from "@/types";
 
 /**
- * The signed-in student's records, loaded from Supabase.
+ * The signed-in student's records, loaded from /api/student/records (read on
+ * the server under row level security).
  *
  * One shared store per tab: every screen reads the same snapshot, and any
  * write below refreshes it so all subscribers re-render together.
@@ -49,25 +43,16 @@ export function currentStudentRecords(): StudentRecords | null {
 export function refreshStudentData(): Promise<void> {
   if (inflight) return inflight;
   inflight = (async () => {
-    const supabase = getSupabaseBrowserClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      setState({ status: "ready", userId: null, records: null, error: null });
-      return;
-    }
-    if (state.userId !== user.id) {
-      setState({ status: "loading", userId: user.id, records: null, error: null });
-    }
     try {
-      const rows = await fetchStudentRecordRows(supabase, user.id);
-      setState({
-        status: "ready",
-        userId: user.id,
-        records: rows ? toStudentRecords(rows) : null,
-        error: null,
-      });
+      const res = await fetch("/api/student/records", { cache: "no-store" });
+      if (res.status === 401) {
+        setState({ status: "ready", userId: null, records: null, error: null });
+        return;
+      }
+      if (!res.ok) throw new Error("Unable to load your records.");
+      const { records } = (await res.json()) as { records: StudentRecords | null };
+      const userId = records?.student.id ?? null;
+      setState({ status: "ready", userId, records, error: null });
     } catch (error) {
       setState({
         ...state,
@@ -91,19 +76,18 @@ export function useStudentData(): StudentDataState {
   useEffect(() => {
     if (state.status === "idle") void refreshStudentData();
 
-    const supabase = getSupabaseBrowserClient();
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
-        setTimeout(() => void refreshStudentData(), 0);
-      }
-    });
+    // Sign-in, sign-out and account changes (lib/auth.ts).
+    // Signed out: drop the records rather than asking the server (it would answer 401).
+    const onSession = (event: Event) => {
+      if (isSignOutEvent(event)) setState({ status: "ready", userId: null, records: null, error: null });
+      else void refreshStudentData();
+    };
+    window.addEventListener("rf-session", onSession);
     // Pick up reviewer decisions made while the tab was in the background.
     const onFocus = () => void refreshStudentData();
     window.addEventListener("focus", onFocus);
     return () => {
-      subscription.unsubscribe();
+      window.removeEventListener("rf-session", onSession);
       window.removeEventListener("focus", onFocus);
     };
   }, []);
@@ -112,7 +96,7 @@ export function useStudentData(): StudentDataState {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Writes made directly from the browser (RLS / RPC enforced)          */
+/*  Writes (each runs on the server under row level security)          */
 /* ------------------------------------------------------------------ */
 
 export class StudentDataError extends Error {}
@@ -122,12 +106,7 @@ export async function setModuleComplete(
   moduleId: string,
   complete: boolean,
 ): Promise<void> {
-  const { error } = await getSupabaseBrowserClient().rpc("set_module_complete", {
-    target_domain: domainId,
-    target_module: moduleId,
-    complete,
-  });
-  if (error) throw new StudentDataError("Unable to update module progress.");
+  await postJSON("/api/student/modules", { domainId, moduleId, complete });
   await refreshStudentData();
 }
 
@@ -136,39 +115,39 @@ export async function saveModuleNote(
   moduleId: string,
   note: string,
 ): Promise<void> {
-  const { error } = await getSupabaseBrowserClient().rpc("save_module_note", {
-    target_domain: domainId,
-    target_module: moduleId,
-    note,
-  });
-  if (error) throw new StudentDataError("Unable to save your note.");
+  await postJSON("/api/student/notes", { domainId, moduleId, note });
   await refreshStudentData();
 }
 
 export async function switchActiveDomain(domainId: string): Promise<boolean> {
-  const { data, error } = await getSupabaseBrowserClient().rpc("switch_active_domain", {
-    target_domain: domainId,
-  });
-  if (error) throw new StudentDataError("Unable to switch domain.");
+  const { switched } = await postJSON<{ switched: boolean }>("/api/student/active-domain", { domainId });
   await refreshStudentData();
-  return Boolean(data);
+  return switched;
 }
 
-/** Uploads to the private "submissions" bucket under the student's own folder. */
-async function uploadSubmissionFile(userId: string, domainId: string, file: File) {
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-120);
-  const path = `${userId}/${domainId}/${Date.now()}-${safeName}`;
-  const { error } = await getSupabaseBrowserClient()
-    .storage.from("submissions")
-    .upload(path, file, { upsert: false, contentType: file.type || undefined });
-  if (error) {
+/**
+ * Uploads a file straight to S3 with a presigned POST issued by the server,
+ * and returns the object key to submit.
+ */
+export async function uploadFile(
+  request: { purpose: "submission"; domainId: string } | { purpose: "project-report"; projectId: string },
+  file: File,
+): Promise<string> {
+  const contentType = file.type || "application/octet-stream";
+  const { url, fields, key } = await postJSON<{ url: string; fields: Record<string, string>; key: string }>(
+    "/api/uploads",
+    { ...request, fileName: file.name, contentType, size: file.size },
+  );
+  const form = new FormData();
+  for (const [name, value] of Object.entries(fields)) form.append(name, value);
+  form.append("file", file);
+  const res = await fetch(url, { method: "POST", body: form }).catch(() => null);
+  if (!res || !res.ok) {
     throw new StudentDataError(
-      error.message.toLowerCase().includes("size")
-        ? "That file is larger than the 20MB limit."
-        : "The file could not be uploaded. Please try again.",
+      res?.status === 400 ? "That file is larger than the 20MB limit." : "The file could not be uploaded. Please try again.",
     );
   }
-  return path;
+  return key;
 }
 
 export async function submitPracticalTask(input: {
@@ -177,38 +156,20 @@ export async function submitPracticalTask(input: {
   responseText: string;
   file: File | null;
 }): Promise<void> {
-  const supabase = getSupabaseBrowserClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new StudentDataError("Your session has expired. Sign in again.");
-
-  const filePath = input.file ? await uploadSubmissionFile(user.id, input.domainId, input.file) : null;
-
-  const { error } = await supabase.from("submissions").upsert(
-    {
-      student_id: user.id,
-      domain_id: input.domainId,
-      task_title: input.taskTitle,
-      response_text: input.responseText,
-      ...(filePath ? { file_path: filePath, file_name: input.file!.name } : {}),
-      status: "submitted",
-      submitted_at: new Date().toISOString(),
-    },
-    { onConflict: "student_id,domain_id" },
-  );
-  if (error) {
-    throw new StudentDataError(
-      error.message.includes("reviewed submission")
-        ? "This submission has already been reviewed and can no longer be changed."
-        : "Unable to submit your work. Please try again.",
-    );
-  }
+  const fileKey = input.file
+    ? await uploadFile({ purpose: "submission", domainId: input.domainId }, input.file)
+    : null;
+  await postJSON("/api/student/submission", {
+    domainId: input.domainId,
+    responseText: input.responseText,
+    fileKey,
+    fileName: input.file?.name ?? null,
+  });
   await refreshStudentData();
 }
 
 /* ------------------------------------------------------------------ */
-/*  Writes that must be decided by the server                          */
+/*  Helpers and server-decided actions                                 */
 /* ------------------------------------------------------------------ */
 
 export async function postJSON<T>(url: string, body: unknown): Promise<T> {
@@ -240,8 +201,8 @@ export async function fetchAssessmentQuestions(assessmentId: string): Promise<Pu
 export async function submitAssessment(
   assessmentId: string,
   answers: Record<string, number[]>,
-): Promise<{ attempt: AssessmentAttempt; review: QuestionReview[] }> {
-  const result = await postJSON<{ attempt: AssessmentAttempt; review: QuestionReview[] }>(
+): Promise<{ attempt: AssessmentAttempt; review: QuestionReview[]; attemptsRemaining?: number }> {
+  const result = await postJSON<{ attempt: AssessmentAttempt; review: QuestionReview[]; attemptsRemaining?: number }>(
     "/api/assessments/submit",
     { assessmentId, answers },
   );
@@ -257,15 +218,4 @@ export async function requestCertificate(): Promise<Certificate> {
   );
   await refreshStudentData();
   return certificate;
-}
-
-export async function enrol(input: {
-  domainId: string;
-  programId: string;
-  experience: string;
-  method: string;
-}): Promise<Registration> {
-  const { registration } = await postJSON<{ registration: Registration }>("/api/enrolments", input);
-  await refreshStudentData();
-  return registration;
 }

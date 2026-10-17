@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAssessmentWithAnswers } from "@/data/assessment-bank";
-import { getAuthenticatedUser, getSupabaseAdminClient } from "@/lib/supabase/server";
+import { requireStudent } from "@/lib/server/auth";
+import { withUser } from "@/lib/server/db";
+import { hasPaidForDomain } from "@/lib/server/enrolment";
 import type { PublicQuestion } from "@/types";
 
 /**
@@ -11,22 +13,15 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ assessmentId: string }> },
 ) {
-  const user = await getAuthenticatedUser();
-  if (!user) return NextResponse.json({ error: "Sign in to continue." }, { status: 401 });
+  const auth = await requireStudent();
+  if (!auth.ok) return auth.response;
 
   const { assessmentId } = await params;
   const assessment = getAssessmentWithAnswers(assessmentId);
   if (!assessment) return NextResponse.json({ error: "Unknown assessment." }, { status: 404 });
 
-  const { data: registration } = await getSupabaseAdminClient()
-    .from("registrations")
-    .select("id")
-    .eq("student_id", user.id)
-    .eq("domain_id", assessment.domainId)
-    .eq("payment_status", "successful")
-    .limit(1)
-    .maybeSingle();
-  if (!registration) {
+  const paid = await withUser(auth.user.id, (tx) => hasPaidForDomain(tx, assessment.domainId));
+  if (!paid) {
     return NextResponse.json({ error: "You are not enrolled in this domain." }, { status: 403 });
   }
 

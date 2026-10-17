@@ -44,7 +44,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DemoBadge } from "@/components/shared/demo-banner";
 import { logout } from "@/lib/auth";
 import { EASE } from "@/lib/motion";
 import { cn, initials } from "@/lib/utils";
@@ -189,12 +188,6 @@ export function AppShell({
             })}
           </ul>
         </nav>
-        <div className="border-t border-border p-4">
-          <DemoBadge />
-          <p className="mt-2.5 text-[0.7rem] leading-relaxed text-muted-foreground">
-            Data is stored in your browser only.
-          </p>
-        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">

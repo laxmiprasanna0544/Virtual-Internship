@@ -1,18 +1,21 @@
 import "server-only";
 
 import { NextResponse } from "next/server";
-import type { Json } from "@/types/supabase";
+import type { Json } from "@/types/db";
 import type { Role } from "@/types";
-import { getAuthenticatedUser, getSupabaseAdminClient } from "@/lib/supabase/server";
-
-export type AdminClient = ReturnType<typeof getSupabaseAdminClient>;
+import { getSql } from "@/lib/server/db";
+import { getAuthenticatedUser } from "@/lib/server/session";
 
 export interface StaffContext {
   userId: string;
   role: Role;
   /** Trainer domains; empty for admins (who are unrestricted). */
   trainerDomains: string[];
-  admin: AdminClient;
+}
+
+/** Staff must have an authenticator app enrolled before using staff APIs. */
+export function staffMfaRequired(): boolean {
+  return process.env.STAFF_MFA_REQUIRED !== "false";
 }
 
 /**
@@ -27,23 +30,30 @@ export async function requireStaff(
     return { ok: false, response: NextResponse.json({ error: "Sign in to continue." }, { status: 401 }) };
   }
 
-  const admin = getSupabaseAdminClient();
-  const { data: profile } = await admin.from("profiles").select("role").eq("id", user.id).single();
+  const sql = getSql();
+  const [profile] = await sql<{ role: Role; mfa_enabled: boolean }[]>`
+    select role, mfa_enabled from public.profiles where id = ${user.id}`;
   if (!profile || !roles.includes(profile.role)) {
     return { ok: false, response: NextResponse.json({ error: "Not allowed." }, { status: 403 }) };
+  }
+  if (profile.role !== "student" && staffMfaRequired() && !profile.mfa_enabled) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { error: "Set up two-factor authentication before using staff tools.", code: "mfa_required" },
+        { status: 403 },
+      ),
+    };
   }
 
   let trainerDomains: string[] = [];
   if (profile.role === "trainer") {
-    const { data: trainer } = await admin
-      .from("trainers")
-      .select("domains")
-      .eq("profile_id", user.id)
-      .maybeSingle();
+    const [trainer] = await sql<{ domains: string[] }[]>`
+      select domains from public.trainers where profile_id = ${user.id}`;
     trainerDomains = trainer?.domains ?? [];
   }
 
-  return { ok: true, ctx: { userId: user.id, role: profile.role, trainerDomains, admin } };
+  return { ok: true, ctx: { userId: user.id, role: profile.role, trainerDomains } };
 }
 
 /** May this staff member act on records in `domainId`? */
@@ -58,14 +68,13 @@ export async function audit(
   targetId: string,
   details: Record<string, Json> = {},
 ) {
-  const { error } = await ctx.admin.from("admin_audit_log").insert({
-    actor_id: ctx.userId,
-    action,
-    target_type: targetType,
-    target_id: targetId,
-    details,
-  });
-  if (error) console.error("audit log write failed:", error.message);
+  try {
+    await getSql()`
+      insert into public.admin_audit_log (actor_id, action, target_type, target_id, details)
+      values (${ctx.userId}, ${action}, ${targetType}, ${targetId}, ${getSql().json(details)})`;
+  } catch (error) {
+    console.error("audit log write failed:", error instanceof Error ? error.message : error);
+  }
 }
 
 export function badRequest(message: string, status = 400) {

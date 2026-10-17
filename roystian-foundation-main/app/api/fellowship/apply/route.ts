@@ -3,10 +3,11 @@ import { z } from "zod";
 import { careerSnapshot } from "@/lib/career-rules";
 import { fellowshipEligibility } from "@/lib/opportunity-rules";
 import { summariseProgress } from "@/lib/rules";
-import { toFellowship } from "@/lib/supabase/career-mappers";
-import { toStudentRecords } from "@/lib/supabase/mappers";
-import { getAuthenticatedUser, getSupabaseAdminClient } from "@/lib/supabase/server";
-import { fetchStudentRecordRows } from "@/lib/supabase/student-records";
+import { toFellowship, type FellowshipRow } from "@/lib/records/career-mappers";
+import { toStudentRecords } from "@/lib/records/mappers";
+import { readJson, requireStudent } from "@/lib/server/auth";
+import { service } from "@/lib/server/db";
+import { fetchStudentRecordRows } from "@/lib/server/student-records";
 
 const body = z.object({
   motivation: z.string().trim().min(20, "Tell us a little more about why.").max(4000),
@@ -21,10 +22,11 @@ const body = z.object({
  * neither can be supplied by the browser.
  */
 export async function POST(req: NextRequest) {
-  const user = await getAuthenticatedUser();
-  if (!user) return NextResponse.json({ error: "Sign in to continue." }, { status: 401 });
+  const auth = await requireStudent();
+  if (!auth.ok) return auth.response;
+  const userId = auth.user.id;
 
-  const parsed = body.safeParse(await req.json().catch(() => null));
+  const parsed = body.safeParse(await readJson(req));
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.issues[0]?.message ?? "Invalid application." },
@@ -32,8 +34,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const admin = getSupabaseAdminClient();
-  const rows = await fetchStudentRecordRows(admin, user.id);
+  const rows = await service((tx) => fetchStudentRecordRows(tx, userId));
   if (!rows || rows.profile.role !== "student") {
     return NextResponse.json({ error: "Student record not found." }, { status: 404 });
   }
@@ -63,29 +64,25 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const now = new Date().toISOString();
-  const { data: row, error } = await admin
-    .from("fellowship_applications")
-    .upsert(
-      {
-        student_id: user.id,
-        stage: "applied",
-        readiness_at_apply: readiness.score,
-        motivation: parsed.data.motivation,
-        available_from: parsed.data.availableFrom,
-        can_relocate: parsed.data.canRelocate,
-        preferred_area: parsed.data.preferredArea,
-        applied_at: now,
-        updated_at: now,
-      },
-      { onConflict: "student_id" },
-    )
-    .select("*")
-    .single();
-  if (error || !row) {
-    console.error("fellowship upsert failed:", error?.message);
+  const v = parsed.data;
+  try {
+    const [row] = await service(
+      (tx) => tx<FellowshipRow[]>`
+        insert into public.fellowship_applications
+          (student_id, stage, readiness_at_apply, motivation, available_from, can_relocate,
+           preferred_area, applied_at, updated_at)
+        values (${userId}, 'applied', ${readiness.score}, ${v.motivation}, ${v.availableFrom},
+                ${v.canRelocate}, ${v.preferredArea}, now(), now())
+        on conflict (student_id) do update
+        set stage = 'applied', readiness_at_apply = excluded.readiness_at_apply,
+            motivation = excluded.motivation, available_from = excluded.available_from,
+            can_relocate = excluded.can_relocate, preferred_area = excluded.preferred_area,
+            applied_at = now(), updated_at = now()
+        returning *`,
+    );
+    return NextResponse.json({ application: toFellowship(row) });
+  } catch (error) {
+    console.error("fellowship upsert failed:", error instanceof Error ? error.message : error);
     return NextResponse.json({ error: "Could not submit your application." }, { status: 500 });
   }
-
-  return NextResponse.json({ application: toFellowship(row) });
 }

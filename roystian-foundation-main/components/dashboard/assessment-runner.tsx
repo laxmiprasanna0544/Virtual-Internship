@@ -36,6 +36,7 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
   const [index, setIndex] = React.useState(0);
   const [result, setResult] = React.useState<AssessmentAttempt | null>(null);
   const [review, setReview] = React.useState<QuestionReview[]>([]);
+  const [attemptsRemaining, setAttemptsRemaining] = React.useState<number | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
   const [questions, setQuestions] = React.useState<PublicQuestion[] | null>(null);
   const [loadError, setLoadError] = React.useState<string | null>(null);
@@ -174,6 +175,7 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
       const scored = await submitAssessment(assessment.id, answers);
       attempt = scored.attempt;
       setReview(scored.review);
+      setAttemptsRemaining(scored.attemptsRemaining ?? null);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not submit your answers.");
       return;
@@ -285,7 +287,7 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
           />
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <Button onClick={restart} variant="outline">
+            <Button onClick={restart} variant="outline" disabled={attemptsRemaining === 0}>
               <RotateCcw /> Retake assessment
             </Button>
             {isFinal && result.passed ? (
@@ -304,17 +306,28 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
           </div>
         </motion.section>
 
-        {/* Review */}
+        {/* Review — only after a pass. A failed attempt shows the score alone, so
+            the answers cannot be worked out by retrying. */}
+        {!result.passed && (
+          <section className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground shadow-soft">
+            <p>
+              Review the module material, then try again. Correct answers are shown once you
+              pass.
+            </p>
+            {attemptsRemaining !== null && (
+              <p className="mt-2 font-medium text-foreground">
+                {attemptsRemaining === 0
+                  ? "You have used every attempt for the next 24 hours."
+                  : `${attemptsRemaining} attempt${attemptsRemaining === 1 ? "" : "s"} left in the next 24 hours.`}
+              </p>
+            )}
+          </section>
+        )}
+        {result.passed && (
         <section className="space-y-4">
           <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             Review your answers
           </h3>
-          {!result.passed && (
-            <p className="rounded-lg bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
-              Correct answers are shown once you pass. Re-read the module material for the
-              questions marked incorrect, then try again.
-            </p>
-          )}
           {questions.map((q, qIndex) => {
             const given = result.answers[q.id] ?? [];
             const feedback = review.find((r) => r.questionId === q.id);
@@ -374,6 +387,7 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
             );
           })}
         </section>
+        )}
       </div>
     );
   }
@@ -399,7 +413,7 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
             Question {index + 1} of {questions.length}
           </p>
           <div className="flex items-center gap-2">
-            {isFinal && <Badge variant="warning">Demo Assessment</Badge>}
+            {isFinal && <Badge variant="outline">Final Assessment</Badge>}
             <Badge variant="secondary">
               {question.type === "multiple" ? "Select all that apply" : "Single choice"}
             </Badge>

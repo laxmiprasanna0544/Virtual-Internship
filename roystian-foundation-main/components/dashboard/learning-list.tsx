@@ -10,6 +10,7 @@ import {
   Lock,
   PlayCircle,
 } from "lucide-react";
+import { LearningGuideCard } from "@/components/dashboard/learning-guide-card";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState, LoadingState } from "@/components/shared/states";
 import { Badge } from "@/components/ui/badge";
@@ -71,6 +72,8 @@ export function LearningList() {
         />
       </section>
 
+      <LearningGuideCard domain={domain} />
+
       <ol className="grid gap-4 sm:grid-cols-2">
         {domain.modules.map((module) => {
           const isDone = completed.includes(module.id);
@@ -116,10 +119,6 @@ export function LearningList() {
                   <li className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1">
                     <BookOpen className="h-3 w-3" aria-hidden="true" />
                     {module.readMinutes} min read
-                  </li>
-                  <li className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1">
-                    <FileText className="h-3 w-3" aria-hidden="true" />
-                    {module.resources.length} resources
                   </li>
                   <li className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1">
                     <ClipboardList className="h-3 w-3" aria-hidden="true" />

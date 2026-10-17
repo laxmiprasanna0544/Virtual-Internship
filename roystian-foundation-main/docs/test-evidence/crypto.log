@@ -1,0 +1,48 @@
+# crypto — 2026-10-17T15:01:50.629Z — exit 0 — 1.6s
+
+
+## TOTP (RFC 6238, SHA-1, 6 digits)
+ok    T=59 → 287082
+ok    T=1111111109 → 081804
+ok    T=1111111111 → 050471
+ok    T=1234567890 → 005924
+ok    T=2000000000 → 279037
+ok    T=20000000000 → 353130
+ok    current code accepted
+ok    one step of clock drift accepted
+ok    codes two steps old rejected
+ok    non-numeric code rejected
+ok    new secrets are 32 base32 characters (160 bits)
+ok    new secrets are random
+
+## Passwords (scrypt)
+ok    self-describing scrypt format
+ok    correct password verifies
+ok    wrong password rejected
+ok    salted: same password, different hash
+ok    malformed stored hash rejected
+ok    unknown-account check costs about the same as a real one
+
+## Password policy
+ok    rejects "Short1A"
+ok    rejects "alllowercase123"
+ok    rejects "ALLUPPERCASE123"
+ok    rejects "NoDigitsInHere"
+ok    rejects "xxxxxxxxxxxxxxxxxxxx"
+ok    accepts Str0ngPassword1
+
+## Encrypted secrets (AES-256-GCM)
+ok    round-trips
+ok    ciphertext doesn't contain the secret
+ok    random IV: same secret seals differently
+ok    tampered ciphertext rejected
+
+## Codes and tokens
+ok    codes are always 6 digits
+ok    codes are spread out (>4900 distinct of 5000)
+ok    code hashes are keyed (differ from a plain SHA-256)
+ok    tokens are 256-bit base64url
+ok    token hash is not the token
+ok    safeEqual
+
+crypto: 34 passed, 0 failed, 0 skipped

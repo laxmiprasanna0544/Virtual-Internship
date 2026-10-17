@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, LogOut, Save } from "lucide-react";
+import { Loader2, LogOut, MailCheck, Save, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingState } from "@/components/shared/states";
@@ -25,7 +25,9 @@ import { EDUCATION_LEVELS, EXPERIENCE_LEVELS } from "@/data/content";
 import { getDomain } from "@/data/domains";
 import { getProgram } from "@/data/programs";
 import { useStudentContext } from "@/lib/use-student";
-import { logout, updateOwnProfile } from "@/lib/auth";
+import { CodeField } from "@/components/account/confirm-email-step";
+import { confirmEmailChange, logout, updateOwnProfile } from "@/lib/auth";
+import { refreshStudentData } from "@/lib/student-data";
 import { formatDate, formatINR } from "@/lib/utils";
 import type { EducationLevel } from "@/types";
 
@@ -45,6 +47,10 @@ export function ProfileView() {
   const ctx = useStudentContext();
   const router = useRouter();
   const [hydrated, setHydrated] = React.useState(false);
+  // Set while a new email address waits for its verification code.
+  const [pendingEmail, setPendingEmail] = React.useState<string | null>(null);
+  const [emailCode, setEmailCode] = React.useState("");
+  const [confirmingEmail, setConfirmingEmail] = React.useState(false);
 
   const {
     register,
@@ -99,11 +105,34 @@ export function ProfileView() {
       toast.error(result.error ?? "Unable to save your profile.");
       return;
     }
+    await refreshStudentData();
+    if (result.emailChangePending) {
+      setPendingEmail(values.email.trim().toLowerCase());
+      setEmailCode("");
+    }
     toast.success("Profile updated", {
       description: result.emailChangePending
-        ? "Check your new inbox to confirm the email change."
+        ? "Enter the code we emailed to your new address to finish changing it."
         : undefined,
     });
+  }
+
+  async function handleConfirmEmail(event: React.FormEvent) {
+    event.preventDefault();
+    if (!/^\d{6}$/.test(emailCode)) {
+      toast.error("Enter the 6-digit code from the email.");
+      return;
+    }
+    setConfirmingEmail(true);
+    const result = await confirmEmailChange(emailCode);
+    setConfirmingEmail(false);
+    if (!result.ok) {
+      toast.error(result.error ?? "That code is not valid.");
+      return;
+    }
+    setPendingEmail(null);
+    await refreshStudentData();
+    toast.success("Email address updated");
   }
 
   async function handleLogout() {
@@ -161,8 +190,10 @@ export function ProfileView() {
               </Label>
               <Select
                 value={watch("educationLevel")}
+                // Radix reports "" from its hidden native select before the
+                // options mount, which would wipe the loaded value. No option is "".
                 onValueChange={(value) =>
-                  setValue("educationLevel", value, { shouldValidate: true })
+                  value && setValue("educationLevel", value, { shouldValidate: true })
                 }
               >
                 <SelectTrigger id="educationLevel">
@@ -190,7 +221,40 @@ export function ProfileView() {
               </>
             )}
           </Button>
+
+          <p className="mt-4 text-sm text-muted-foreground">
+            <Link href="/account/security" className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline">
+              <ShieldCheck className="h-4 w-4" aria-hidden="true" /> Two-factor authentication
+            </Link>
+          </p>
         </form>
+
+        {pendingEmail && (
+          <form
+            onSubmit={handleConfirmEmail}
+            noValidate
+            className="rounded-2xl border border-border bg-card p-6 shadow-soft lg:col-span-2"
+          >
+            <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <MailCheck className="h-4 w-4" aria-hidden="true" /> Confirm your new email
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              We sent a 6-digit code to <span className="font-medium text-foreground">{pendingEmail}</span>.
+              Your current address stays active until you confirm.
+            </p>
+            <div className="mt-4 max-w-xs">
+              <CodeField id="email-code" value={emailCode} onChange={setEmailCode} />
+            </div>
+            <div className="mt-4 flex gap-3">
+              <Button type="submit" disabled={confirmingEmail}>
+                {confirmingEmail ? <Loader2 className="animate-spin" /> : <MailCheck />} Confirm email
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setPendingEmail(null)}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        )}
 
         <div className="space-y-6">
           <section className="rounded-2xl border border-border bg-card p-5 shadow-soft">

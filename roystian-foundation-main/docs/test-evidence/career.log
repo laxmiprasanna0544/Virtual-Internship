@@ -1,0 +1,105 @@
+# career — 2026-10-17T15:02:01.541Z — exit 0 — 2.2s
+
+
+## Projects
+ok    project started
+ok    unknown project → 404
+ok    project row created in-progress
+ok    draft saved
+ok    invalid repo URL rejected (400)
+ok    another student cannot edit this project (404)
+ok    project submitted
+ok    student cannot evaluate (403)
+ok    trainer for another domain cannot evaluate (403)
+ok    trainer evaluates the project
+ok    overall score is the server-side weighted score
+ok    evaluation stored
+ok    unknown criteria are not stored
+ok    evaluated project cannot be edited (409)
+ok    evaluated project cannot be resubmitted (409)
+ok    score, status and analysis unchanged after attempts
+
+## Industry challenges
+ok    challenge entry submitted
+ok    unknown challenge → 404
+ok    student may revise before evaluation
+ok    client cannot set status or score
+ok    student cannot score a challenge (403)
+ok    admin scores the entry
+ok    evaluated entry cannot be resubmitted (409)
+ok    score and solution unchanged
+
+## Career Passport and public profile
+ok    update before the passport exists → 404
+ok    passport created
+ok    slug derived from the name
+ok    passport is private by default
+ok    a second student gets a free slug even when private passports already use it
+ok    invalid slug rejected (400)
+ok    slug and about updated
+ok    taken slug → 409
+ok    unpublished profile → 404
+ok    profile published
+ok    published profile is public
+ok    contact email hidden by default
+ok    evaluated project visible when enabled
+ok    no internal identifiers leak
+ok    visibility updated
+ok    contact shown only when enabled
+ok    disabled sections are empty
+ok    malformed slug → 404
+
+## Partner talent directory
+ok    partner lists published profiles
+ok    unpublished profiles are not listed
+ok    student cannot open the talent directory (403)
+
+## Resume and LinkedIn drafts
+ok    resume saved
+ok    resume stored
+ok    LinkedIn drafts saved
+ok    LinkedIn drafts stored
+ok    invalid resume rejected (400)
+
+## Mock interviews are scored on the server
+ok    student without a domain is refused (400)
+ok    interview scored
+ok    client-sent scores ignored
+ok    unknown question answers are dropped
+
+## Fellowship
+ok    ineligible student cannot apply (403)
+ok    invalid application rejected (400)
+ok    no application row created
+
+## Scholarship
+ok    invalid tier rejected (400)
+ok    scholarship application submitted
+ok    second open application refused (409)
+ok    application stored as submitted with no award
+ok    student cannot decide (403)
+ok    admin approves with a tier
+ok    decision stored
+
+## Notifications
+ok    notifications listed
+ok    scholarship award notified
+ok    project evaluation notified
+ok    request to mark another user's notification is accepted but does nothing
+ok    another user's notification stays unread
+ok    owner marks it read
+ok    mark all read
+ok    other user's notifications untouched (sanity)
+ok    invalid body rejected (400)
+
+## Public college enquiry
+ok    lead submitted anonymously
+ok    lead stored with status new
+ok    honeypot-filled submission rejected
+ok    no row for the bot submission
+ok    invalid lead rejected (400)
+ok    client cannot set the lead status
+ok    lead form is rate limited (429)
+ok    students cannot read leads through the admin API (403)
+
+career: 81 passed, 0 failed, 0 skipped

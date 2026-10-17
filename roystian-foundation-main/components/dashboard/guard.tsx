@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useSession } from "@/lib/auth";
-import { homeForRole } from "@/lib/supabase/roles";
+import { homeForRole } from "@/lib/roles";
 import type { Role, Student, User } from "@/types";
 
 /**

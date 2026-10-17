@@ -1,16 +1,10 @@
 import type { MetadataRoute } from "next";
+import { siteUrl } from "@/lib/site-url";
 import { DOMAINS } from "@/data/domains";
 
-function baseUrl(): string {
-  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL)
-    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "http://localhost:3000";
-}
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = baseUrl();
+  const base = siteUrl();
   const now = new Date();
 
   const staticRoutes = [

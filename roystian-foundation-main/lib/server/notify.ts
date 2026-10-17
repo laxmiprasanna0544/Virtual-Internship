@@ -1,40 +1,54 @@
 import "server-only";
 
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/types/supabase";
-import type { CommunicationChannel, CommunicationEvent, NotificationType } from "@/types";
-
-type Admin = SupabaseClient<Database>;
+import { getSql } from "@/lib/server/db";
+import { emailConfigured, sendEmail } from "@/lib/server/email";
+import type { CommunicationEvent, NotificationType } from "@/types";
 
 /** In-app notification for one user. Failures are logged, never fatal. */
 export async function notify(
-  admin: Admin,
   userId: string,
   type: NotificationType,
   title: string,
   body: string,
   href?: string,
 ) {
-  const { error } = await admin
-    .from("notifications")
-    .insert({ user_id: userId, type, title, body, href: href ?? null });
-  if (error) console.error("notify failed:", error.message);
+  try {
+    await getSql()`
+      insert into public.notifications (user_id, type, title, body, href)
+      values (${userId}, ${type}, ${title}, ${body}, ${href ?? null})`;
+  } catch (error) {
+    console.error("notify failed:", error instanceof Error ? error.message : error);
+  }
 }
 
 /**
- * Records an outbound message. Nothing is delivered yet: rows are written as
- * "queued" until an email / WhatsApp provider is connected to send them.
+ * Sends a transactional email (lib/server/email.ts) and records it in the
+ * communication log (sent, or failed with the reason). Never throws: the
+ * action that triggered the email has already happened.
  */
-export async function queueCommunication(
-  admin: Admin,
-  message: {
-    event: CommunicationEvent;
-    channel: CommunicationChannel;
-    recipient: string;
-    subject: string;
-    body: string;
-  },
-) {
-  const { error } = await admin.from("communication_logs").insert({ ...message, status: "queued" });
-  if (error) console.error("queueCommunication failed:", error.message);
+export async function sendCommunication(message: {
+  event: CommunicationEvent;
+  recipient: string;
+  subject: string;
+  body: string;
+}) {
+  let status: "sent" | "queued" | "failed" = "queued";
+  let providerMessageId: string | null = null;
+  if (emailConfigured()) {
+    try {
+      providerMessageId = await sendEmail(message.recipient, message.subject, message.body);
+      status = "sent";
+    } catch (error) {
+      status = "failed";
+      console.error("email send failed:", error instanceof Error ? error.name : error);
+    }
+  }
+  try {
+    await getSql()`
+      insert into public.communication_logs (event, channel, recipient, subject, body, status, provider_message_id)
+      values (${message.event}, 'email', ${message.recipient}, ${message.subject}, ${message.body},
+              ${status}, ${providerMessageId})`;
+  } catch (error) {
+    console.error("communication log failed:", error instanceof Error ? error.message : error);
+  }
 }

@@ -103,15 +103,15 @@ export function AdminPayments() {
                 <RefreshCcw /> Refund
               </Button>
             }
-            title="Mark this payment as refunded?"
-            description={`${formatINR(row.amount)} for ${row.studentName} will be marked refunded and the registration payment status updated. This records the refund and removes access to the domain; the money must also be refunded in the payment gateway.`}
-            confirmLabel="Mark refunded"
+            title="Refund this payment?"
+            description={`${formatINR(row.amount)} will be refunded to ${row.studentName} through Cashfree, to the original payment method. The registration is marked refunded and the student loses access to the domain.`}
+            confirmLabel="Refund through Cashfree"
             destructive
             onConfirm={async () => {
               try {
                 await refundPayment(row.id);
-                toast.success("Payment marked as refunded", {
-                  description: "Refund the money in the payment gateway as well.",
+                toast.success("Refund issued", {
+                  description: "Cashfree returns the money to the original payment method, usually within 5–7 working days.",
                 });
               } catch (error) {
                 toast.error(error instanceof Error ? error.message : "Refund failed.");

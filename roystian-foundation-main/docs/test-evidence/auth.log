@@ -1,0 +1,114 @@
+# auth — 2026-10-17T15:01:52.499Z — exit 0 — 2.4s
+
+
+## Sign-up
+ok    weak password is rejected (400)
+ok    password without upper case is rejected by the password policy
+ok    invalid email is rejected (400)
+ok    sign-up succeeds and asks for email confirmation
+ok    profile + student rows created at sign-up
+ok    every sign-up is a student, whatever the request says
+ok    sign-up details stored
+ok    password stored only as a salted scrypt hash
+ok    account starts unverified
+ok    verification code emailed (6 digits)
+ok    code stored only as a keyed hash
+ok    duplicate email is refused (409)
+
+## Confirmation gate
+ok    unconfirmed account cannot sign in (403 needsConfirmation)
+ok    no session cookie for an unconfirmed account
+ok    malformed confirmation code rejected (400)
+ok    wrong confirmation code rejected
+ok    resend issues a new code
+ok    the superseded code no longer works
+ok    current code confirms the account
+
+## Code attempts are limited
+ok    after 5 wrong attempts even the right code is refused
+
+## Sign-in and session cookie
+ok    wrong password → 401 with a generic message
+ok    unknown account → the same 401 (no account discovery)
+ok    sign-in succeeds (email is case-insensitive)
+ok    rf_session cookie is HttpOnly, SameSite=Lax, Path=/
+ok    session cookie lasts 30 days
+ok    session token is a 256-bit random value
+ok    the token is never in the JSON body
+ok    only the token's hash is stored
+ok    session endpoint returns the signed-in student
+ok    student can open /dashboard
+ok    student is redirected away from /admin
+
+## Session tokens can't be forged
+ok    random token is rejected
+ok    modified token is rejected
+ok    the stored hash instead of the token is rejected
+ok    an overlong value is rejected
+ok    a forged token cannot open protected pages
+
+## Profile
+ok    student updates own profile
+ok    profile changes saved
+ok    role cannot be changed through the profile route
+
+## Sign-out revokes the session on the server
+ok    a copy of the cookie works before sign-out
+ok    logout succeeds
+ok    logout clears the cookie
+ok    the same token no longer works anywhere after sign-out
+ok    session marked revoked in the database
+
+## Password reset (code by email)
+ok    forgot-password reports success for unknown accounts
+ok    no email is sent for unknown accounts
+ok    forgot-password sends a code
+ok    reset rejects a weak password
+ok    reset rejects a wrong code
+ok    reset with the emailed code succeeds
+ok    a password reset signs out every other session
+ok    the old password no longer works
+ok    sign-in with the new password works
+
+## Authenticator app (TOTP)
+ok    setup returns a base32 secret and an otpauth URI
+ok    mfa_enabled recorded after a real code verified
+ok    authenticator secret stored encrypted
+ok    sign-in now asks for the authenticator code
+ok    challenge is kept in an HttpOnly cookie
+ok    malformed code rejected
+ok    wrong authenticator code rejected
+ok    right code completes sign-in
+ok    the same authenticator code cannot be replayed
+ok    MFA step without a pending challenge is refused
+
+## Email change (code to the new address)
+ok    email change starts and sends a code to the new address
+ok    the code goes to the new address only
+ok    the current address stays in use until confirmed
+ok    malformed code rejected
+ok    email change confirmed
+ok    profile and sign-in both use the verified new address (not the request body)
+ok    sign-in works with the new address
+
+## Suspension
+ok    suspended student is signed out of protected pages
+ok    suspended student's API calls are refused (403)
+
+## Staff must enrol two-factor
+ok    staff sign-in flags MFA setup as required
+ok    staff without MFA are sent to /account/security
+ok    staff APIs refuse until MFA is enrolled
+ok    staff APIs work once MFA is enrolled
+
+## Account lockout (second layer behind rate limits)
+ok    the 10th wrong password is refused
+ok    the account is then locked in the database
+ok    while locked, even the right password is refused (429)
+ok    after the lock expires the right password works and the counter resets
+
+## Rate limiting
+ok    repeated sign-in attempts are rate limited (429)
+ok    429 carries Retry-After
+
+auth: 82 passed, 0 failed, 0 skipped

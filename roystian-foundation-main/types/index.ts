@@ -63,12 +63,6 @@ export interface Concept {
   definition: string;
 }
 
-export interface Resource {
-  title: string;
-  type: "pdf" | "notebook" | "dataset" | "article" | "checklist" | "template";
-  meta: string;
-}
-
 export interface Module {
   id: string;
   domainId: string;
@@ -81,7 +75,6 @@ export interface Module {
   objectives: string[];
   concepts: Concept[];
   reading: { heading: string; body: string }[];
-  resources: Resource[];
   assessmentId: string;
 }
 

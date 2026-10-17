@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
 export const runtime = "nodejs";
@@ -6,7 +8,9 @@ export const alt =
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default function OpengraphImage() {
+export default async function OpengraphImage() {
+  const png = await readFile(join(process.cwd(), "public/images/brand/roystian-logo.png"));
+  const logo = `data:image/png;base64,${png.toString("base64")}`;
   return new ImageResponse(
     (
       <div
@@ -22,22 +26,8 @@ export default function OpengraphImage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
-          <div
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 14,
-              background: "#3B46C4",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#fff",
-              fontSize: 28,
-              fontWeight: 700,
-            }}
-          >
-            R
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element -- ImageResponse renders plain <img> */}
+          <img src={logo} width={88} height={88} alt="" />
           <div style={{ display: "flex", flexDirection: "column" }}>
             <div
               style={{

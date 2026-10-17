@@ -108,9 +108,9 @@ export default function PehlaChancePage() {
                 About this page
               </h2>
               <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-                This is a preview of the PehlaChance experience within the demonstration
-                environment. No live job listings, employer relationships or placement
-                outcomes are represented here, and none are promised. Industry-Led
+                This page describes the PehlaChance experience. No job listings, employer
+                relationships or placement outcomes are represented here, and none are
+                promised. Industry-Led
                 students have one month of access activated automatically once their
                 internship is completed.
               </p>

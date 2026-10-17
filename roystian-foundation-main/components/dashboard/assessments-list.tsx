@@ -36,7 +36,7 @@ export function AssessmentsList() {
     <div className="space-y-6">
       <PageHeader
         title="Assessments"
-        description="Short assessments after every module, plus one final assessment. The pass mark is 70% and retakes are unlimited."
+        description="Short assessments after every module, plus one final assessment. The pass mark is 70%, with up to five attempts per assessment each day."
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Assessments" },
@@ -76,7 +76,6 @@ export function AssessmentsList() {
                 <Badge>
                   <GraduationCap className="h-3 w-3" /> Final Assessment
                 </Badge>
-                <Badge variant="warning">Demo Assessment</Badge>
                 {progress?.finalAttempt && (
                   <StatusBadge
                     status={progress.finalAttempt.passed ? "completed" : "pending"}

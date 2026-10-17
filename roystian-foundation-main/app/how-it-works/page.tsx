@@ -30,7 +30,7 @@ const REQUIREMENTS = [
   },
   {
     label: "Module assessments passed",
-    detail: "Each module assessment passed at 70% or above. Unlimited retakes.",
+    detail: "Each module assessment passed at 70% or above. Up to five attempts a day.",
   },
   {
     label: "Practical task submitted and reviewed",

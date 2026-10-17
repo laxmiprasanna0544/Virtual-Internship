@@ -8,9 +8,14 @@ import { submissionFileUrl } from "@/lib/admin-data";
 
 /** Opens a student's uploaded file through a short-lived signed link. */
 export function SubmissionFileLink({
+  id,
+  kind = "submission",
   filePath,
   fileName,
 }: {
+  /** The submission (or project submission) the file belongs to. */
+  id: string;
+  kind?: "submission" | "project";
   filePath: string | null | undefined;
   fileName: string | null;
 }) {
@@ -24,7 +29,7 @@ export function SubmissionFileLink({
   async function open() {
     setOpening(true);
     try {
-      const url = await submissionFileUrl(filePath!);
+      const url = await submissionFileUrl(kind, id);
       window.open(url, "_blank", "noopener,noreferrer");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not open the file.");

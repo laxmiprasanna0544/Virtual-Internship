@@ -2,19 +2,22 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { AlertCircle, KeyRound, Loader2, MailCheck } from "lucide-react";
+import { KeyRound, Loader2, MailCheck } from "lucide-react";
 import { toast } from "sonner";
+import { CARD, FormError } from "@/components/account/confirm-email-step";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { requestPasswordReset, updatePassword } from "@/lib/auth";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { requestPasswordReset, resetPassword } from "@/lib/auth";
 
-const CARD = "rounded-2xl border border-border bg-card p-6 shadow-card sm:p-8";
+/*
+ * Password reset is code-based: we email a 6-digit code, which is
+ * entered here with the new password. There are no reset links.
+ */
 
 const emailSchema = z.object({ email: z.string().email("Enter a valid email address.") });
 
@@ -31,17 +34,15 @@ export function ForgotPasswordForm() {
 
   if (sentTo) {
     return (
-      <div role="status" className={CARD}>
-        <MailCheck className="h-6 w-6 text-primary" aria-hidden="true" />
-        <h1 className="mt-4 font-display text-xl font-semibold text-foreground">Check your email</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          If an account exists for <span className="font-medium text-foreground">{sentTo}</span>,
-          a link to reset the password is on its way. It expires in one hour.
-        </p>
-        <Button asChild variant="outline" className="mt-6">
-          <Link href="/login">Back to sign in</Link>
-        </Button>
-      </div>
+      <ResetPasswordForm
+        initialEmail={sentTo}
+        intro={
+          <>
+            If an account exists for <span className="font-medium text-foreground">{sentTo}</span>,
+            a 6-digit code is on its way. Enter it below with your new password.
+          </>
+        }
+      />
     );
   }
 
@@ -51,12 +52,12 @@ export function ForgotPasswordForm() {
       className={CARD}
       onSubmit={handleSubmit(async ({ email }) => {
         await requestPasswordReset(email);
-        setSentTo(email);
+        setSentTo(email.trim().toLowerCase());
       })}
     >
       <h1 className="font-display text-xl font-semibold text-foreground">Reset your password</h1>
       <p className="mt-1.5 text-sm text-muted-foreground">
-        Enter the email address you signed up with.
+        Enter the email address you signed up with. We will email you a code.
       </p>
       <div className="mt-6">
         <Label htmlFor="email" className="mb-2 block">
@@ -76,10 +77,14 @@ export function ForgotPasswordForm() {
         )}
       </div>
       <Button type="submit" size="lg" className="mt-6 w-full" disabled={isSubmitting}>
-        {isSubmitting ? <Loader2 className="animate-spin" /> : <MailCheck />} Send reset link
+        {isSubmitting ? <Loader2 className="animate-spin" /> : <MailCheck />} Send reset code
       </Button>
       <p className="mt-5 text-center text-sm text-muted-foreground">
-        Remembered it?{" "}
+        Already have a code?{" "}
+        <Link href="/reset-password" className="font-medium text-primary hover:underline">
+          Enter it
+        </Link>{" "}
+        · Remembered it?{" "}
         <Link href="/login" className="font-medium text-primary hover:underline">
           Sign in
         </Link>
@@ -88,9 +93,16 @@ export function ForgotPasswordForm() {
   );
 }
 
-const passwordSchema = z
+const resetSchema = z
   .object({
-    password: z.string().min(8, "Use at least 8 characters."),
+    email: z.string().email("Enter a valid email address."),
+    code: z.string().regex(/^\d{6}$/, "Enter the 6-digit code from the email."),
+    password: z
+      .string()
+      .min(10, "Use at least 10 characters.")
+      .regex(/[a-z]/, "Include a lower case letter.")
+      .regex(/[A-Z]/, "Include an upper case letter.")
+      .regex(/[0-9]/, "Include a number."),
     confirmPassword: z.string(),
   })
   .refine((v) => v.password === v.confirmPassword, {
@@ -98,101 +110,94 @@ const passwordSchema = z
     path: ["confirmPassword"],
   });
 
-export function ResetPasswordForm() {
+type ResetValues = z.infer<typeof resetSchema>;
+
+export function ResetPasswordForm({
+  initialEmail,
+  intro,
+}: {
+  initialEmail?: string;
+  intro?: React.ReactNode;
+}) {
   const router = useRouter();
-  const [hasSession, setHasSession] = React.useState<boolean | null>(null);
+  const searchParams = useSearchParams();
   const [serverError, setServerError] = React.useState<string | null>(null);
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<z.infer<typeof passwordSchema>>({
-    resolver: zodResolver(passwordSchema),
-    defaultValues: { password: "", confirmPassword: "" },
+  } = useForm<ResetValues>({
+    resolver: zodResolver(resetSchema),
+    defaultValues: {
+      email: initialEmail ?? searchParams.get("email") ?? "",
+      code: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
 
-  React.useEffect(() => {
-    getSupabaseBrowserClient()
-      .auth.getUser()
-      .then(({ data }) => setHasSession(Boolean(data.user)));
-  }, []);
-
-  if (hasSession === null) {
-    return (
-      <div className={CARD} role="status">
-        <Loader2 className="h-5 w-5 animate-spin text-primary" aria-hidden="true" />
-      </div>
-    );
-  }
-
-  if (!hasSession) {
-    return (
-      <div className={CARD} role="alert">
-        <h1 className="font-display text-xl font-semibold text-foreground">Link expired</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          This password reset link is invalid or has already been used.
-        </p>
-        <Button asChild className="mt-6">
-          <Link href="/forgot-password">Request a new link</Link>
-        </Button>
-      </div>
-    );
-  }
+  const fields = [
+    { name: "email", label: "Email", type: "email", autoComplete: "email" },
+    { name: "code", label: "6-digit code", type: "text", autoComplete: "one-time-code" },
+    { name: "password", label: "New password", type: "password", autoComplete: "new-password" },
+    { name: "confirmPassword", label: "Confirm new password", type: "password", autoComplete: "new-password" },
+  ] as const;
 
   return (
     <form
       noValidate
       className={CARD}
-      onSubmit={handleSubmit(async ({ password }) => {
+      onSubmit={handleSubmit(async ({ email, code, password }) => {
         setServerError(null);
-        const result = await updatePassword(password);
+        const result = await resetPassword(email, code, password);
         if (!result.ok) {
-          setServerError(result.error ?? "Could not update the password.");
+          setServerError(result.error ?? "Could not reset the password.");
           return;
         }
-        toast.success("Password updated");
-        router.push("/dashboard");
+        toast.success("Password updated. Sign in with your new password.");
+        router.push("/login");
       })}
     >
       <h1 className="font-display text-xl font-semibold text-foreground">Choose a new password</h1>
-      {serverError && (
-        <div
-          role="alert"
-          className="mt-5 flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
-        >
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          {serverError}
-        </div>
-      )}
+      <p className="mt-1.5 text-sm text-muted-foreground">
+        {intro ?? "Enter the code from the reset email and your new password."}
+      </p>
+      <FormError message={serverError} />
       <div className="mt-6 space-y-5">
-        {(
-          [
-            ["password", "New password"],
-            ["confirmPassword", "Confirm new password"],
-          ] as const
-        ).map(([name, label]) => (
-          <div key={name}>
-            <Label htmlFor={name} className="mb-2 block">
-              {label}
+        {fields.map((field) => (
+          <div key={field.name}>
+            <Label htmlFor={field.name} className="mb-2 block">
+              {field.label}
             </Label>
             <Input
-              id={name}
-              type="password"
-              autoComplete="new-password"
-              aria-invalid={Boolean(errors[name])}
-              {...register(name)}
+              id={field.name}
+              type={field.type}
+              autoComplete={field.autoComplete}
+              {...(field.name === "code" ? { inputMode: "numeric" as const, maxLength: 6 } : {})}
+              aria-invalid={Boolean(errors[field.name])}
+              {...register(field.name)}
             />
-            {errors[name] && (
+            {errors[field.name] ? (
               <p role="alert" className="mt-1.5 text-xs text-destructive">
-                {errors[name]?.message}
+                {errors[field.name]?.message}
               </p>
-            )}
+            ) : field.name === "password" ? (
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                At least 10 characters, with upper and lower case letters and a number.
+              </p>
+            ) : null}
           </div>
         ))}
       </div>
       <Button type="submit" size="lg" className="mt-6 w-full" disabled={isSubmitting}>
         {isSubmitting ? <Loader2 className="animate-spin" /> : <KeyRound />} Update password
       </Button>
+      <p className="mt-5 text-center text-sm text-muted-foreground">
+        No code?{" "}
+        <Link href="/forgot-password" className="font-medium text-primary hover:underline">
+          Send a new one
+        </Link>
+      </p>
     </form>
   );
 }

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { SiteShell } from "@/components/site/site-shell";
+import { LoadingState } from "@/components/shared/states";
 import { ResetPasswordForm } from "@/components/site/password-forms";
 
 export const metadata: Metadata = {
@@ -12,7 +14,9 @@ export default function Page() {
     <SiteShell>
       <section className="section">
         <div className="container max-w-md">
-          <ResetPasswordForm />
+          <Suspense fallback={<LoadingState rows={3} />}>
+            <ResetPasswordForm />
+          </Suspense>
         </div>
       </section>
     </SiteShell>

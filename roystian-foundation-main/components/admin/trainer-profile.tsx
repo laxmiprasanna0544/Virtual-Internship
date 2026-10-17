@@ -10,34 +10,30 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState, LoadingState } from "@/components/shared/states";
-import { DemoNote } from "@/components/shared/demo-banner";
+import { InfoNote } from "@/components/admin/info-note";
 import { DynamicIcon } from "@/components/shared/icon";
 import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAdminData } from "@/lib/admin-data";
-import { useDatabase } from "@/lib/db";
-import { catalogTrainers } from "@/lib/catalog";
+import { TRAINERS } from "@/data/trainers";
 import { DOMAINS, getDomain } from "@/data/domains";
 import { buildSchedule } from "@/lib/schedule";
 import { formatDate, initials as toInitials } from "@/lib/utils";
 
 export function AdminTrainerProfile({ trainerId }: { trainerId: string }) {
   const db = useAdminData();
-  // The trainer catalogue (with admin edits) still lives in the browser demo
-  // database until catalogue management moves to Supabase.
-  const catalog = useDatabase();
 
-  if (!db || !catalog) return <LoadingState label="Loading trainer" rows={3} />;
+  if (!db) return <LoadingState label="Loading trainer" rows={3} />;
 
-  const trainer = catalogTrainers(catalog).find((t) => t.id === trainerId);
+  const trainer = TRAINERS.find((t) => t.id === trainerId);
   if (!trainer) {
     return (
       <EmptyState
         icon={Users}
         title="Trainer not found"
-        description="This trainer profile does not exist in the demo catalogue."
+        description="This trainer profile does not exist in the catalogue."
         actionLabel="Back to trainers"
         actionHref="/admin/trainers"
       />
@@ -82,10 +78,10 @@ export function AdminTrainerProfile({ trainerId }: { trainerId: string }) {
         }
       />
 
-      <DemoNote>
-        This is an illustrative persona created for the demonstration environment. It
-        is not a real individual and carries no real credentials.
-      </DemoNote>
+      <InfoNote>
+        Trainer profiles are maintained in the codebase. This profile is a placeholder
+        until the trainer roster is confirmed.
+      </InfoNote>
 
       <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
@@ -100,7 +96,6 @@ export function AdminTrainerProfile({ trainerId }: { trainerId: string }) {
               <Badge variant={trainer.active ? "success" : "secondary"}>
                 {trainer.active ? "Active" : "Inactive"}
               </Badge>
-              <Badge variant="warning">Demo profile</Badge>
             </div>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               {trainer.bio}

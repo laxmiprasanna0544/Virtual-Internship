@@ -1,25 +1,22 @@
+import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+/** The Roystian Foundation emblem (public/images/brand/roystian-logo.png). */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <span
-      className={cn(
-        "relative flex h-9 w-9 items-center justify-center rounded-[10px] bg-primary text-primary-foreground",
-        className,
-      )}
+      className={cn("relative flex h-10 w-10 shrink-0 items-center justify-center", className)}
       aria-hidden="true"
     >
-      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-        <path
-          d="M4 18V6.5A2.5 2.5 0 0 1 6.5 4H14l6 6v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-        <path d="M13.5 4v5.5H19" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-        <path d="M8 13.5h7M8 16.5h4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      </svg>
+      <Image
+        src="/images/brand/roystian-logo.png"
+        alt=""
+        width={80}
+        height={80}
+        priority
+        className="h-full w-full object-contain"
+      />
     </span>
   );
 }

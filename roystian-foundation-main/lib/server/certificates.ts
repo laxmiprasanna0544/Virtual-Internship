@@ -4,10 +4,10 @@ import { getDomain } from "@/data/domains";
 import { getProgram } from "@/data/programs";
 import { domainCode } from "@/lib/ids";
 import { isCertificateUnlocked } from "@/lib/rules";
-import { notify, queueCommunication } from "@/lib/server/notify";
-import type { AdminClient } from "@/lib/server/staff";
-import { fetchStudentRecordRows } from "@/lib/supabase/student-records";
-import { toCertificate, toStudentRecords } from "@/lib/supabase/mappers";
+import { service } from "@/lib/server/db";
+import { notify, sendCommunication } from "@/lib/server/notify";
+import { fetchStudentRecordRows } from "@/lib/server/student-records";
+import { toCertificate, toStudentRecords, type CertificateRow } from "@/lib/records/mappers";
 import type { Certificate } from "@/types";
 
 export type IssueResult =
@@ -19,11 +19,8 @@ export type IssueResult =
  * every completion rule against the database. Used by the student's own
  * request and by admins; neither can bypass the rules.
  */
-export async function issueCertificateFor(
-  admin: AdminClient,
-  studentId: string,
-): Promise<IssueResult> {
-  const rows = await fetchStudentRecordRows(admin, studentId);
+export async function issueCertificateFor(studentId: string): Promise<IssueResult> {
+  const rows = await service((tx) => fetchStudentRecordRows(tx, studentId));
   if (!rows || rows.profile.role !== "student") {
     return { ok: false, status: 404, error: "Student record not found." };
   }
@@ -46,34 +43,30 @@ export async function issueCertificateFor(
     };
   }
 
-  const { data: row, error } = await admin.rpc("issue_certificate", {
-    p_student_id: studentId,
-    p_registration_id: student.registrationId,
-    p_domain_code: domainCode(domain.id),
-    p_student_name: student.name,
-    p_domain_name: domain.name,
-    p_program_name: program.name,
-    p_duration: "15 Days",
-    p_final_score: progress?.finalAttempt?.percentage ?? 0,
-  });
-  if (error || !row) {
-    console.error("issue_certificate failed:", error?.message);
-    return { ok: false, status: 500, error: "Could not issue the certificate." };
+  let row: CertificateRow | undefined;
+  try {
+    [row] = await service(
+      (tx) => tx<CertificateRow[]>`
+        select * from public.issue_certificate(
+          ${studentId}, ${student.registrationId}, ${domainCode(domain.id)}, ${student.name},
+          ${domain.name}, ${program.name}, ${"15 Days"}, ${progress?.finalAttempt?.percentage ?? 0})`,
+    );
+  } catch (error) {
+    console.error("issue_certificate failed:", error instanceof Error ? error.message : error);
   }
+  if (!row) return { ok: false, status: 500, error: "Could not issue the certificate." };
   const certificate = toCertificate(row);
 
   await Promise.all([
     notify(
-      admin,
       studentId,
       "certificate",
       "Certificate unlocked",
       `Your ${domain.name} internship certificate ${certificate.id} is ready to download.`,
       "/dashboard/certificate",
     ),
-    queueCommunication(admin, {
+    sendCommunication({
       event: "program-completed",
-      channel: "email",
       recipient: student.email,
       subject: "Your Roystian internship certificate is ready",
       body: `Congratulations ${student.name.split(" ")[0]}, certificate ${certificate.id} has been issued and can be verified publicly.`,

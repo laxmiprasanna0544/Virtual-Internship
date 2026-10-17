@@ -10,7 +10,6 @@ import {
   Copy,
   LayoutDashboard,
   Mail,
-  MessageCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -21,15 +20,15 @@ import { useStudentContext } from "@/lib/use-student";
 import { formatDate, formatINR } from "@/lib/utils";
 
 const AUTOMATED_STEPS = [
-  { icon: Mail, label: "Confirmation email queued" },
-  { icon: MessageCircle, label: "WhatsApp confirmation queued" },
+  { icon: CheckCircle2, label: "Payment confirmed by Cashfree" },
+  { icon: Mail, label: "Confirmation email sent" },
   { icon: LayoutDashboard, label: "Dashboard activated" },
   { icon: Bell, label: "Programme team notified" },
 ];
 
 /**
- * Shows the registration the enrolment route just created, read back from
- * Supabase. Payment confirmation itself happens on the server; this page
+ * Shows the registration created when Cashfree confirmed the payment (see
+ * /payment/status). Confirmation itself happens on the server; this page
  * only displays the result.
  */
 export function PaymentSuccessView() {
@@ -141,7 +140,7 @@ export function PaymentSuccessView() {
           Automated communications
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          These run automatically when a payment succeeds.
+          These happen automatically once the payment is confirmed.
         </p>
         <ul className="mt-5 space-y-3" aria-live="polite">
           {AUTOMATED_STEPS.map((step, index) => {

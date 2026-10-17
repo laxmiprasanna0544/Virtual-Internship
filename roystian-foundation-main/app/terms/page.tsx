@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/site/legal-page";
+import { SITE } from "@/data/content";
 
 export const metadata: Metadata = {
   title: "Terms",
@@ -10,7 +11,7 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms"
-      updated="16 September 2026"
+      updated="11 October 2026"
       intro="These terms describe what the Roystian Foundation virtual internship programme provides, what is expected of participants, and what is explicitly not promised."
       sections={[
         {
@@ -47,6 +48,18 @@ export default function TermsPage() {
           ],
         },
         {
+          heading: "Fees and payment",
+          paragraphs: [
+            "Programme fees are shown in Indian rupees at checkout and are paid through Cashfree Payments. A registration is confirmed only when Cashfree confirms the payment. Refunds are governed by the Refund Policy.",
+          ],
+        },
+        {
+          heading: "Accounts and security",
+          paragraphs: [
+            "You are responsible for keeping your password confidential. Staff accounts must use two-factor authentication. We may suspend an account that is used to misrepresent work, share credentials or interfere with the platform.",
+          ],
+        },
+        {
           heading: "Changes to the programme",
           paragraphs: [
             "Curriculum content, schedules and trainers may be updated to keep material current. Material changes affecting an active cohort will be communicated to enrolled participants.",
@@ -55,7 +68,7 @@ export default function TermsPage() {
         {
           heading: "Contact",
           paragraphs: [
-            "Questions about these terms can be sent to the programme team through the contact details published on this site.",
+            `Questions about these terms can be sent to ${SITE.email}.`,
           ],
         },
       ]}

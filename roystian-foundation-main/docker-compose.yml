@@ -1,0 +1,54 @@
+# Local stand-ins for the production services.
+#
+#   postgres  → managed PostgreSQL 17 (the app role is not a superuser, as in
+#               production)
+#   moto      → S3-compatible object storage (stands in for DigitalOcean Spaces)
+#   cashfree  → a mock of the Cashfree PG API and hosted checkout
+#
+# Usage: npm run local:up && npm run local:setup (see README.md).
+
+name: roystian
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+      APP_DB_PASSWORD: roystian_local
+    ports:
+      - "55432:5432"
+    volumes:
+      - ./db/bootstrap.sql:/bootstrap/bootstrap.sql:ro
+      - ./infra/local/postgres-init.sh:/docker-entrypoint-initdb.d/00-bootstrap.sh:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      retries: 30
+
+  moto:
+    image: motoserver/moto:latest
+    environment:
+      MOTO_PORT: "5000"
+    ports:
+      - "5055:5000"
+
+  cashfree:
+    image: node:22-alpine
+    working_dir: /app
+    command: ["node", "scripts/mock-cashfree.mjs"]
+    environment:
+      PORT: "8787"
+      CASHFREE_SECRET_KEY: local-cashfree-secret
+      # Where the mock delivers webhooks (the app on the host).
+      WEBHOOK_URL: ${MOCK_CASHFREE_WEBHOOK_URL:-http://host.docker.internal:3100/api/payment/webhook}
+      PUBLIC_URL: http://localhost:8787
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./scripts/mock-cashfree.mjs:/app/scripts/mock-cashfree.mjs:ro
+    ports:
+      - "8787:8787"
+
+volumes:
+  pgdata:

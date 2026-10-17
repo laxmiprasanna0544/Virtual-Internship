@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/site/legal-page";
+import { SITE } from "@/data/content";
 
 export const metadata: Metadata = {
   title: "Refund Policy",
@@ -11,7 +12,7 @@ export default function RefundPolicyPage() {
   return (
     <LegalPage
       title="Refund Policy"
-      updated="16 September 2026"
+      updated="11 October 2026"
       intro="This policy explains when a programme fee can be refunded and how a refund request is processed."
       sections={[
         {
@@ -24,6 +25,7 @@ export default function RefundPolicyPage() {
           heading: "After the programme starts",
           paragraphs: [
             "Once learning content has been accessed, or once an Industry-Led cohort has begun, the fee is not refundable. This is because content, assessments and live sessions are made available in full at the start of the programme.",
+            "A certificate is earned by completing the programme requirements; it is not purchased, and an unfinished programme is not grounds for a refund.",
           ],
         },
         {
@@ -35,19 +37,20 @@ export default function RefundPolicyPage() {
         {
           heading: "Duplicate or failed payments",
           paragraphs: [
-            "Duplicate charges and amounts debited against a failed registration are refunded in full once verified.",
+            "Duplicate charges, and amounts debited for a payment that did not complete a registration, are refunded in full once verified.",
           ],
         },
         {
           heading: "How to request a refund",
           paragraphs: [
-            "Send the registration ID and the reason for the request to the programme team. Approved refunds are returned to the original payment method.",
+            `Send your registration ID and the reason for the request to ${SITE.email}. We will confirm whether the request is approved.`,
           ],
         },
         {
-          heading: "Demo environment",
+          heading: "How refunds are paid",
           paragraphs: [
-            "No real payments are processed in this demonstration environment, so no real refunds can occur. Payment records shown here are simulated.",
+            "Payments are processed by Cashfree Payments, and approved refunds are issued through Cashfree to the original payment method. Refunds typically reach your account 5–7 working days after approval, depending on your bank or card issuer.",
+            "Once a refund is issued, access to that programme's coursework ends.",
           ],
         },
       ]}

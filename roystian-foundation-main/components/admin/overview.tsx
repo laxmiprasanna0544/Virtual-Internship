@@ -17,7 +17,7 @@ import { LoadingState } from "@/components/shared/states";
 import { StatCard } from "@/components/shared/stat-card";
 import { AnimatedCounter } from "@/components/motion/animated-counter";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { DemoNote } from "@/components/shared/demo-banner";
+import { InfoNote } from "@/components/admin/info-note";
 import {
   CompletionBarChart,
   DomainBarChart,
@@ -63,11 +63,10 @@ export function AdminOverview() {
         }
       />
 
-      <DemoNote>
-        Every figure on this page is computed from the seeded demo dataset stored in your
-        browser. Actions you take in the admin area update the student dashboard
-        immediately.
-      </DemoNote>
+      <InfoNote>
+        Every figure on this page is computed live from the platform database. Actions you
+        take in the admin area update the student dashboard immediately.
+      </InfoNote>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard

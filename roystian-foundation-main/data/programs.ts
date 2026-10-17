@@ -82,7 +82,7 @@ export const PROGRAM_FEATURES: ProgramFeature[] = [
   },
   {
     label: "Module assessments",
-    detail: "A short assessment after every module, 70% to pass, unlimited retakes.",
+    detail: "A short assessment after every module, 70% to pass, up to five attempts a day.",
     selfPaced: true,
     industryLed: true,
   },

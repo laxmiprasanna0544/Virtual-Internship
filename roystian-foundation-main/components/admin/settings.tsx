@@ -1,16 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Database, Download, Info, RefreshCw, ShieldCheck } from "lucide-react";
+import { Database, Download, Info, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingState } from "@/components/shared/states";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { ThemeToggle } from "@/components/shared/theme";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useAdminData } from "@/lib/admin-data";
-import { resetDB } from "@/lib/db";
 import { useSession } from "@/lib/auth";
 
 export function AdminSettings() {
@@ -73,8 +71,9 @@ export function AdminSettings() {
         <section className="rounded-2xl border border-border bg-card p-5 shadow-soft">
           <h2 className="text-sm font-semibold text-foreground">Messaging</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Enrolment and certificate emails and WhatsApp messages are recorded in the
-            communication log as <span className="font-medium text-foreground">queued</span>.
+            Enrolment and certificate emails are sent through Resend and recorded in the
+            communication log as <span className="font-medium text-foreground">sent</span> or{" "}
+            <span className="font-medium text-foreground">failed</span>.
           </p>
           <div className="mt-4 flex items-center justify-between rounded-lg border border-border px-4 py-3">
             <Label htmlFor="theme-toggle">Appearance</Label>
@@ -82,8 +81,7 @@ export function AdminSettings() {
           </div>
           <p className="mt-4 flex items-start gap-2 text-xs text-muted-foreground">
             <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            No email or WhatsApp provider is connected yet, so queued messages are not
-            delivered.
+            WhatsApp messaging is not connected, so no WhatsApp messages are sent.
           </p>
         </section>
 
@@ -92,30 +90,15 @@ export function AdminSettings() {
           <p className="mt-1 text-sm text-muted-foreground">
             The export contains students' personal details. Store it securely.
           </p>
-          <div className="mt-4 space-y-2.5">
+          <div className="mt-4">
             <Button variant="outline" className="w-full" onClick={exportData}>
               <Download /> Export records as JSON
             </Button>
-            <ConfirmDialog
-              trigger={
-                <Button variant="outline" className="w-full">
-                  <RefreshCw /> Reset browser demo data
-                </Button>
-              }
-              title="Reset browser demo data?"
-              description="Restores the sample data that career tools, catalogue edits, projects and opportunities still read from this browser. Database records are not affected."
-              confirmLabel="Reset browser data"
-              destructive
-              onConfirm={() => {
-                resetDB();
-                toast.success("Browser demo data reset");
-              }}
-            />
           </div>
           <p className="mt-4 flex items-start gap-2 text-xs text-muted-foreground">
             <Database className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            Students, enrolments, payments, submissions, certificates and leads are stored
-            in Supabase.
+            All records are stored in the platform database (managed PostgreSQL);
+            uploaded files are kept in private object storage.
           </p>
         </section>
       </div>
@@ -129,8 +112,9 @@ export function AdminSettings() {
         </p>
         <p className="mt-4 flex items-start gap-2 text-xs text-muted-foreground">
           <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          Accounts are managed in Supabase Auth. Staff roles are granted by an
-          administrator and cannot be self-assigned.
+          Sign-in is handled by the platform itself (hashed passwords, emailed codes, revocable sessions). Staff roles are granted by an
+          administrator and cannot be self-assigned, and staff accounts must use
+          two-factor authentication.
         </p>
       </section>
     </div>

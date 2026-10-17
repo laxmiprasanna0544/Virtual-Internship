@@ -201,8 +201,8 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
               <Badge variant="outline">{brief.dataset.format}</Badge>
             </div>
             <p className="mt-4 border-t border-border pt-3 text-[0.72rem] leading-relaxed text-muted-foreground">
-              In this demo environment the dataset is described rather than
-              downloadable.
+              The dataset is described here rather than provided as a
+              download.
             </p>
           </section>
 

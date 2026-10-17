@@ -7,7 +7,6 @@ import type {
   Domain,
   DomainCluster,
   Module,
-  Resource,
 } from "@/types";
 import { careerDataFor, CLUSTER_OF, CLUSTERS } from "@/data/career-pathways";
 
@@ -17,40 +16,6 @@ function parseConcepts(raw: string[]): Concept[] {
   return raw.map((entry) => {
     const [term, ...rest] = entry.split("|");
     return { term: term.trim(), definition: rest.join("|").trim() };
-  });
-}
-
-const RESOURCE_PLAN: { type: Resource["type"]; label: string; meta: string }[] =
-  [
-    { type: "pdf", label: "Module handbook", meta: "PDF · Demo resource" },
-    {
-      type: "checklist",
-      label: "Concept checklist",
-      meta: "Checklist · Demo resource",
-    },
-    {
-      type: "template",
-      label: "Practice worksheet",
-      meta: "Template · Demo resource",
-    },
-    { type: "article", label: "Further reading", meta: "Article · Demo resource" },
-    { type: "dataset", label: "Sample dataset", meta: "CSV · Demo resource" },
-    {
-      type: "notebook",
-      label: "Walkthrough notebook",
-      meta: "Notebook · Demo resource",
-    },
-  ];
-
-function buildResources(module: RawModule, domain: RawDomain, index: number): Resource[] {
-  const offset = index % 3;
-  return [0, 1, 2].map((i) => {
-    const plan = RESOURCE_PLAN[(offset + i * 2) % RESOURCE_PLAN.length];
-    return {
-      title: `${module.t} — ${plan.label}`,
-      type: plan.type,
-      meta: `${plan.meta} · ${domain.shortName}`,
-    };
   });
 }
 
@@ -91,7 +56,6 @@ function buildDomain(raw: RawDomain): Domain {
       objectives: rawModule.o,
       concepts,
       reading: buildReading(rawModule, concepts),
-      resources: buildResources(rawModule, raw, index),
       assessmentId: `${moduleId}-assessment`,
     };
   });

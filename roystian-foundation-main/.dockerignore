@@ -1,0 +1,15 @@
+.git
+node_modules
+.next
+.env*
+!.env.example
+supabase
+about-us
+*.pdf
+test-evidence
+docs
+.selftest
+*.tsbuildinfo
+README.md
+TESTING.md
+infra/terraform/.terraform

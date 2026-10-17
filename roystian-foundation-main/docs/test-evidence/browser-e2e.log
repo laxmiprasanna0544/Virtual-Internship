@@ -1,0 +1,38 @@
+ok    no demo wording on /
+ok    public: / renders
+ok    no demo wording on /programs
+ok    public: /programs renders
+ok    no demo wording on /internships/ai-ml
+ok    public: /internships/ai-ml renders
+ok    no demo wording on /privacy
+ok    public: /privacy renders
+ok    no demo wording on /terms
+ok    public: /terms renders
+ok    no demo wording on /refund-policy
+ok    public: /refund-policy renders
+ok    no demo wording on /verify
+ok    public: /verify reports an unknown certificate as not found
+ok    student: register and confirm the emailed code, then auto sign-in
+ok    student: onboarding: profile → domain → experience → programme
+ok    no demo wording on /checkout
+ok    student: checkout redirects to the Cashfree hosted page
+ok    student: pay on the gateway → status page → success
+ok    no demo wording on /dashboard
+ok    student: dashboard shows the enrolment
+ok    student: open a learning module and mark it complete
+ok    no demo wording on /dashboard/assessments/ai-ml-m02-assessment
+ok    student: take a module assessment and see the score
+ok    student: submit the practical task with a PDF uploaded to S3
+ok    student: profile page
+ok    student: sign out
+ok    staff: admin signs in and is forced to enrol an authenticator
+ok    no demo wording on /admin
+ok    staff: set up TOTP (QR code) and land on the admin console
+ok    staff: students list → the student from the student journey
+ok    staff: assignments page shows the submission and the admin approves it
+ok    password-reset: request a reset code
+ok    password-reset: enter the code and a new password
+ok    password-reset: sign in with the new password
+ok    no console or page errors
+
+browser e2e: 36 passed, 0 failed, 35 screenshots in docs/test-evidence/screenshots/

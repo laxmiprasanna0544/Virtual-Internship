@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getProject } from "@/data/projects";
+import { readJson } from "@/lib/server/auth";
+import { getSql } from "@/lib/server/db";
 import { notify } from "@/lib/server/notify";
 import { audit, badRequest, canActOnDomain, requireStaff } from "@/lib/server/staff";
 
@@ -19,15 +21,16 @@ export async function POST(req: NextRequest) {
   if (!auth.ok) return auth.response;
   const { ctx } = auth;
 
-  const parsed = body.safeParse(await req.json().catch(() => null));
+  const parsed = body.safeParse(await readJson(req));
   if (!parsed.success) return badRequest("Invalid evaluation.");
   const { submissionId, feedback } = parsed.data;
 
-  const { data: submission } = await ctx.admin
-    .from("project_submissions")
-    .select("id, student_id, project_id, domain_id, status")
-    .eq("id", submissionId)
-    .maybeSingle();
+  const sql = getSql();
+  const [submission] = await sql<
+    { id: string; student_id: string; project_id: string; domain_id: string; status: string }[]
+  >`
+    select id, student_id, project_id, domain_id, status
+    from public.project_submissions where id = ${submissionId}`;
   if (!submission) return badRequest("Submission not found.", 404);
   if (!canActOnDomain(ctx, submission.domain_id)) return badRequest("Not allowed.", 403);
   if (submission.status !== "submitted" && submission.status !== "evaluated") {
@@ -43,21 +46,17 @@ export async function POST(req: NextRequest) {
     brief.evaluationCriteria.reduce((sum, c) => sum + criterionScores[c.label] * (c.weight / 100), 0),
   );
 
-  const { error } = await ctx.admin
-    .from("project_submissions")
-    .update({
-      status: "evaluated",
-      criterion_scores: criterionScores,
-      overall_score: overall,
-      feedback: feedback || null,
-      evaluated_at: new Date().toISOString(),
-    })
-    .eq("id", submissionId);
-  if (error) return badRequest("Could not save the evaluation.", 500);
+  await sql`
+    update public.project_submissions
+    set status = 'evaluated',
+        criterion_scores = ${sql.json(criterionScores)},
+        overall_score = ${overall},
+        feedback = ${feedback || null},
+        evaluated_at = now()
+    where id = ${submissionId}`;
 
   await Promise.all([
     notify(
-      ctx.admin,
       submission.student_id,
       "assignment",
       "Project evaluated",

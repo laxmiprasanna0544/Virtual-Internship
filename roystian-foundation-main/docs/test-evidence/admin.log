@@ -1,0 +1,111 @@
+# admin — 2026-10-17T15:01:58.952Z — exit 0 — 2.6s
+
+
+## Role enforcement on every admin route
+ok    GET data: signed out → 401
+ok    GET data: student → 403
+ok    GET data: admin without MFA → 403 mfa_required
+ok    POST certificates/issue: signed out 401, student 403, no-MFA staff 403 mfa_required
+ok    POST certificates/status: signed out 401, student 403, no-MFA staff 403 mfa_required
+ok    POST challenges/score: signed out 401, student 403, no-MFA staff 403 mfa_required
+ok    POST fellowship/stage: signed out 401, student 403, no-MFA staff 403 mfa_required
+ok    POST leads/status: signed out 401, student 403, no-MFA staff 403 mfa_required
+ok    POST payments/refund: signed out 401, student 403, no-MFA staff 403 mfa_required
+ok    POST projects/evaluate: signed out 401, student 403, no-MFA staff 403 mfa_required
+ok    POST scholarships/decide: signed out 401, student 403, no-MFA staff 403 mfa_required
+ok    POST students/progress: signed out 401, student 403, no-MFA staff 403 mfa_required
+ok    POST students/status: signed out 401, student 403, no-MFA staff 403 mfa_required
+ok    POST submissions/review: signed out 401, student 403, no-MFA staff 403 mfa_required
+ok    POST files: signed out 401, student 403, no-MFA staff 403 mfa_required
+ok    POST certificates/issue: trainer → 403 (admin only)
+ok    POST certificates/status: trainer → 403 (admin only)
+ok    POST challenges/score: trainer → 403 (admin only)
+ok    POST fellowship/stage: trainer → 403 (admin only)
+ok    POST leads/status: trainer → 403 (admin only)
+ok    POST payments/refund: trainer → 403 (admin only)
+ok    POST scholarships/decide: trainer → 403 (admin only)
+ok    POST students/progress: trainer → 403 (admin only)
+ok    POST students/status: trainer → 403 (admin only)
+
+## Trainer sees only their domains
+ok    trainer loads the console data
+ok    trainer sees the student in their domain
+ok    trainer does not see the student outside their domains
+ok    every student the trainer sees is in their domains
+ok    trainer sees no payments of out-of-domain students
+ok    trainer cannot read college leads
+ok    trainer cannot review a submission outside their domains (403)
+ok    trainer cannot download a file outside their domains
+ok    trainer can download a file in their domain
+ok    trainer reviews a submission in their domain
+ok    trainer cannot evaluate a project outside their domains (403)
+ok    admin evaluates any project; score weighted on the server
+
+## College sees only its own cohort
+ok    college loads its dashboard data
+ok    college sees its own student
+ok    college does not see another college's student
+ok    every student the college sees names that college
+ok    college cannot download another college's file
+ok    college cannot review submissions (403)
+
+## Admin sees everything
+ok    admin sees students from every domain and college
+
+## Progress overrides never replace earned results
+ok    student earns the first module assessment
+ok    admin marks a module complete
+ok    module from another domain is refused (400)
+ok    admin completes all modules
+ok    missing module results recorded as overrides by this admin
+ok    no override added for the assessment the student earned
+ok    admin clears all modules
+ok    overrides removed, earned attempt kept
+ok    admin records the final as passed (override)
+ok    final override marked with overridden_by
+ok    student also passes the final themselves
+ok    removing the override keeps the earned final (notice)
+ok    only the earned final attempt remains
+
+## Certificates: issue enforces the rules, revoke/restore
+ok    admin cannot issue before every requirement is met (403)
+ok    admin issues once requirements are met
+ok    admin revokes the certificate
+ok    public verification shows revoked
+ok    admin restores the certificate
+ok    public verification shows valid again
+ok    unknown certificate → 404
+
+## Suspension disables the account and revokes sessions
+ok    admin suspends the student
+ok    suspended student cannot sign in (403 suspended)
+ok    existing session revoked: student APIs refuse it (401)
+ok    suspended student cannot start a checkout (401, session revoked)
+ok    existing session redirected away from the dashboard
+ok    admin reactivates the student
+ok    reactivated student can sign in again
+ok    unknown student → 404
+
+## College leads
+ok    public enquiry accepted
+ok    lead stored as new
+ok    honeypot field rejects bots (400)
+ok    admin updates the lead status
+ok    lead status saved
+ok    invalid lead status → 400
+ok    admin sees leads
+
+## Audit log
+ok    audit log records progress.module with the actor
+ok    audit log records progress.all-modules with the actor
+ok    audit log records progress.final with the actor
+ok    audit log records certificate.issue with the actor
+ok    audit log records certificate.revoke with the actor
+ok    audit log records certificate.restore with the actor
+ok    audit log records student.suspend with the actor
+ok    audit log records student.reactivate with the actor
+ok    audit log records lead.status with the actor
+ok    audit log records project.evaluate with the actor
+ok    trainer actions are audited too (review, file download)
+
+admin: 89 passed, 0 failed, 0 skipped

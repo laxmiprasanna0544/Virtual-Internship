@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getChallenge } from "@/data/challenges";
+import { readJson } from "@/lib/server/auth";
+import { getSql } from "@/lib/server/db";
 import { notify } from "@/lib/server/notify";
 import { audit, badRequest, requireStaff } from "@/lib/server/staff";
 
@@ -16,28 +18,24 @@ export async function POST(req: NextRequest) {
   if (!auth.ok) return auth.response;
   const { ctx } = auth;
 
-  const parsed = body.safeParse(await req.json().catch(() => null));
+  const parsed = body.safeParse(await readJson(req));
   if (!parsed.success) return badRequest("Invalid score.");
   const { entryId, feedback } = parsed.data;
   const score = Math.round(parsed.data.score);
 
-  const { data: entry } = await ctx.admin
-    .from("challenge_entries")
-    .select("id, student_id, challenge_id, status")
-    .eq("id", entryId)
-    .maybeSingle();
+  const sql = getSql();
+  const [entry] = await sql<{ id: string; student_id: string; challenge_id: string; status: string }[]>`
+    select id, student_id, challenge_id, status from public.challenge_entries where id = ${entryId}`;
   if (!entry) return badRequest("Entry not found.", 404);
   if (entry.status === "draft") return badRequest("This entry has not been submitted.", 409);
 
-  const { error } = await ctx.admin
-    .from("challenge_entries")
-    .update({ status: "evaluated", score, feedback: feedback || null, evaluated_at: new Date().toISOString() })
-    .eq("id", entryId);
-  if (error) return badRequest("Could not save the score.", 500);
+  await sql`
+    update public.challenge_entries
+    set status = 'evaluated', score = ${score}, feedback = ${feedback || null}, evaluated_at = now()
+    where id = ${entryId}`;
 
   await Promise.all([
     notify(
-      ctx.admin,
       entry.student_id,
       "assessment",
       "Challenge entry evaluated",

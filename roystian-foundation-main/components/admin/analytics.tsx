@@ -5,7 +5,7 @@ import { Award, CreditCard, GraduationCap, Layers, Users } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingState } from "@/components/shared/states";
 import { StatCard } from "@/components/shared/stat-card";
-import { DemoNote } from "@/components/shared/demo-banner";
+import { InfoNote } from "@/components/admin/info-note";
 import {
   CompletionBarChart,
   DomainBarChart,
@@ -44,13 +44,13 @@ export function AdminAnalytics() {
     <div className="space-y-6">
       <PageHeader
         title="Analytics"
-        description="Registrations, revenue, domain distribution and completion, derived from the demo dataset."
+        description="Registrations, revenue, domain distribution and completion, computed from live records."
       />
 
-      <DemoNote>
-        All values are computed from the seeded demo records in this browser. They are
-        illustrative and do not represent real programme performance.
-      </DemoNote>
+      <InfoNote>
+        All values are computed from the records in the platform database at the time the
+        page loaded.
+      </InfoNote>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard label="Total registrations" value={db.registrations.length} icon={Users} />

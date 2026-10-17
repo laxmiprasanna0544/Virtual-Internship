@@ -165,7 +165,7 @@ export function AdminAssignments() {
 
               {submission.fileName && (
                 <div className="mt-2.5">
-                  <SubmissionFileLink filePath={submission.filePath} fileName={submission.fileName} />
+                  <SubmissionFileLink id={submission.id} filePath={submission.filePath} fileName={submission.fileName} />
                 </div>
               )}
 
@@ -205,7 +205,7 @@ export function AdminAssignments() {
             {active?.responseText || "No written response submitted."}
           </div>
           {active?.fileName && (
-            <SubmissionFileLink filePath={active.filePath} fileName={active.fileName} />
+            <SubmissionFileLink id={active.id} filePath={active.filePath} fileName={active.fileName} />
           )}
 
           <div>

@@ -1,0 +1,355 @@
+# security — 2026-10-17T15:02:03.693Z — exit 0 — 2.5s
+
+ok    route inventory found the API
+
+## Security headers
+ok    /: CSP present
+ok    /: CSP has no 'unsafe-eval' in production
+ok    /: CSP frame-ancestors 'none'
+ok    /: CSP object-src 'none'
+ok    /: script-src has no wildcard sources
+ok    /: CSP allows Cashfree SDK
+ok    /: CSP allows the uploads origin (S3)
+ok    /: HSTS
+ok    /: X-Frame-Options DENY
+ok    /: X-Content-Type-Options nosniff
+ok    /: Referrer-Policy
+ok    /: Permissions-Policy
+ok    /: no X-Powered-By
+ok    /login: CSP present
+ok    /login: CSP has no 'unsafe-eval' in production
+ok    /login: CSP frame-ancestors 'none'
+ok    /login: CSP object-src 'none'
+ok    /login: script-src has no wildcard sources
+ok    /login: CSP allows Cashfree SDK
+ok    /login: CSP allows the uploads origin (S3)
+ok    /login: HSTS
+ok    /login: X-Frame-Options DENY
+ok    /login: X-Content-Type-Options nosniff
+ok    /login: Referrer-Policy
+ok    /login: Permissions-Policy
+ok    /login: no X-Powered-By
+ok    /verify: CSP present
+ok    /verify: CSP has no 'unsafe-eval' in production
+ok    /verify: CSP frame-ancestors 'none'
+ok    /verify: CSP object-src 'none'
+ok    /verify: script-src has no wildcard sources
+ok    /verify: CSP allows Cashfree SDK
+ok    /verify: CSP allows the uploads origin (S3)
+ok    /verify: HSTS
+ok    /verify: X-Frame-Options DENY
+ok    /verify: X-Content-Type-Options nosniff
+ok    /verify: Referrer-Policy
+ok    /verify: Permissions-Policy
+ok    /verify: no X-Powered-By
+ok    /api/auth/session: CSP present
+ok    /api/auth/session: CSP has no 'unsafe-eval' in production
+ok    /api/auth/session: CSP frame-ancestors 'none'
+ok    /api/auth/session: CSP object-src 'none'
+ok    /api/auth/session: script-src has no wildcard sources
+ok    /api/auth/session: CSP allows Cashfree SDK
+ok    /api/auth/session: CSP allows the uploads origin (S3)
+ok    /api/auth/session: HSTS
+ok    /api/auth/session: X-Frame-Options DENY
+ok    /api/auth/session: X-Content-Type-Options nosniff
+ok    /api/auth/session: Referrer-Policy
+ok    /api/auth/session: Permissions-Policy
+ok    /api/auth/session: no X-Powered-By
+
+## CSRF: mutating API routes require the site's Origin
+ok    /api/admin/certificates/issue: no Origin → 403
+ok    /api/admin/certificates/issue: foreign Origin → 403
+ok    /api/admin/certificates/status: no Origin → 403
+ok    /api/admin/certificates/status: foreign Origin → 403
+ok    /api/admin/challenges/score: no Origin → 403
+ok    /api/admin/challenges/score: foreign Origin → 403
+ok    /api/admin/fellowship/stage: no Origin → 403
+ok    /api/admin/fellowship/stage: foreign Origin → 403
+ok    /api/admin/files: no Origin → 403
+ok    /api/admin/files: foreign Origin → 403
+ok    /api/admin/leads/status: no Origin → 403
+ok    /api/admin/leads/status: foreign Origin → 403
+ok    /api/admin/payments/refund: no Origin → 403
+ok    /api/admin/payments/refund: foreign Origin → 403
+ok    /api/admin/projects/evaluate: no Origin → 403
+ok    /api/admin/projects/evaluate: foreign Origin → 403
+ok    /api/admin/scholarships/decide: no Origin → 403
+ok    /api/admin/scholarships/decide: foreign Origin → 403
+ok    /api/admin/students/progress: no Origin → 403
+ok    /api/admin/students/progress: foreign Origin → 403
+ok    /api/admin/students/status: no Origin → 403
+ok    /api/admin/students/status: foreign Origin → 403
+ok    /api/admin/submissions/review: no Origin → 403
+ok    /api/admin/submissions/review: foreign Origin → 403
+ok    /api/assessments/submit: no Origin → 403
+ok    /api/assessments/submit: foreign Origin → 403
+ok    /api/auth/confirm: no Origin → 403
+ok    /api/auth/confirm: foreign Origin → 403
+ok    /api/auth/forgot: no Origin → 403
+ok    /api/auth/forgot: foreign Origin → 403
+ok    /api/auth/login: no Origin → 403
+ok    /api/auth/login: foreign Origin → 403
+ok    /api/auth/logout: no Origin → 403
+ok    /api/auth/logout: foreign Origin → 403
+ok    /api/auth/mfa/enable: no Origin → 403
+ok    /api/auth/mfa/enable: foreign Origin → 403
+ok    /api/auth/mfa: no Origin → 403
+ok    /api/auth/mfa: foreign Origin → 403
+ok    /api/auth/mfa/setup: no Origin → 403
+ok    /api/auth/mfa/setup: foreign Origin → 403
+ok    /api/auth/resend: no Origin → 403
+ok    /api/auth/resend: foreign Origin → 403
+ok    /api/auth/reset: no Origin → 403
+ok    /api/auth/reset: foreign Origin → 403
+ok    /api/auth/signup: no Origin → 403
+ok    /api/auth/signup: foreign Origin → 403
+ok    /api/career/challenges: no Origin → 403
+ok    /api/career/challenges: foreign Origin → 403
+ok    /api/career/linkedin: no Origin → 403
+ok    /api/career/linkedin: foreign Origin → 403
+ok    /api/career/passport: no Origin → 403
+ok    /api/career/passport: foreign Origin → 403
+ok    /api/career/projects: no Origin → 403
+ok    /api/career/projects: foreign Origin → 403
+ok    /api/career/resume: no Origin → 403
+ok    /api/career/resume: foreign Origin → 403
+ok    /api/certificates/issue: no Origin → 403
+ok    /api/certificates/issue: foreign Origin → 403
+ok    /api/fellowship/apply: no Origin → 403
+ok    /api/fellowship/apply: foreign Origin → 403
+ok    /api/interviews: no Origin → 403
+ok    /api/interviews: foreign Origin → 403
+ok    /api/leads: no Origin → 403
+ok    /api/leads: foreign Origin → 403
+ok    /api/me/email/confirm: no Origin → 403
+ok    /api/me/email/confirm: foreign Origin → 403
+ok    /api/me/email: no Origin → 403
+ok    /api/me/email: foreign Origin → 403
+ok    /api/me/profile: no Origin → 403
+ok    /api/me/profile: foreign Origin → 403
+ok    /api/notifications: no Origin → 403
+ok    /api/notifications: foreign Origin → 403
+ok    /api/payment/create-order: no Origin → 403
+ok    /api/payment/create-order: foreign Origin → 403
+ok    /api/scholarships/apply: no Origin → 403
+ok    /api/scholarships/apply: foreign Origin → 403
+ok    /api/student/active-domain: no Origin → 403
+ok    /api/student/active-domain: foreign Origin → 403
+ok    /api/student/modules: no Origin → 403
+ok    /api/student/modules: foreign Origin → 403
+ok    /api/student/notes: no Origin → 403
+ok    /api/student/notes: foreign Origin → 403
+ok    /api/student/submission: no Origin → 403
+ok    /api/student/submission: foreign Origin → 403
+ok    /api/submissions/validate: no Origin → 403
+ok    /api/submissions/validate: foreign Origin → 403
+ok    /api/uploads: no Origin → 403
+ok    /api/uploads: foreign Origin → 403
+ok    webhook without Origin is not blocked by CSRF but bad signature → 401
+ok    webhook with no signature → 401
+ok    correctly signed webhook (unknown order) accepted without effect
+
+## Authentication on every API route (signed out)
+ok    POST /api/admin/certificates/issue signed out → 401/403
+ok    POST /api/admin/certificates/issue error body has no internals
+ok    POST /api/admin/certificates/status signed out → 401/403
+ok    POST /api/admin/certificates/status error body has no internals
+ok    POST /api/admin/challenges/score signed out → 401/403
+ok    POST /api/admin/challenges/score error body has no internals
+ok    GET /api/admin/data signed out → 401/403
+ok    GET /api/admin/data error body has no internals
+ok    POST /api/admin/fellowship/stage signed out → 401/403
+ok    POST /api/admin/fellowship/stage error body has no internals
+ok    POST /api/admin/files signed out → 401/403
+ok    POST /api/admin/files error body has no internals
+ok    POST /api/admin/leads/status signed out → 401/403
+ok    POST /api/admin/leads/status error body has no internals
+ok    POST /api/admin/payments/refund signed out → 401/403
+ok    POST /api/admin/payments/refund error body has no internals
+ok    POST /api/admin/projects/evaluate signed out → 401/403
+ok    POST /api/admin/projects/evaluate error body has no internals
+ok    POST /api/admin/scholarships/decide signed out → 401/403
+ok    POST /api/admin/scholarships/decide error body has no internals
+ok    POST /api/admin/students/progress signed out → 401/403
+ok    POST /api/admin/students/progress error body has no internals
+ok    POST /api/admin/students/status signed out → 401/403
+ok    POST /api/admin/students/status error body has no internals
+ok    POST /api/admin/submissions/review signed out → 401/403
+ok    POST /api/admin/submissions/review error body has no internals
+ok    GET /api/assessments/ai-ml-m01-assessment signed out → 401/403
+ok    GET /api/assessments/ai-ml-m01-assessment error body has no internals
+ok    POST /api/assessments/submit signed out → 401/403
+ok    POST /api/assessments/submit error body has no internals
+ok    POST /api/career/challenges signed out → 401/403
+ok    POST /api/career/challenges error body has no internals
+ok    POST /api/career/linkedin signed out → 401/403
+ok    POST /api/career/linkedin error body has no internals
+ok    POST /api/career/passport signed out → 401/403
+ok    POST /api/career/passport error body has no internals
+ok    POST /api/career/projects signed out → 401/403
+ok    POST /api/career/projects error body has no internals
+ok    POST /api/career/resume signed out → 401/403
+ok    POST /api/career/resume error body has no internals
+ok    POST /api/certificates/issue signed out → 401/403
+ok    POST /api/certificates/issue error body has no internals
+ok    POST /api/fellowship/apply signed out → 401/403
+ok    POST /api/fellowship/apply error body has no internals
+ok    POST /api/interviews signed out → 401/403
+ok    POST /api/interviews error body has no internals
+ok    POST /api/me/email/confirm signed out → 401/403
+ok    POST /api/me/email/confirm error body has no internals
+ok    POST /api/me/email signed out → 401/403
+ok    POST /api/me/email error body has no internals
+ok    POST /api/me/profile signed out → 401/403
+ok    POST /api/me/profile error body has no internals
+ok    GET /api/notifications signed out → 401/403
+ok    GET /api/notifications error body has no internals
+ok    POST /api/notifications signed out → 401/403
+ok    POST /api/notifications error body has no internals
+ok    GET /api/partner/talent signed out → 401/403
+ok    GET /api/partner/talent error body has no internals
+ok    POST /api/payment/create-order signed out → 401/403
+ok    POST /api/payment/create-order error body has no internals
+ok    GET /api/payment/verify signed out → 401/403
+ok    GET /api/payment/verify error body has no internals
+ok    POST /api/scholarships/apply signed out → 401/403
+ok    POST /api/scholarships/apply error body has no internals
+ok    POST /api/student/active-domain signed out → 401/403
+ok    POST /api/student/active-domain error body has no internals
+ok    GET /api/student/guides/[domainId] signed out → 401/403
+ok    GET /api/student/guides/[domainId] error body has no internals
+ok    POST /api/student/modules signed out → 401/403
+ok    POST /api/student/modules error body has no internals
+ok    POST /api/student/notes signed out → 401/403
+ok    POST /api/student/notes error body has no internals
+ok    GET /api/student/records signed out → 401/403
+ok    GET /api/student/records error body has no internals
+ok    POST /api/student/submission signed out → 401/403
+ok    POST /api/student/submission error body has no internals
+ok    POST /api/submissions/validate signed out → 401/403
+ok    POST /api/submissions/validate error body has no internals
+ok    POST /api/uploads signed out → 401/403
+ok    POST /api/uploads error body has no internals
+ok    POST /api/auth/mfa/setup signed out → 401
+ok    POST /api/auth/mfa/enable signed out → 401
+ok    GET /api/auth/session signed out → user null
+     intentionally public: /api/auth/confirm, /api/auth/forgot, /api/auth/login, /api/auth/logout, /api/auth/mfa/enable, /api/auth/mfa, /api/auth/mfa/setup, /api/auth/resend, /api/auth/reset, /api/auth/session, /api/auth/signup, /api/certificates/verify/RF-NONE-2026-000000, /api/health/ready, /api/health, /api/leads, /api/payment/webhook, /api/profiles/no-such-profile
+
+## Private responses are not cacheable
+ok    /api/auth/session: 200 for the owner
+ok    /api/auth/session: Cache-Control private/no-store
+ok    /api/student/records: 200 for the owner
+ok    /api/student/records: Cache-Control private/no-store
+ok    /api/notifications: 200 for the owner
+ok    /api/notifications: Cache-Control private/no-store
+
+## Protected pages redirect signed-out users to /login
+ok    /dashboard → /login
+ok    /dashboard: next is a same-site path
+ok    /admin → /login
+ok    /admin: next is a same-site path
+ok    /campus → /login
+ok    /campus: next is a same-site path
+ok    /partner → /login
+ok    /partner: next is a same-site path
+ok    /checkout → /login
+ok    /checkout: next is a same-site path
+ok    /payment/status → /login
+ok    /payment/status: next is a same-site path
+ok    /account/security → /login
+ok    /account/security: next is a same-site path
+ok    /login?next=//evil.example renders (no server redirect off-site)
+ok    /login?next=https://evil.example renders (no server redirect off-site)
+ok    /login?next=/\evil.example renders (no server redirect off-site)
+ok    safeNext rejects //evil.example
+ok    safeNext rejects https://evil.example
+ok    safeNext rejects /\evil.example
+ok    safeNext rejects javascript:alert(1)
+ok    safeNext keeps same-site paths
+
+## Upload abuse
+ok    declared size over 20MB → 413
+ok    text/html → 415
+ok    image/svg+xml → 415
+ok    allowed extension with forbidden content type → 415
+ok    upload for an unpaid domain → 403
+ok    traversal-style file name accepted but sanitised
+ok    key keeps the owner prefix and has no '..' path segments
+ok    emulator stored an oversize object (S3 itself enforces the policy in AWS)
+ok    submitting an oversize object is rejected (422)
+ok    oversize object deleted by the server
+ok    object stored as text/html is rejected (422)
+ok    text/html object deleted by the server
+ok    another student's object key is rejected (400)
+ok    key with '..' segments is rejected
+
+## Input validation
+ok    /api/auth/login: malformed JSON → 400
+ok    /api/auth/login: error has no internals
+ok    /api/auth/signup: malformed JSON → 400
+ok    /api/auth/signup: error has no internals
+ok    /api/leads: malformed JSON → 400
+ok    /api/leads: error has no internals
+ok    /api/assessments/submit: malformed JSON → 400
+ok    /api/assessments/submit: error has no internals
+ok    /api/student/modules: malformed JSON → 400
+ok    /api/student/modules: error has no internals
+ok    /api/uploads: malformed JSON → 400
+ok    /api/uploads: error has no internals
+ok    /api/submissions/validate: malformed JSON → 400
+ok    /api/submissions/validate: error has no internals
+ok    /api/payment/create-order: malformed JSON → 400
+ok    /api/payment/create-order: error has no internals
+ok    oversized note → 4xx, not 500
+ok    verify ' OR '1'='1 → 404
+ok    profile ' OR '1'='1 → 404
+ok    payment verify ' OR '1'='1 → 4xx
+ok    assessment ' OR '1'='1 → 404
+ok    verify 1;drop table profiles-- → 404
+ok    profile 1;drop table profiles-- → 404
+ok    payment verify 1;drop table profiles-- → 4xx
+ok    assessment 1;drop table profiles-- → 404
+ok    verify %27%3B-- → 404
+ok    profile %27%3B-- → 404
+ok    payment verify %27%3B-- → 4xx
+ok    assessment %27%3B-- → 404
+ok    profiles table intact after injection attempts
+
+## Rate limits
+ok    leads: 11th submission from one IP in 10 min → 429
+ok    leads 429 has Retry-After
+ok    leads: a different viewer IP is unaffected
+ok    leads honeypot filled → rejected
+ok    signup: 4th attempt for the same email in 10 min → 429
+ok    signup 429 has Retry-After
+ok    signup: other requests from the same IP still allowed (400 for a bad body, not 429)
+ok    forgot-password: 4th request for the same email in 10 min → 429
+ok    forgot-password: a different email from the same IP is unaffected
+ok    uploads: limited after 20 per user per 10 min (429)
+
+## Health, robots, sitemap
+ok    /api/health 200 {ok:true} without cookies
+ok    /api/health is not processed by middleware
+ok    /api/health/ready reports the database
+ok    robots.txt disallows /api/
+ok    robots.txt disallows /admin
+ok    robots.txt disallows /dashboard
+ok    robots.txt disallows /campus
+ok    robots.txt disallows /partner
+ok    robots.txt disallows /checkout
+ok    robots.txt disallows /payment
+ok    robots.txt disallows /account
+ok    sitemap uses NEXT_PUBLIC_SITE_URL
+
+## Session tokens
+ok    control: the real session token is accepted
+ok    the database hash of a token is not itself a valid token
+ok    a token with one character changed is rejected
+ok    an expired session is rejected
+ok    a session idle for more than 7 days is rejected
+ok    control: the restored session works again
+ok    a disabled account's session is rejected
+ok    the identity schema is invisible to the request roles
+ok    authenticated users cannot read password hashes or sessions (42501)
+
+security: 330 passed, 0 failed, 0 skipped

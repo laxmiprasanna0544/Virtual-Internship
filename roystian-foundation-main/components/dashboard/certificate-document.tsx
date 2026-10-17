@@ -55,21 +55,10 @@ function fmtOrdinal(d: Date): string {
   return `${day}${ord} ${d.toLocaleString("en-IN", { month: "long" })} ${d.getFullYear()}`;
 }
 
-function KRCircularLogo() {
-  const pts = [0, 60, 120, 180, 240, 300].map((deg) => {
-    const r = ((deg - 90) * Math.PI) / 180;
-    return { x: 40 + 33 * Math.cos(r), y: 40 + 33 * Math.sin(r) };
-  });
+function RoystianLogo() {
   return (
-    <svg viewBox="0 0 80 80" width="70" height="70" aria-hidden="true">
-      <circle cx="40" cy="40" r="38" fill="none" stroke="#0c2d6b" strokeWidth="1.8" />
-      <circle cx="40" cy="40" r="29" fill="none" stroke="#0c2d6b" strokeWidth="1" />
-      {pts.map((pt, i) => (
-        <text key={i} x={pt.x} y={pt.y} textAnchor="middle" dominantBaseline="middle" fontSize="6" fill="#0c2d6b">★</text>
-      ))}
-      <text x="40" y="34" textAnchor="middle" dominantBaseline="middle" fontSize="17" fontWeight="bold" fill="#0c2d6b" fontFamily="Georgia, serif">KR</text>
-      <text x="40" y="49" textAnchor="middle" fontSize="4.5" fill="#0c2d6b" fontFamily="Arial, sans-serif" letterSpacing="1">ROYSTIAN</text>
-    </svg>
+    // eslint-disable-next-line @next/next/no-img-element -- printed certificate; a plain img prints reliably
+    <img src="/images/brand/roystian-logo.png" width={70} height={70} alt="Roystian Foundation" />
   );
 }
 
@@ -209,7 +198,7 @@ export function CertificateDocument({
             gap: "4px",
           }}
         >
-          <KRCircularLogo />
+          <RoystianLogo />
           <QRCode value={verificationUrl} size={66} alt="Certificate verification QR code" />
           <p style={{ fontSize: "0.42rem", letterSpacing: "0.2em", color: "#475569", textTransform: "uppercase", fontFamily: "Arial, sans-serif", margin: 0 }}>
             SCAN TO VERIFY

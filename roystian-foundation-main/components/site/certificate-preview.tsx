@@ -12,8 +12,7 @@ import { cn } from "@/lib/utils";
  * Marketing preview of the completion certificate.
  *
  * A real photograph of the document, held in a tilt card so it reads as a
- * physical object. The data on it matches the seeded demo record shown on the
- * public verification page.
+ * physical object.
  */
 export function CertificatePreview({ className }: { className?: string }) {
   const reduce = useReducedMotion();

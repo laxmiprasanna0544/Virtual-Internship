@@ -163,7 +163,6 @@ export function InternshipView() {
                     <div>
                       <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-foreground">
                         {trainer.name}
-                        <Badge variant="warning">Demo profile</Badge>
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {trainer.role} · {trainer.experience} · {trainer.specialization}

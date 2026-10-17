@@ -43,7 +43,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DOMAINS } from "@/data/domains";
 import { PROGRAMS } from "@/data/programs";
-import { TRAINERS } from "@/data/trainers";
 import { IMAGES } from "@/lib/images";
 import {
   ABOUT_PILLARS,
@@ -52,7 +51,6 @@ import {
 } from "@/data/content";
 
 export default function HomePage() {
-  const trainer = TRAINERS[0];
 
   return (
     <SiteShell bleed>
@@ -325,7 +323,7 @@ export default function HomePage() {
                     {
                       icon: ClipboardCheck,
                       title: "Module assessments",
-                      body: "A short assessment after every module, with a 70% pass threshold and unlimited retakes.",
+                      body: "A short assessment after every module, with a 70% pass threshold and up to five attempts a day.",
                     },
                     {
                       icon: FileCheck2,
@@ -398,22 +396,9 @@ export default function HomePage() {
               />
               <Reveal delay={0.08} className="mt-7">
                 <div className="flex flex-col gap-5 rounded-2xl border border-border bg-muted/40 p-5 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-4">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 font-display text-sm font-semibold text-primary">
-                      {trainer.initials}
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">
-                        {trainer.name}
-                        <span className="ml-2 rounded bg-warning/15 px-1.5 py-0.5 text-[0.62rem] font-semibold uppercase tracking-wide text-warning-ink">
-                          Demo profile
-                        </span>
-                      </p>
-                      <p className="mt-0.5 text-sm text-muted-foreground">
-                        {trainer.role} · {trainer.industry} · {trainer.experience}
-                      </p>
-                    </div>
-                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Sessions are led by practitioners working in each domain.
+                  </p>
                   <Button asChild variant="outline" className="group shrink-0">
                     <Link href="/programs">
                       <CalendarDays /> See the structure
@@ -496,10 +481,8 @@ export default function HomePage() {
                   Check a certificate right now
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Enter a certificate ID exactly as it appears on the document. Try the
-                  seeded demo record{" "}
-                  <span className="font-mono text-foreground">RF-AIML-2026-000184</span>
-                  .
+                  Enter a certificate ID exactly as it appears on the document, or scan
+                  the QR code printed on it.
                 </p>
                 <div className="mt-6">
                   <VerifyWidget />

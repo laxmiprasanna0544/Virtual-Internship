@@ -9,7 +9,6 @@ import {
   BookOpen,
   CheckCircle2,
   ClipboardList,
-  Download,
   FileText,
   NotebookPen,
   RotateCcw,
@@ -18,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState, LoadingState } from "@/components/shared/states";
+import { LearningGuideCard } from "@/components/dashboard/learning-guide-card";
 import { ReadingPane } from "@/components/dashboard/reading-pane";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -193,7 +193,7 @@ export function ModuleView({ moduleId }: { moduleId: string }) {
             ) : (
               <p className="mt-3 text-sm text-muted-foreground">
                 A short assessment covering this module's key concepts. You need 70% to
-                pass, with unlimited retakes.
+                pass, with up to five attempts a day.
               </p>
             )}
             <Button asChild className="mt-4 w-full">
@@ -203,44 +203,8 @@ export function ModuleView({ moduleId }: { moduleId: string }) {
             </Button>
           </section>
 
-          {/* Resources */}
-          <section className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-            <div className="flex items-center gap-2.5">
-              <FileText className="h-4 w-4 text-primary" aria-hidden="true" />
-              <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                Resources
-              </h2>
-            </div>
-            <ul className="mt-4 space-y-2">
-              {lesson.resources.map((resource) => (
-                <li key={resource.title}>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      toast("Demo resource", {
-                        description:
-                          "Downloadable resources are placeholders in this demo environment.",
-                      })
-                    }
-                    className="flex w-full items-start gap-3 rounded-lg border border-border px-3.5 py-3 text-left transition-colors hover:border-primary/35 hover:bg-muted/50"
-                  >
-                    <Download
-                      className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
-                      aria-hidden="true"
-                    />
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm text-foreground">
-                        {resource.title}
-                      </span>
-                      <span className="mt-0.5 block text-xs text-muted-foreground">
-                        {resource.meta}
-                      </span>
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
+          {/* The domain's learning guide */}
+          {ctx.domain && <LearningGuideCard domain={ctx.domain} />}
 
           {/* Key concepts */}
           <section className="rounded-2xl border border-border bg-card p-5 shadow-soft">

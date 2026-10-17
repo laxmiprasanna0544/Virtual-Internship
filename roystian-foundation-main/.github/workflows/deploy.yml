@@ -1,0 +1,96 @@
+name: Deploy
+
+# Runs after CI passes on main (or by hand). Builds one image, migrates the
+# database with it, then rolls the ECS service. Credentials come from AWS
+# through OIDC (infra/terraform/cicd.tf); nothing long-lived is stored here.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency: production
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    # Native ARM64 build for Graviton Fargate tasks (cpu_architecture in Terraform).
+    runs-on: ubuntu-24.04-arm
+    environment: production
+    env:
+      AWS_REGION: ap-south-1
+      CLUSTER: ${{ vars.ECS_CLUSTER }}
+      SERVICE: ${{ vars.ECS_SERVICE }}
+      WEB_FAMILY: ${{ vars.ECS_WEB_FAMILY }}
+      MIGRATE_FAMILY: ${{ vars.ECS_MIGRATE_FAMILY }}
+      IMAGE: ${{ vars.ECR_REPOSITORY_URL }}:${{ github.event.workflow_run.head_sha || github.sha }}
+      NETWORK: awsvpcConfiguration={subnets=[${{ vars.PRIVATE_SUBNETS }}],securityGroups=[${{ vars.APP_SECURITY_GROUP }}],assignPublicIp=DISABLED}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-south-1
+
+      - uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push the image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/arm64
+          push: true
+          tags: ${{ env.IMAGE }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NEXT_PUBLIC_SITE_URL=${{ vars.NEXT_PUBLIC_SITE_URL }}
+
+      - name: Register task definitions for this image
+        run: |
+          set -euo pipefail
+          for family in "$WEB_FAMILY" "$MIGRATE_FAMILY"; do
+            aws ecs describe-task-definition --task-definition "$family" --query taskDefinition > td.json
+            jq --arg image "$IMAGE" '
+              .containerDefinitions[0].image = $image
+              | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities,
+                    .registeredAt, .registeredBy, .deregisteredAt)' td.json > td-new.json
+            arn=$(aws ecs register-task-definition --cli-input-json file://td-new.json \
+                  --query taskDefinition.taskDefinitionArn --output text)
+            echo "$family -> $arn"
+            if [ "$family" = "$WEB_FAMILY" ]; then echo "WEB_TD=$arn" >> "$GITHUB_ENV"; else echo "MIGRATE_TD=$arn" >> "$GITHUB_ENV"; fi
+          done
+
+      - name: Migrate the database (fails the deploy if it fails)
+        run: |
+          set -euo pipefail
+          task=$(aws ecs run-task --cluster "$CLUSTER" --launch-type FARGATE \
+                 --task-definition "$MIGRATE_TD" --network-configuration "$NETWORK" \
+                 --query 'tasks[0].taskArn' --output text)
+          echo "migration task: $task"
+          aws ecs wait tasks-stopped --cluster "$CLUSTER" --tasks "$task"
+          code=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$task" \
+                 --query 'tasks[0].containers[0].exitCode' --output text)
+          echo "exit code: $code"
+          test "$code" = "0"
+
+      - name: Roll the service
+        run: |
+          aws ecs update-service --cluster "$CLUSTER" --service "$SERVICE" --task-definition "$WEB_TD" > /dev/null
+          aws ecs wait services-stable --cluster "$CLUSTER" --services "$SERVICE"
+
+      - name: Smoke test
+        run: |
+          curl -fsS "${{ vars.NEXT_PUBLIC_SITE_URL }}/api/health/ready"
+          curl -fsSI "${{ vars.NEXT_PUBLIC_SITE_URL }}/" | grep -i content-security-policy

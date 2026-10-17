@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: Typecheck, lint, unit checks, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run verify
+      - run: npm audit --omit=dev --audit-level=critical
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_SITE_URL: http://localhost:3100
+
+  integration:
+    name: Integration suites (Postgres + AWS emulator + Cashfree mock)
+    runs-on: ubuntu-latest
+    needs: static
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Start local AWS stand-ins
+        run: docker compose up -d --wait postgres moto cashfree
+        env:
+          MOCK_CASHFREE_WEBHOOK_URL: http://host.docker.internal:3100/api/payment/webhook
+      - name: Migrate, create Cognito/S3/SES resources, seed, write .env.local
+        run: npm run aws:setup
+      - name: Build and start the production server
+        run: |
+          npm run build
+          nohup npm run start:standalone > server.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf localhost:3100/api/health && exit 0; sleep 1; done
+          cat server.log; exit 1
+      - name: Run every suite
+        run: npm run test:all
+      - name: Browser end-to-end
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:e2e
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-evidence
+          path: |
+            docs/test-evidence/
+            server.log
+
+  terraform:
+    name: Terraform validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - working-directory: infra/terraform
+        run: |
+          terraform fmt -check -recursive
+          terraform init -backend=false -input=false
+          terraform validate

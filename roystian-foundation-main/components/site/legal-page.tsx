@@ -1,6 +1,5 @@
 import { SiteShell } from "@/components/site/site-shell";
 import { Breadcrumbs } from "@/components/shared/page-header";
-import { DemoNote } from "@/components/shared/demo-banner";
 
 export interface LegalSection {
   heading: string;
@@ -25,19 +24,13 @@ export function LegalPage({
         <div className="container">
           <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: title }]} />
           <h1 className="h1">{title}</h1>
-          <p className="mt-3 text-sm text-muted-foreground">Last updated {updated}</p>
+          <p className="mt-3 text-sm text-muted-foreground">Last updated: {updated}</p>
           <p className="lede mt-5 max-w-2xl">{intro}</p>
         </div>
       </section>
 
       <section className="section">
         <div className="container max-w-3xl">
-          <DemoNote className="mb-10">
-            This is a demonstration environment. The text below is illustrative policy
-            content for the demo and is not a substitute for reviewed legal
-            documentation.
-          </DemoNote>
-
           <div className="space-y-10">
             {sections.map((section, index) => (
               <section key={section.heading}>

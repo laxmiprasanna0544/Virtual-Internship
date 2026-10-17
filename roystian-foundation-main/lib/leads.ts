@@ -1,31 +1,39 @@
 "use client";
 
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { CollegeLead } from "@/types";
 
 /**
- * Submits the public college enquiry form. Anyone may insert a lead (RLS),
- * but only admins can read them.
+ * Submits the public college enquiry form. Anyone may send a lead; only
+ * admins can read them.
  */
 export async function createLead(
-  input: Omit<CollegeLead, "id" | "status" | "createdAt">,
+  input: Omit<CollegeLead, "id" | "status" | "createdAt"> & { website?: string },
 ): Promise<void> {
-  const { error } = await getSupabaseBrowserClient()
-    .from("college_leads")
-    .insert({
-      college_name: input.collegeName,
+  const res = await fetch("/api/leads", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      collegeName: input.collegeName,
       city: input.city,
       state: input.state,
-      institution_type: input.institutionType || null,
+      institutionType: input.institutionType || null,
       departments: input.departments,
-      year_batch: input.yearBatch,
-      contact_person: input.contactPerson,
+      yearBatch: input.yearBatch,
+      contactPerson: input.contactPerson,
       designation: input.designation,
       email: input.email,
       phone: input.phone,
-      student_count: input.studentCount,
+      studentCount: input.studentCount,
       interest: input.interest,
       message: input.message,
-    });
-  if (error) throw new Error("Your enquiry could not be sent. Please try again.");
+      website: input.website ?? "",
+    }),
+  }).catch(() => null);
+  if (!res?.ok) {
+    throw new Error(
+      res?.status === 429
+        ? "Too many enquiries from this connection. Please try again later."
+        : "Your enquiry could not be sent. Please try again.",
+    );
+  }
 }

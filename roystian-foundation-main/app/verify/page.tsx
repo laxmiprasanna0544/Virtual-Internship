@@ -13,12 +13,6 @@ export const metadata: Metadata = {
     "Check the validity of a Roystian Foundation internship certificate using its certificate ID. No login required.",
 };
 
-const DEMO_IDS = [
-  "RF-AIML-2026-000184",
-  "RF-DA-2026-001284",
-  "RF-FS-2026-001101",
-];
-
 export default function VerifyPage() {
   return (
     <SiteShell bleed>
@@ -44,23 +38,6 @@ export default function VerifyPage() {
                 <VerifyWidget autoFocus />
               </div>
 
-              <div className="mt-8 border-t border-border pt-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                  Demo certificates in this environment
-                </p>
-                <ul className="mt-3 flex flex-wrap gap-2">
-                  {DEMO_IDS.map((id) => (
-                    <li key={id}>
-                      <a
-                        href={`/verify/${id}`}
-                        className="inline-flex min-h-[2.5rem] items-center rounded-lg border border-border bg-muted/40 px-3.5 py-2 font-mono text-xs text-foreground transition-colors hover:border-primary/40 hover:text-primary"
-                      >
-                        {id}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
             </div>
           </Reveal>
 

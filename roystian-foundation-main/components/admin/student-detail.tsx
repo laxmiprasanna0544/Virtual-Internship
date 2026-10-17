@@ -348,7 +348,7 @@ export function AdminStudentDetail({ studentId }: { studentId: string }) {
                 </p>
                 {submission.fileName && (
                   <div className="mt-3">
-                    <SubmissionFileLink filePath={submission.filePath} fileName={submission.fileName} />
+                    <SubmissionFileLink id={submission.id} filePath={submission.filePath} fileName={submission.fileName} />
                   </div>
                 )}
                 <p className="mt-3 text-xs text-muted-foreground">

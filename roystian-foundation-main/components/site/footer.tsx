@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight, Mail, MapPin, Phone } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
-import { DemoBadge } from "@/components/shared/demo-banner";
 import { SITE } from "@/data/content";
 
 const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
@@ -66,10 +65,18 @@ export function Footer() {
                 <Mail className="h-3.5 w-3.5" aria-hidden="true" />
                 {SITE.email}
               </a>
-              <p className="flex items-center gap-1.5 text-muted-foreground">
-                <Phone className="h-3.5 w-3.5" aria-hidden="true" />
-                {SITE.phone}
-              </p>
+              <div className="flex flex-col gap-2">
+                {SITE.phones.map((phone) => (
+                  <a
+                    key={phone.tel}
+                    href={`tel:${phone.tel}`}
+                    className="link-underline w-fit text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <Phone className="h-3.5 w-3.5" aria-hidden="true" />
+                    {phone.display}
+                  </a>
+                ))}
+              </div>
               <address className="flex gap-1.5 not-italic text-muted-foreground">
                 <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 <span>
@@ -79,9 +86,6 @@ export function Footer() {
                   {SITE.address.postalCode}
                 </span>
               </address>
-            </div>
-            <div className="mt-6">
-              <DemoBadge />
             </div>
           </div>
 
@@ -120,8 +124,8 @@ export function Footer() {
             organization.
           </p>
           <p className="max-w-xl sm:text-right">
-            This is a demonstration environment. No real payments are processed and
-            all student records shown are demo data. No placement is guaranteed.
+            Certificates are earned by completing the programme, not purchased. No
+            placement is guaranteed.
           </p>
         </div>
       </div>

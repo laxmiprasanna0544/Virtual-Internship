@@ -1,0 +1,138 @@
+# rls — 2026-10-17T15:01:52.265Z — exit 0 — 0.2s
+
+
+## A student sees only their own records
+ok    profiles: no other student's rows
+ok    students: no other student's rows
+ok    registrations: no other student's rows
+ok    payments: no other student's rows
+ok    assessment_attempts: no other student's rows
+ok    submissions: no other student's rows
+ok    certificates: no other student's rows
+ok    notifications: no other student's rows
+ok    resume_drafts: no other student's rows
+ok    scholarship_applications: no other student's rows
+ok    module_progress: no other student's rows
+ok    student sees their own registration
+ok    another student's unpublished passport is hidden
+ok    profiles table shows only the student themself
+ok    students cannot read college leads
+ok    students cannot read the audit log
+ok    students cannot read the communication log
+
+## Column grants: what a student may change about themself
+ok    own name can be changed
+ok    another student's name cannot be changed (0 rows)
+ok    profiles.role cannot be changed by the student
+ok    profiles.college_id cannot be changed by the student
+ok    profiles.mfa_enabled cannot be changed by the student
+ok    profiles.email cannot be changed by the student
+ok    students.status cannot be changed by the student
+ok    students.domain_id cannot be changed by the student
+ok    students.active_registration_id cannot be changed by the student
+ok    students.enrolled_at cannot be changed by the student
+ok    role, college and MFA flag unchanged
+
+## Students cannot create trusted records
+ok    cannot insert into registrations
+ok    cannot insert into payments
+ok    cannot insert into assessment_attempts
+ok    cannot insert into certificates
+ok    cannot insert into notifications for others
+ok    cannot insert into interview_sessions
+ok    cannot insert into fellowship_applications
+
+## Students cannot run trusted functions
+ok    complete_payment is not executable by students
+ok    complete_payment is not executable anonymously
+ok    fail_payment is not executable by students
+ok    fail_payment is not executable anonymously
+ok    record_refund is not executable by students
+ok    record_refund is not executable anonymously
+ok    provision_student is not executable by students
+ok    provision_student is not executable anonymously
+ok    issue_certificate is not executable by students
+ok    issue_certificate is not executable anonymously
+
+## Students cannot delete
+ok    notifications: delete refused
+ok    resume_drafts: delete refused
+ok    scholarship_applications: delete refused
+ok    career_passports: delete refused
+ok    assessment_attempts: delete refused
+
+## Guard triggers: no self-review, evaluated work is final
+ok    student cannot submit a self-approved practical task
+ok    reviewer fields are cleared on a student insert
+ok    submission owner cannot be changed
+ok    an approved submission cannot be changed
+ok    student cannot insert an evaluated project
+ok    project score/feedback cleared on a student insert
+ok    student cannot write a project score
+ok    project domain cannot be changed
+ok    an evaluated project cannot be reopened or edited
+ok    challenge score cleared on a student insert
+ok    student cannot evaluate their own challenge entry
+ok    an evaluated challenge entry cannot be resubmitted
+ok    an evaluated challenge entry cannot be deleted
+ok    challenge entry unchanged
+ok    student cannot approve their own scholarship (no update policy)
+
+## Enrolment functions respect payment
+ok    cannot switch to an unpaid domain
+ok    can switch to a paid domain
+ok    set_module_complete refused for an unpaid domain
+ok    set_module_complete works for a paid domain
+ok    save_module_note refused for an unpaid domain
+
+## Trainer: only students in their domains
+ok    trainer sees the AI/ML student
+ok    trainer does not see the Cyber Security student
+ok    trainer cannot read other domains' certificates
+ok    trainer cannot read payments
+ok    trainer cannot write review fields directly (column grant)
+
+## College: only its own cohort
+ok    college sees its student
+ok    college does not see other colleges' students
+ok    college sees only its own college record
+
+## Admin: everything
+ok    admin sees every student
+ok    admin reads college leads
+ok    admin reads payments
+ok    even an admin cannot set their own MFA flag directly
+
+## Anonymous visitors
+ok    active trainers are public, inactive hidden
+ok    only published passports are public
+ok    verify_certificate works anonymously
+ok    verification returns no student id or score
+ok    anon reads nothing from certificates
+ok    anon reads nothing from profiles
+ok    anon reads nothing from students
+ok    anon reads nothing from payments
+ok    anon reads nothing from registrations
+ok    anon reads nothing from college_leads
+ok    anon reads nothing from notifications
+ok    anon reads nothing from colleges
+ok    anon can submit a college lead (status new)
+ok    anon cannot submit a lead with another status
+ok    anon cannot update leads
+ok    anon cannot write other tables
+
+## Sign-in data is out of reach of every request role
+ok    student cannot read identity.users (42501)
+ok    student cannot read identity.sessions (42501)
+ok    student cannot read identity.codes (42501)
+ok    student cannot read identity.mfa_challenges (42501)
+ok    admin cannot read identity.users (42501)
+ok    admin cannot read identity.sessions (42501)
+ok    admin cannot read identity.codes (42501)
+ok    admin cannot read identity.mfa_challenges (42501)
+ok    anonymous visitors cannot read identity.users (42501)
+
+## Clean-up
+ok    fixtures removed
+
+rls: 108 passed, 0 failed, 0 skipped

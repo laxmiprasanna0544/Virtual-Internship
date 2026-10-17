@@ -248,8 +248,8 @@ export function CertificateView() {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Sharing is composed here and posted by you — this demo does not connect to any
-            social network.
+            Sharing is composed here and posted by you — Roystian does not connect to
+            or post on any social network on your behalf.
           </p>
         </DialogContent>
       </Dialog>

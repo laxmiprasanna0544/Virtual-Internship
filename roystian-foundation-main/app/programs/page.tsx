@@ -15,7 +15,6 @@ import { FaqAccordion } from "@/components/site/faq-section";
 import { Button } from "@/components/ui/button";
 import { PROGRAMS, getProgram } from "@/data/programs";
 import { FAQS } from "@/data/content";
-import { TRAINERS } from "@/data/trainers";
 import { IMAGES } from "@/lib/images";
 
 export const metadata: Metadata = {
@@ -176,40 +175,6 @@ export default function ProgramsPage() {
             <FifteenDayTimeline />
           </Reveal>
 
-          <Reveal delay={0.1} className="mt-14">
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-              <div className="flex items-center justify-between gap-4">
-                <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                  Demo trainer profiles
-                </h3>
-                <span className="rounded bg-warning/15 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-warning-ink">
-                  Demo data
-                </span>
-              </div>
-              <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {TRAINERS.slice(0, 6).map((trainer) => (
-                  <li key={trainer.id} className="flex items-start gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/8 font-display text-xs font-semibold text-primary">
-                      {trainer.initials}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-foreground">
-                        {trainer.name}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {trainer.role} · {trainer.experience}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-5 text-xs text-muted-foreground">
-                These are illustrative personas created for the demonstration
-                environment. They are not real individuals and carry no real
-                credentials.
-              </p>
-            </div>
-          </Reveal>
         </div>
       </section>
 

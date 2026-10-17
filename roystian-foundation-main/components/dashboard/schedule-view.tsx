@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarDays, ExternalLink, Info } from "lucide-react";
+import { CalendarDays, Info } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState, LoadingState } from "@/components/shared/states";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -75,7 +74,6 @@ export function ScheduleView() {
           { label: "Dashboard", href: "/dashboard" },
           { label: "Schedule" },
         ]}
-        action={<Badge variant="warning">Demo schedule</Badge>}
       />
 
       {/* Trainer */}
@@ -89,7 +87,6 @@ export function ScheduleView() {
               <div>
                 <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-foreground">
                   {trainer.name}
-                  <Badge variant="warning">Demo profile</Badge>
                 </p>
                 <p className="mt-0.5 text-sm text-muted-foreground">
                   {trainer.role} · {trainer.industry} · {trainer.experience}
@@ -99,11 +96,6 @@ export function ScheduleView() {
                 </p>
               </div>
             </div>
-            <Button asChild variant="outline" size="sm" className="shrink-0">
-              <a href={trainer.linkedin} target="_blank" rel="noopener noreferrer">
-                <ExternalLink /> LinkedIn
-              </a>
-            </Button>
           </div>
         </section>
       )}

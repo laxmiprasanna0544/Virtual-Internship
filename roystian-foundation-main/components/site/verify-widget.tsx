@@ -43,7 +43,7 @@ export function VerifyWidget({
           value={value}
           autoFocus={autoFocus}
           onChange={(event) => setValue(event.target.value)}
-          placeholder="RF-AIML-2026-000184"
+          placeholder="RF-AIML-2026-001234"
           className="font-mono uppercase placeholder:font-mono placeholder:normal-case"
           aria-invalid={Boolean(error)}
           aria-describedby={error ? "certificate-id-error" : undefined}
@@ -59,14 +59,7 @@ export function VerifyWidget({
       )}
       {!compact && (
         <p className="mt-2.5 text-xs text-muted-foreground">
-          Try a demo certificate:{" "}
-          <button
-            type="button"
-            className="font-mono text-primary underline-offset-2 hover:underline"
-            onClick={() => setValue("RF-AIML-2026-000184")}
-          >
-            RF-AIML-2026-000184
-          </button>
+          The ID is printed below the QR code, for example RF-AIML-2026-001234.
         </p>
       )}
     </form>

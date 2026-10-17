@@ -1,0 +1,65 @@
+# payments — 2026-10-17T15:01:56.581Z — exit 0 — 2.4s
+
+
+## Who may start a checkout
+ok    signed-out create-order → 401
+ok    staff account cannot check out (403)
+ok    unknown domain → 400
+ok    unknown programme → 400
+ok    checkout starts for a student
+ok    mock environment returns a hosted checkout URL
+ok    missing mobile → 400 mobile_required
+
+## Amounts come from the catalogue
+ok    self-paced: pending payment at the catalogue price
+ok    self-paced: gateway order amount matches the catalogue
+ok    industry-led: pending payment at the catalogue price
+ok    industry-led: gateway order amount matches the catalogue
+
+## Webhook signatures
+ok    webhook without signature → 401
+ok    webhook signed with the wrong secret → 401
+ok    webhook with a garbage signature → 401
+ok    forged webhooks change nothing
+
+## Tampered amount
+ok    validly signed webhook with the wrong amount is not accepted
+ok    payment stays unpaid after an amount mismatch
+
+## Signed webhook, replayed
+ok    valid signed webhook completes the payment
+ok    replays create exactly one registration
+ok    replays send exactly one notification
+ok    replays send exactly one email
+ok    payment linked to the registration
+ok    already enrolled → 409
+
+## Failed payment
+ok    gateway reports the failure
+ok    PAYMENT_FAILED_WEBHOOK marks the payment failed
+ok    verify reports failed
+
+## Order status belongs to its owner
+ok    another student's order → 404
+ok    signed-out verify → 401
+
+## Reconciliation when the webhook never arrives
+ok    webhook could not complete the hidden order
+ok    verify asks Cashfree for the order and completes it
+ok    reconciled payment recorded with the gateway payment id
+
+## Refunds
+ok    enrolled student can open assessments
+ok    student cannot refund (403)
+ok    trainer cannot refund (403)
+ok    admin refund succeeds
+ok    refund issued at the gateway
+ok    payment marked refunded with the refund id
+ok    registration marked refunded
+ok    refund written to the audit log
+ok    refunded student loses access to the coursework (403)
+ok    repeated refund is idempotent
+ok    no second refund at the gateway
+ok    a failed payment cannot be refunded (409)
+
+payments: 43 passed, 0 failed, 0 skipped

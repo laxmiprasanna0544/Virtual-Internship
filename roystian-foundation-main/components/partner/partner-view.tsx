@@ -14,7 +14,6 @@ import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingState, EmptyState } from "@/components/shared/states";
 import { Logo } from "@/components/shared/logo";
-import { DemoBadge } from "@/components/shared/demo-banner";
 import { ThemeToggle } from "@/components/shared/theme";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,7 +52,6 @@ export function PartnerView() {
                 Talent
               </p>
               <div className="ml-auto flex items-center gap-2">
-                <DemoBadge />
                 <ThemeToggle />
                 <Button
                   variant="ghost"

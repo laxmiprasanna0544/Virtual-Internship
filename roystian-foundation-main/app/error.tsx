@@ -13,7 +13,7 @@ export default function Error({
   reset: () => void;
 }) {
   React.useEffect(() => {
-    // Surfacing the error keeps the demo debuggable without a logging service.
+    // Logged with its digest so it can be matched to the server log entry.
     console.error("Application error:", error);
   }, [error]);
 
@@ -28,7 +28,7 @@ export default function Error({
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           An unexpected error interrupted this page. You can retry, or go back to the
-          home page and pick up where you left off — your demo data is saved locally.
+          home page — your progress is saved to your account.
         </p>
         {error.digest && (
           <p className="mt-3 font-mono text-xs text-muted-foreground">

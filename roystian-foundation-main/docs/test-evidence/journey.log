@@ -1,0 +1,74 @@
+# journey — 2026-10-17T15:01:54.912Z — exit 0 — 1.7s
+
+
+## Sign-up and enrolment
+ok    student signed up and signed in
+ok    records load before enrolment
+ok    assessments are locked before payment (403)
+ok    checkout → gateway → webhook produced a registration
+ok    payment recorded as successful
+ok    amount came from the catalogue, not the browser
+ok    gateway payment id stored
+ok    student is enrolled in the domain
+ok    registration notification delivered in-app
+
+## Modules and notes
+ok    module marked complete
+ok    cannot complete a module in an unpaid domain (403)
+ok    module note saved
+ok    progress and note stored
+
+## Assessments are scored on the server
+ok    questions load for an enrolled student
+ok    questions never include answers or explanations
+ok    failed attempt recorded
+ok    failed attempt reveals no per-question correctness
+ok    attempts remaining reported
+ok    passing attempt
+ok    passing attempt returns the full review with explanations
+ok    client-supplied score fields are ignored
+
+## Attempt cap (5 per assessment per 24 hours)
+ok    6th attempt within 24h is refused with 429
+
+## Pass every module assessment
+ok    all module assessments passed
+ok    passing a module assessment completes the module
+
+## Certificate stays locked until every requirement is met
+ok    certificate refused before the practical task and final (403)
+
+## Practical task upload to S3
+ok    presigned upload issued
+ok    upload key is under the student's own prefix
+ok    browser-style upload straight to S3 succeeds
+ok    practical task submitted with the uploaded file
+ok    submission stored with the S3 key
+
+## Trainer reviews the submission
+ok    trainer gets a short-lived download link
+ok    download link returns the uploaded file
+ok    trainer approves the submission
+ok    an approved submission cannot be changed by the student (409)
+
+## Final assessment and certificate
+ok    final assessment passed
+ok    Industry-Led certificate waits for the 15-day programme duration (403)
+ok    certificate issued once every requirement is met
+ok    issuing again returns the same certificate
+ok    registration marked certified
+
+## Public verification
+ok    anyone can verify the certificate
+ok    verification exposes only certificate fields
+ok    verification is case-insensitive
+ok    unknown certificate → 404
+ok    public verification page renders
+
+## Transactional email
+ok    verification code was emailed at sign-up
+ok    payment confirmation email sent
+ok    certificate email sent
+ok    communication log records each message as sent with a message id
+
+journey: 48 passed, 0 failed, 0 skipped

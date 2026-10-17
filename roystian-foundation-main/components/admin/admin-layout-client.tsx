@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { AppShell, type NavItem } from "@/components/dashboard/shell";
 import { RouteGuard } from "@/components/dashboard/guard";
-import { TRAINER_ADMIN_SECTIONS } from "@/lib/supabase/roles";
+import { TRAINER_ADMIN_SECTIONS } from "@/lib/roles";
 
 export const ADMIN_NAV: NavItem[] = [
   { href: "/admin", label: "Overview", icon: LayoutGrid, exact: true },

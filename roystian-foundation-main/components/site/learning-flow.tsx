@@ -20,7 +20,7 @@ const STEPS = [
   {
     label: "Assess",
     icon: ClipboardCheck,
-    body: "Take the module assessment. 70% to pass, unlimited retakes, answers explained afterwards.",
+    body: "Take the module assessment. 70% to pass, up to five attempts a day, answers explained once you pass.",
   },
   {
     label: "Complete",

@@ -62,7 +62,7 @@ const EMPTY_SUMMARY: ProgressSummary = {
   nextModuleId: null,
 };
 
-/** Everything a student-facing screen needs, derived from the Supabase records. */
+/** Everything a student-facing screen needs, derived from the database records. */
 export function useStudentContext(): StudentContext {
   const { status, records, error } = useStudentData();
 

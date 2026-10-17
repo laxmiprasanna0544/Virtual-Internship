@@ -2,42 +2,31 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const isDev = process.env.NODE_ENV !== "production";
 
-// The browser talks to Supabase directly (auth, data, storage). Everything
-// else the app needs — fonts included, via next/font — is served from 'self'.
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const supabaseOrigin = supabaseUrl ? new URL(supabaseUrl).origin : "";
-const supabaseWs = supabaseOrigin.replace(/^http/, "ws");
-
-const csp = [
-  "default-src 'self'",
-  // Next.js injects inline bootstrap scripts; dev mode also needs eval.
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob: ${supabaseOrigin}`.trim(),
-  "font-src 'self' data:",
-  `connect-src 'self' ${supabaseOrigin} ${supabaseWs}`.trim(),
-  "frame-src 'none'",
-  "frame-ancestors 'none'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  ...(isDev ? [] : ["upgrade-insecure-requests"]),
-].join("; ");
-
+// The Content-Security-Policy is set per request by middleware.ts, from
+// runtime configuration (uploads bucket, Cashfree environment), so the same
+// image runs in every environment. These headers are environment-independent.
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: csp },
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+  {
+    key: "Permissions-Policy",
+    value: 'camera=(), microphone=(), geolocation=(), payment=(self "https://sdk.cashfree.com")',
+  },
 ];
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Self-contained server bundle for the Docker image (see Dockerfile).
+  output: "standalone",
   outputFileTracingRoot: __dirname,
+  // The learning-guide PDFs are read at runtime by this route; ship them in the
+  // standalone server bundle (they are deliberately not in public/).
+  outputFileTracingIncludes: {
+    "/api/student/guides/[domainId]": ["./content/guides/*.pdf"],
+  },
   reactStrictMode: true,
   poweredByHeader: false,
   images: {

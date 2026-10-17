@@ -3,8 +3,10 @@ import { z } from "zod";
 import { getDomain } from "@/data/domains";
 import { questionsFor } from "@/data/interviews";
 import { evaluateInterview } from "@/lib/interviews";
-import { toInterviewSession } from "@/lib/supabase/career-mappers";
-import { getAuthenticatedUser, getSupabaseAdminClient } from "@/lib/supabase/server";
+import { toInterviewSession, type InterviewRow } from "@/lib/records/career-mappers";
+import { readJson, requireStudent } from "@/lib/server/auth";
+import { getSql } from "@/lib/server/db";
+import { rateLimit } from "@/lib/server/rate-limit";
 
 const body = z.object({
   kind: z.enum(["technical", "hr", "project"]),
@@ -17,19 +19,18 @@ const body = z.object({
  * from the browser.
  */
 export async function POST(req: NextRequest) {
-  const user = await getAuthenticatedUser();
-  if (!user) return NextResponse.json({ error: "Sign in to continue." }, { status: 401 });
+  const auth = await requireStudent();
+  if (!auth.ok) return auth.response;
+  const limited = rateLimit(`interview:${auth.user.id}`, 20, 3600);
+  if (limited) return limited;
 
-  const parsed = body.safeParse(await req.json().catch(() => null));
+  const parsed = body.safeParse(await readJson(req));
   if (!parsed.success) return NextResponse.json({ error: "Invalid answers." }, { status: 400 });
   const { kind } = parsed.data;
 
-  const admin = getSupabaseAdminClient();
-  const { data: student } = await admin
-    .from("students")
-    .select("domain_id")
-    .eq("id", user.id)
-    .maybeSingle();
+  const sql = getSql();
+  const [student] = await sql<{ domain_id: string | null }[]>`
+    select domain_id from public.students where id = ${auth.user.id}`;
   const domain = getDomain(student?.domain_id);
   if (!student || !domain) {
     return NextResponse.json({ error: "Choose a domain before practising interviews." }, { status: 400 });
@@ -41,24 +42,16 @@ export async function POST(req: NextRequest) {
   );
   const feedback = evaluateInterview(kind, domain.name, answers);
 
-  const { data: row, error } = await admin
-    .from("interview_sessions")
-    .insert({
-      student_id: user.id,
-      kind,
-      domain_id: domain.id,
-      answers,
-      scores: { ...feedback.scores },
-      overall_score: feedback.overallScore,
-      strengths: feedback.strengths,
-      improvements: feedback.improvements,
-    })
-    .select("*")
-    .single();
-  if (error || !row) {
-    console.error("interview insert failed:", error?.message);
+  try {
+    const [row] = await sql<InterviewRow[]>`
+      insert into public.interview_sessions
+        (student_id, kind, domain_id, answers, scores, overall_score, strengths, improvements)
+      values (${auth.user.id}, ${kind}, ${domain.id}, ${sql.json(answers)}, ${sql.json({ ...feedback.scores })},
+              ${feedback.overallScore}, ${feedback.strengths}, ${feedback.improvements})
+      returning *`;
+    return NextResponse.json({ session: toInterviewSession(row), feedback });
+  } catch (error) {
+    console.error("interview insert failed:", error instanceof Error ? error.message : error);
     return NextResponse.json({ error: "Could not save the session." }, { status: 500 });
   }
-
-  return NextResponse.json({ session: toInterviewSession(row), feedback });
 }

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { readJson } from "@/lib/server/auth";
+import { getSql } from "@/lib/server/db";
 import { notify } from "@/lib/server/notify";
 import { audit, badRequest, canActOnDomain, requireStaff } from "@/lib/server/staff";
 
@@ -21,35 +23,26 @@ export async function POST(req: NextRequest) {
   if (!auth.ok) return auth.response;
   const { ctx } = auth;
 
-  const parsed = body.safeParse(await req.json().catch(() => null));
+  const parsed = body.safeParse(await readJson(req));
   if (!parsed.success) return badRequest("Invalid review.");
   const { submissionId, status, feedback } = parsed.data;
 
-  const { data: submission } = await ctx.admin
-    .from("submissions")
-    .select("id, student_id, domain_id, status")
-    .eq("id", submissionId)
-    .maybeSingle();
+  const sql = getSql();
+  const [submission] = await sql<{ id: string; student_id: string; domain_id: string; status: string }[]>`
+    select id, student_id, domain_id, status from public.submissions where id = ${submissionId}`;
   if (!submission) return badRequest("Submission not found.", 404);
   if (!canActOnDomain(ctx, submission.domain_id)) return badRequest("Not allowed.", 403);
   if (submission.status === "pending") {
     return badRequest("The student has not submitted this task yet.", 409);
   }
 
-  const { error } = await ctx.admin
-    .from("submissions")
-    .update({
-      status,
-      feedback: feedback || null,
-      reviewed_by: ctx.userId,
-      reviewed_at: new Date().toISOString(),
-    })
-    .eq("id", submissionId);
-  if (error) return badRequest("Could not save the review.", 500);
+  await sql`
+    update public.submissions
+    set status = ${status}, feedback = ${feedback || null}, reviewed_by = ${ctx.userId}, reviewed_at = now()
+    where id = ${submissionId}`;
 
   await Promise.all([
     notify(
-      ctx.admin,
       submission.student_id,
       "assignment",
       TITLES[status],

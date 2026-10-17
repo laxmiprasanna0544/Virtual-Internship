@@ -7,7 +7,7 @@ export async function GET() {
   const auth = await requireStaff(["partner", "admin"]);
   if (!auth.ok) return auth.response;
   return NextResponse.json(
-    { profiles: await publishedProfiles(auth.ctx.admin) },
+    { profiles: await publishedProfiles() },
     { headers: { "Cache-Control": "private, no-store" } },
   );
 }

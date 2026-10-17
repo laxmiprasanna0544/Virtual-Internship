@@ -207,13 +207,16 @@ export default function AboutPage() {
                   <Mail className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
                   {SITE.email}
                 </a>
-                <a
-                  href={`tel:${SITE.phone.replace(/\s/g, "")}`}
-                  className="flex items-center gap-2.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <Phone className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-                  {SITE.phone}
-                </a>
+                {SITE.phones.map((phone) => (
+                  <a
+                    key={phone.tel}
+                    href={`tel:${phone.tel}`}
+                    className="flex items-center gap-2.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <Phone className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                    {phone.display}
+                  </a>
+                ))}
               </div>
             </div>
           </Reveal>
@@ -232,7 +235,7 @@ export default function AboutPage() {
                   "No guaranteed jobs or placements",
                   "No government or university accreditation is claimed",
                   "No affiliation with companies is implied by any content on this site",
-                  "Trainer profiles shown in this environment are demonstration personas",
+                  "Certificates are earned through completed work, never sold",
                 ].map((item) => (
                   <li key={item} className="flex gap-2.5">
                     <span aria-hidden="true">—</span>

@@ -3,8 +3,6 @@
 const PREFIX = "roystian";
 
 export const STORAGE_KEYS = {
-  db: `${PREFIX}.db.v1`,
-  session: `${PREFIX}.session.v1`,
   onboarding: `${PREFIX}.onboarding.v1`,
   theme: `${PREFIX}.theme`,
   pendingPayment: `${PREFIX}.pending-payment.v1`,
@@ -33,7 +31,7 @@ export function writeStorage<T>(key: string, value: T): void {
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    // Quota or privacy-mode failures are non-fatal in the demo.
+    // Quota or privacy-mode failures are non-fatal.
   }
 }
 

@@ -7,8 +7,12 @@ export const SITE = {
   tagline: "Learn. Build. Get Certified. Move Forward.",
   description:
     "Build practical skills through structured virtual internships, assessments, practical activities and verifiable certificates.",
-  email: "hello@roystian.demo",
-  phone: "+91 90000 00000",
+  email: "Operations@roystianfoundation.com",
+  /** Display form; `tel` is the dialable form for links. */
+  phones: [
+    { display: "+91 63097 29944", tel: "+916309729944" },
+    { display: "+91 63090 89944", tel: "+916309089944" },
+  ],
   address: {
     line1: "T-Hub Phase 2",
     line2: "Knowledge City, Raidurg",

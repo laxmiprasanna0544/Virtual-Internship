@@ -102,9 +102,6 @@ export default async function DomainDetailPage({ params }: PageProps) {
               <div className="flex flex-wrap gap-2">
                 <Badge variant="secondary">{domain.category}</Badge>
                 <Badge variant="outline">{domain.modules.length} modules</Badge>
-                {domain.curriculumSource === "demo" && (
-                  <Badge variant="warning">Demo curriculum</Badge>
-                )}
               </div>
             </div>
             <p className="lede mt-6 max-w-2xl">{domain.longDescription}</p>
@@ -256,8 +253,8 @@ export default async function DomainDetailPage({ params }: PageProps) {
             </div>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
               {domain.curriculumSource === "demo"
-                ? "This is a demo curriculum created for the demonstration environment. It is written for learning purposes and does not represent any external accreditation."
-                : "Each module pairs written learning material with key concepts, downloadable resources and a short assessment."}
+                ? "This curriculum was written by the Roystian programme team for learning purposes and does not represent any external accreditation."
+                : "Each module pairs written learning material with key concepts and a short assessment, backed by a downloadable learning guide for the whole domain."}
             </p>
           </Reveal>
 
@@ -399,7 +396,7 @@ export default async function DomainDetailPage({ params }: PageProps) {
             animate
             eyebrow="Available Programs"
             title={`Two ways to complete the ${domain.shortName} track.`}
-            description={`Both programmes cover the ${domain.name} track in full. Industry-Led adds video lessons and live sessions with ${trainer.name} (demo trainer profile), mentor interaction and career guidance.`}
+            description={`Both programmes cover the ${domain.name} track in full. Industry-Led adds video lessons and live sessions with a working professional in ${trainer.specialization}, mentor interaction and career guidance.`}
           />
           <div className="mt-12 grid gap-6 lg:grid-cols-2">
             {PROGRAMS.map((program, index) => (

@@ -138,8 +138,8 @@ export function CollegeEnquiryForm() {
           Thank you. Our team will contact you.
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          Your enquiry has been recorded. In this demo environment it appears in the
-          admin College Leads view.
+          Your enquiry has been recorded and our partnerships team will reply by
+          email.
         </p>
         <Button
           variant="outline"

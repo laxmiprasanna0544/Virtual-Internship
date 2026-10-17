@@ -89,7 +89,7 @@ export function StartShell({
                   </StaticImage>
                   <ul className="mt-5 space-y-2.5 text-xs leading-relaxed text-muted-foreground">
                     <li>You can change your domain and level before checkout.</li>
-                    <li>Payments in this environment are simulated.</li>
+                    <li>Payment is completed securely on Cashfree&apos;s checkout.</li>
                     <li>
                       The certificate unlocks only after the completion requirements
                       are met.

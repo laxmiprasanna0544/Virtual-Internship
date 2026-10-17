@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
 import { ThemeToggle } from "@/components/shared/theme";
-import { DemoBadge } from "@/components/shared/demo-banner";
 import { PageTransition } from "@/components/motion/page-transition";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -89,8 +88,7 @@ export function CampusShell({ children }: { children: React.ReactNode }) {
             </nav>
 
             <div className="border-t border-border p-4">
-              <DemoBadge />
-              <p className="mt-2.5 text-[0.7rem] leading-relaxed text-muted-foreground">
+              <p className=" text-[0.7rem] leading-relaxed text-muted-foreground">
                 Figures are computed live from your cohort.
               </p>
             </div>

@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { getDomain } from "@/data/domains";
 import { useAdminData } from "@/lib/admin-data";
 import { readinessForStudent as readinessIn } from "@/lib/career-rules";
-import type { AdminData } from "@/lib/supabase/admin-records";
+import type { AdminData } from "@/lib/records/admin";
 import { READINESS_LABEL } from "@/lib/readiness";
 import { summariseProgress } from "@/lib/rules";
 import type {

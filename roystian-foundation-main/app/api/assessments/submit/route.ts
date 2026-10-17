@@ -2,14 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAssessmentWithAnswers } from "@/data/assessment-bank";
 import { scoreAssessment } from "@/lib/rules";
+import { readJson, requireStudent } from "@/lib/server/auth";
+import { getSql, withUser } from "@/lib/server/db";
+import { hasPaidForDomain } from "@/lib/server/enrolment";
 import { notify } from "@/lib/server/notify";
-import {
-  getAuthenticatedUser,
-  getSupabaseAdminClient,
-  getSupabaseServerClient,
-} from "@/lib/supabase/server";
-import { toAttempt } from "@/lib/supabase/mappers";
+import { toAttempt, type AttemptRow } from "@/lib/records/mappers";
 import type { QuestionReview } from "@/types";
+
+/** Attempts allowed per assessment in any rolling 24 hours. */
+const MAX_ATTEMPTS_PER_DAY = 5;
 
 const body = z.object({
   assessmentId: z.string().min(1).max(200),
@@ -18,10 +19,11 @@ const body = z.object({
 
 /** Scores an assessment attempt on the server and records it. */
 export async function POST(req: NextRequest) {
-  const user = await getAuthenticatedUser();
-  if (!user) return NextResponse.json({ error: "Sign in to continue." }, { status: 401 });
+  const auth = await requireStudent();
+  if (!auth.ok) return auth.response;
+  const userId = auth.user.id;
 
-  const parsed = body.safeParse(await req.json().catch(() => null));
+  const parsed = body.safeParse(await readJson(req));
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid submission." }, { status: 400 });
   }
@@ -31,19 +33,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unknown assessment." }, { status: 404 });
   }
 
-  const admin = getSupabaseAdminClient();
-  const { data: registration } = await admin
-    .from("registrations")
-    .select("id")
-    .eq("student_id", user.id)
-    .eq("domain_id", assessment.domainId)
-    .eq("payment_status", "successful")
-    .limit(1)
-    .maybeSingle();
-  if (!registration) {
+  const sql = getSql();
+  const paid = await withUser(userId, (tx) => hasPaidForDomain(tx, assessment.domainId));
+  if (!paid) {
+    return NextResponse.json({ error: "You are not enrolled in this domain." }, { status: 403 });
+  }
+
+  const [{ count }] = await sql<{ count: number }[]>`
+    select count(*)::int as count from public.assessment_attempts
+    where student_id = ${userId} and assessment_id = ${assessment.id}
+      and overridden_by is null and submitted_at > now() - interval '24 hours'`;
+  if (count >= MAX_ATTEMPTS_PER_DAY) {
     return NextResponse.json(
-      { error: "You are not enrolled in this domain." },
-      { status: 403 },
+      {
+        error: `You have used all ${MAX_ATTEMPTS_PER_DAY} attempts for this assessment in the last 24 hours. Review the module and try again tomorrow.`,
+        attemptsRemaining: 0,
+      },
+      { status: 429 },
     );
   }
 
@@ -54,40 +60,29 @@ export async function POST(req: NextRequest) {
   );
   const scored = scoreAssessment(assessment, answers);
 
-  const { data: row, error } = await admin
-    .from("assessment_attempts")
-    .insert({
-      student_id: user.id,
-      domain_id: assessment.domainId,
-      assessment_id: assessment.id,
-      kind: assessment.kind,
-      score: scored.score,
-      total: scored.total,
-      percentage: scored.percentage,
-      passed: scored.passed,
-      answers,
-    })
-    .select("*")
-    .single();
-  if (error || !row) {
-    console.error("assessment insert failed:", error?.message);
+  let row: AttemptRow;
+  try {
+    [row] = await sql<AttemptRow[]>`
+      insert into public.assessment_attempts
+        (student_id, domain_id, assessment_id, kind, score, total, percentage, passed, answers)
+      values (${userId}, ${assessment.domainId}, ${assessment.id}, ${assessment.kind}, ${scored.score},
+              ${scored.total}, ${scored.percentage}, ${scored.passed}, ${sql.json(answers)})
+      returning *`;
+  } catch (error) {
+    console.error("assessment insert failed:", error instanceof Error ? error.message : error);
     return NextResponse.json({ error: "Could not record your attempt." }, { status: 500 });
   }
 
-  // Passing a module assessment completes the module, as before.
+  // Passing a module assessment completes the module.
   if (scored.passed && assessment.kind === "module" && assessment.moduleId) {
-    const supabase = await getSupabaseServerClient();
-    await supabase.rpc("set_module_complete", {
-      target_domain: assessment.domainId,
-      target_module: assessment.moduleId,
-      complete: true,
-    });
+    await withUser(userId, (tx) =>
+      tx`select public.set_module_complete(${assessment.domainId}, ${assessment.moduleId!}, true)`,
+    );
   }
 
   if (scored.passed && assessment.kind === "final") {
     await notify(
-      admin,
-      user.id,
+      userId,
       "assessment",
       "Final assessment passed",
       `You scored ${scored.percentage}% on the final assessment.`,
@@ -95,18 +90,24 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Which questions were right is always returned. The correct options and
-  // explanations are revealed only once the attempt passes, so a failed
-  // attempt cannot simply be retaken with the answers copied over.
-  const review: QuestionReview[] = assessment.questions.map((question) => {
-    const given = [...(answers[question.id] ?? [])].sort((a, b) => a - b);
-    const expected = [...question.correct].sort((a, b) => a - b);
-    const correct =
-      given.length === expected.length && given.every((value, i) => value === expected[i]);
-    return scored.passed
-      ? { questionId: question.id, correct, correctOptions: question.correct, explanation: question.explanation }
-      : { questionId: question.id, correct };
-  });
+  const attemptsRemaining = Math.max(0, MAX_ATTEMPTS_PER_DAY - count - 1);
 
-  return NextResponse.json({ attempt: toAttempt(row), review });
+  // A failed attempt reveals only the score: no per-question right/wrong,
+  // so answers cannot be worked out by retrying. A pass shows the full review.
+  const review: QuestionReview[] = scored.passed
+    ? assessment.questions.map((question) => {
+        const given = [...(answers[question.id] ?? [])].sort((a, b) => a - b);
+        const expected = [...question.correct].sort((a, b) => a - b);
+        const correct =
+          given.length === expected.length && given.every((value, i) => value === expected[i]);
+        return {
+          questionId: question.id,
+          correct,
+          correctOptions: question.correct,
+          explanation: question.explanation,
+        };
+      })
+    : [];
+
+  return NextResponse.json({ attempt: toAttempt(row), review, attemptsRemaining });
 }

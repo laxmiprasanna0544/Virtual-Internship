@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { readJson } from "@/lib/server/auth";
+import { getSql } from "@/lib/server/db";
 import { audit, badRequest, requireStaff } from "@/lib/server/staff";
 
 const body = z.object({
@@ -14,22 +16,22 @@ export async function POST(req: NextRequest) {
   if (!auth.ok) return auth.response;
   const { ctx } = auth;
 
-  const parsed = body.safeParse(await req.json().catch(() => null));
+  const parsed = body.safeParse(await readJson(req));
   if (!parsed.success) return badRequest("Invalid request.");
   const { certificateId, status, reason } = parsed.data;
 
-  const { data, error } = await ctx.admin
-    .from("certificates")
-    .update(
-      status === "revoked"
-        ? { status, revoked_at: new Date().toISOString(), revoked_reason: reason ?? null }
-        : { status, revoked_at: null, revoked_reason: null },
-    )
-    .eq("id", certificateId)
-    .select("id")
-    .maybeSingle();
-  if (error) return badRequest("Could not update the certificate.", 500);
-  if (!data) return badRequest("Certificate not found.", 404);
+  const sql = getSql();
+  const rows =
+    status === "revoked"
+      ? await sql`
+          update public.certificates
+          set status = 'revoked', revoked_at = now(), revoked_reason = ${reason ?? null}
+          where id = ${certificateId} returning id`
+      : await sql`
+          update public.certificates
+          set status = 'valid', revoked_at = null, revoked_reason = null
+          where id = ${certificateId} returning id`;
+  if (!rows.length) return badRequest("Certificate not found.", 404);
 
   await audit(ctx, `certificate.${status === "revoked" ? "revoke" : "restore"}`, "certificate", certificateId, {
     reason: reason ?? null,

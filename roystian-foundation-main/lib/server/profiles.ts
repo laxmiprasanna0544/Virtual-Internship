@@ -2,11 +2,11 @@ import "server-only";
 
 import { getDomainAssessments } from "@/data/domains";
 import { careerSnapshot } from "@/lib/career-rules";
-import type { AdminClient } from "@/lib/server/staff";
-import type { PassportRow } from "@/lib/supabase/career-mappers";
-import { toPassport } from "@/lib/supabase/career-mappers";
-import { toStudentRecords } from "@/lib/supabase/mappers";
-import { fetchStudentRecordRows } from "@/lib/supabase/student-records";
+import { service } from "@/lib/server/db";
+import type { PassportRow } from "@/lib/records/career-mappers";
+import { toPassport } from "@/lib/records/career-mappers";
+import { toStudentRecords } from "@/lib/records/mappers";
+import { fetchStudentRecordRows } from "@/lib/server/student-records";
 import type { PublicProfileView } from "@/types";
 
 /**
@@ -14,12 +14,9 @@ import type { PublicProfileView } from "@/types";
  * student switched on are filled in; everything else is null or empty, so
  * hidden data never leaves the server.
  */
-export async function buildPublicProfile(
-  admin: AdminClient,
-  passportRow: PassportRow,
-): Promise<PublicProfileView | null> {
+export async function buildPublicProfile(passportRow: PassportRow): Promise<PublicProfileView | null> {
   if (!passportRow.published) return null;
-  const rows = await fetchStudentRecordRows(admin, passportRow.student_id);
+  const rows = await service((tx) => fetchStudentRecordRows(tx, passportRow.student_id));
   if (!rows || rows.profile.role !== "student") return null;
 
   const passport = toPassport(passportRow);
@@ -79,22 +76,24 @@ export async function buildPublicProfile(
   };
 }
 
-export async function publicProfileBySlug(
-  admin: AdminClient,
-  slug: string,
-): Promise<PublicProfileView | null> {
-  const { data } = await admin
-    .from("career_passports")
-    .select("*")
-    .eq("slug", slug.toLowerCase())
-    .eq("published", true)
-    .maybeSingle();
-  return data ? buildPublicProfile(admin, data) : null;
+export async function publicProfileBySlug(slug: string): Promise<PublicProfileView | null> {
+  const [row] = await service(
+    (tx) => tx<PassportRow[]>`
+      select * from public.career_passports where slug = ${slug.toLowerCase()} and published`,
+  );
+  return row ? buildPublicProfile(row) : null;
 }
 
 /** Every published passport, for the partner talent directory. */
-export async function publishedProfiles(admin: AdminClient): Promise<PublicProfileView[]> {
-  const { data } = await admin.from("career_passports").select("*").eq("published", true).limit(500);
-  const views = await Promise.all((data ?? []).map((row) => buildPublicProfile(admin, row)));
-  return views.filter((v): v is PublicProfileView => v !== null);
+export async function publishedProfiles(): Promise<PublicProfileView[]> {
+  const rows = await service(
+    (tx) => tx<PassportRow[]>`
+      select * from public.career_passports where published order by updated_at desc limit 500`,
+  );
+  const views: PublicProfileView[] = [];
+  for (const row of rows) {
+    const view = await buildPublicProfile(row);
+    if (view) views.push(view);
+  }
+  return views;
 }

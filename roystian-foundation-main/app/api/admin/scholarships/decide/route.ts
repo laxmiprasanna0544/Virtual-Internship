@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { readJson } from "@/lib/server/auth";
+import { getSql } from "@/lib/server/db";
 import { notify } from "@/lib/server/notify";
 import { audit, badRequest, requireStaff } from "@/lib/server/staff";
 
@@ -19,40 +21,36 @@ export async function POST(req: NextRequest) {
   if (!auth.ok) return auth.response;
   const { ctx } = auth;
 
-  const parsed = body.safeParse(await req.json().catch(() => null));
+  const parsed = body.safeParse(await readJson(req));
   if (!parsed.success) return badRequest("Invalid decision.");
   const input = parsed.data;
   const final = input.status === "approved" || input.status === "declined";
+  const awardedTier = input.status === "approved" ? input.awardedTier : null;
 
-  const { data, error } = await ctx.admin
-    .from("scholarship_applications")
-    .update({
-      status: input.status,
-      awarded_tier: input.status === "approved" ? input.awardedTier : null,
-      decided_at: final ? new Date().toISOString() : null,
-    })
-    .eq("id", input.applicationId)
-    .select("student_id")
-    .maybeSingle();
-  if (error) return badRequest("Could not record the decision.", 500);
-  if (!data) return badRequest("Application not found.", 404);
+  const [row] = await getSql()<{ student_id: string }[]>`
+    update public.scholarship_applications
+    set status = ${input.status},
+        awarded_tier = ${awardedTier},
+        decided_at = case when ${final}::boolean then now() else null end
+    where id = ${input.applicationId}
+    returning student_id`;
+  if (!row) return badRequest("Application not found.", 404);
 
   await Promise.all([
     final
       ? notify(
-          ctx.admin,
-          data.student_id,
+          row.student_id,
           "system",
           input.status === "approved" ? "Scholarship awarded" : "Scholarship decision",
           input.status === "approved"
-            ? `You have been awarded a ${input.awardedTier}% Roystian Skill Scholarship.`
+            ? `You have been awarded a ${awardedTier}% Roystian Skill Scholarship.`
             : "Your scholarship application was not successful this time.",
           "/dashboard/scholarship",
         )
       : Promise.resolve(),
     audit(ctx, "scholarship.decide", "scholarship_application", input.applicationId, {
       status: input.status,
-      awardedTier: input.status === "approved" ? input.awardedTier : null,
+      awardedTier,
     }),
   ]);
   return NextResponse.json({ ok: true });

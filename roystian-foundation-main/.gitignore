@@ -16,5 +16,18 @@ next-env.d.ts
 .env*
 
 # Local test evidence (videos/screenshots) — never deploy or commit
-test-evidence
+/test-evidence
 !.env.example
+
+# Terraform
+infra/terraform/.terraform/
+infra/terraform/*.tfstate*
+infra/terraform/terraform.tfvars
+infra/terraform/.terraform.lock.hcl.bak
+
+# Local dev outbox (emails written instead of sent)
+.local/
+
+# Source files supplied for import (copied into content/guides and public/images/brand)
+/temp_pdfs/
+/logo.jpeg

@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { fetchAdminData, type AdminData } from "@/lib/supabase/admin-records";
+import type { AdminData } from "@/lib/records/admin";
 import type { Certificate, CollegeLead, FellowshipStage, ScholarshipTier } from "@/types";
 
 /**
- * Admin console data from Supabase, shared by every admin screen in the tab.
+ * Staff console data (GET /api/admin/data), shared by every admin, trainer and
+ * campus screen in the tab. The server loads it under the caller's own row
+ * level security.
  * Mutations go through /api/admin/* (role-checked and audited on the server)
  * and refresh this store when they succeed.
  */
@@ -34,7 +35,14 @@ function subscribe(listener: () => void) {
 export function refreshAdminData(): Promise<void> {
   if (inflight) return inflight;
   if (state.status === "idle") setState({ ...state, status: "loading" });
-  inflight = fetchAdminData(getSupabaseBrowserClient())
+  inflight = fetch("/api/admin/data", { cache: "no-store" })
+    .then(async (res) => {
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(typeof body?.error === "string" ? body.error : "Unable to load admin data.");
+      }
+      return body.data as AdminData;
+    })
     .then((data) => setState({ status: "ready", data, error: null }))
     .catch((error) =>
       setState({
@@ -59,16 +67,20 @@ export function useAdminState(): AdminState {
 
   useEffect(() => {
     if (state.status === "idle") void refreshAdminData();
-    const supabase = getSupabaseBrowserClient();
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_OUT") setState({ status: "idle", data: null, error: null });
-    });
+    // lib/auth.ts announces session changes; drop staff data on sign-out.
+    const onSession = () => {
+      void fetch("/api/auth/session", { cache: "no-store" })
+        .then((res) => res.json())
+        .then((body) => {
+          if (!body?.user) setState({ status: "idle", data: null, error: null });
+        })
+        .catch(() => undefined);
+    };
     const onFocus = () => void refreshAdminData();
+    window.addEventListener("rf-session", onSession);
     window.addEventListener("focus", onFocus);
     return () => {
-      subscription.unsubscribe();
+      window.removeEventListener("rf-session", onSession);
       window.removeEventListener("focus", onFocus);
     };
   }, []);
@@ -127,23 +139,24 @@ export const setFinalPassed = (studentId: string, passed: boolean) =>
     passed,
   });
 
-/** College leads are admin-writable under RLS, so this is a direct update. */
-export async function setLeadStatus(id: string, status: CollegeLead["status"]) {
-  const { error } = await getSupabaseBrowserClient()
-    .from("college_leads")
-    .update({ status })
-    .eq("id", id);
-  if (error) throw new Error("Could not update the lead.");
-  await refreshAdminData();
-}
+export const setLeadStatus = (id: string, status: CollegeLead["status"]) =>
+  adminPost("leads/status", { id, status });
 
-/** Short-lived link to a student's uploaded file; RLS limits it to reviewers. */
-export async function submissionFileUrl(filePath: string): Promise<string> {
-  const { data, error } = await getSupabaseBrowserClient()
-    .storage.from("submissions")
-    .createSignedUrl(filePath, 60 * 5);
-  if (error || !data) throw new Error("Could not open the file.");
-  return data.signedUrl;
+/**
+ * Five-minute download link for a student's uploaded file. The server only
+ * issues it if the caller may see that student's record.
+ */
+export async function submissionFileUrl(kind: "submission" | "project", id: string): Promise<string> {
+  const res = await fetch("/api/admin/files", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind, id }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || typeof data?.url !== "string") {
+    throw new Error(typeof data?.error === "string" ? data.error : "Could not open the file.");
+  }
+  return data.url;
 }
 
 export const evaluateProject = (

@@ -1,6 +1,5 @@
 "use client";
 
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   currentStudentRecords,
   postJSON,
@@ -53,22 +52,10 @@ export async function applyForScholarship(input: {
   category: string;
   statement: string;
 }): Promise<void> {
-  const supabase = getSupabaseBrowserClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new StudentDataError("Your session has expired. Sign in again.");
   if (scholarshipFor()?.status === "submitted" || scholarshipFor()?.status === "under-review") {
     throw new StudentDataError("You already have an application under review.");
   }
-  const { error } = await supabase.from("scholarship_applications").insert({
-    student_id: user.id,
-    requested_tier: input.requestedTier,
-    household_income_band: input.householdIncomeBand,
-    category: input.category,
-    statement: input.statement,
-  });
-  if (error) throw new StudentDataError("Could not submit your application.");
+  await postJSON("/api/scholarships/apply", input);
   await refreshStudentData();
 }
 

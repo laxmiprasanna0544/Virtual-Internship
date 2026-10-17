@@ -1,21 +1,28 @@
-# Files that must never be uploaded to a deployment.
+# Files that must never be uploaded to a Vercel deployment.
 #
-# The Vercel CLI uploads the working directory, including files that are
-# untracked by git, so anything sensitive or merely unnecessary has to be
-# excluded here explicitly.
+# The Vercel CLI uploads the working directory, including untracked files,
+# and when this file exists it does NOT read .gitignore — so secrets and local
+# state must be excluded here explicitly.
 
-# Local Supabase CLI state — contains generated local secrets under
-# .temp/start-secrets/. Never deploy.
-supabase/
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+.local/
+.vercel/
 
-# Original-resolution team photographs and bio source text. The site serves
-# the converted WebP files in public/images/team/ instead.
-about-us/
-
-# Working documents and issued certificates kept in the project root.
-*.pdf
-
-# Local test harnesses and evidence.
-test-evidence/
+# Local tooling, test harnesses and evidence (not needed to build or run)
 .selftest/
 scripts/
+docs/
+infra/
+test-evidence/
+*.tsbuildinfo
+
+# Source material and working documents kept in the project root. The
+# learning guides the app serves live in content/guides/ and ARE deployed.
+temp_pdfs/
+logo.jpeg
+about-us/
+*.pdf
+!content/guides/*.pdf

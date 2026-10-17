@@ -28,6 +28,9 @@ import {
 } from "@/lib/submission-validation";
 import { formatDateTime } from "@/lib/utils";
 
+// Set NEXT_PUBLIC_UPLOADS_ENABLED=false at build time on deployments without object storage.
+const UPLOADS_ENABLED = process.env.NEXT_PUBLIC_UPLOADS_ENABLED !== "false";
+
 export function AssignmentView() {
   const ctx = useStudentContext();
   const [text, setText] = React.useState("");
@@ -234,6 +237,19 @@ export function AssignmentView() {
                 </TabsContent>
 
                 <TabsContent value="file">
+                  {!UPLOADS_ENABLED ? (
+                    <div className="rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center">
+                      <Upload className="mx-auto h-6 w-6 text-muted-foreground" aria-hidden="true" />
+                      <p className="mt-3 text-sm font-medium text-foreground">
+                        File attachments aren&apos;t available yet
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Submit your work as text in the Response tab. Your reviewer assesses the
+                        written response in the same way.
+                      </p>
+                    </div>
+                  ) : (
+                  <>
                   <div className="rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center">
                     <Upload
                       className="mx-auto h-6 w-6 text-muted-foreground"
@@ -286,6 +302,8 @@ export function AssignmentView() {
                         <X className="h-4 w-4" />
                       </button>
                     </div>
+                  )}
+                  </>
                   )}
                 </TabsContent>
               </Tabs>

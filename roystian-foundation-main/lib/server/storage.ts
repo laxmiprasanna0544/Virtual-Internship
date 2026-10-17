@@ -25,6 +25,11 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 
+/** File uploads need an S3-compatible bucket; without one they are switched off. */
+export function uploadsEnabled(): boolean {
+  return Boolean(process.env.S3_UPLOADS_BUCKET);
+}
+
 /** Content types a browser may report for allowed files. Never HTML or SVG. */
 const ALLOWED_TYPES = new Set([
   "application/pdf",

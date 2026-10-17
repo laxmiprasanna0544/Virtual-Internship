@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-10-17T15:02:06.147Z",
+  "ranAt": "2026-10-17T17:05:43.670Z",
   "node": "v26.7.0",
   "environment": "local stand-ins: postgres:17, S3 emulator (for Spaces), Cashfree mock; built-in auth; emails to a local outbox",
   "totals": {
@@ -11,7 +11,7 @@
     {
       "suite": "crypto",
       "exitCode": 0,
-      "seconds": 1.6,
+      "seconds": 2.4,
       "passed": 34,
       "failed": 0,
       "skipped": 0,
@@ -20,7 +20,7 @@
     {
       "suite": "rls",
       "exitCode": 0,
-      "seconds": 0.2,
+      "seconds": 0.3,
       "passed": 108,
       "failed": 0,
       "skipped": 0,
@@ -29,7 +29,7 @@
     {
       "suite": "auth",
       "exitCode": 0,
-      "seconds": 2.4,
+      "seconds": 2.7,
       "passed": 82,
       "failed": 0,
       "skipped": 0,
@@ -38,7 +38,7 @@
     {
       "suite": "journey",
       "exitCode": 0,
-      "seconds": 1.7,
+      "seconds": 1.9,
       "passed": 48,
       "failed": 0,
       "skipped": 0,
@@ -47,7 +47,7 @@
     {
       "suite": "payments",
       "exitCode": 0,
-      "seconds": 2.4,
+      "seconds": 2.6,
       "passed": 43,
       "failed": 0,
       "skipped": 0,
@@ -56,7 +56,7 @@
     {
       "suite": "admin",
       "exitCode": 0,
-      "seconds": 2.6,
+      "seconds": 2.8,
       "passed": 89,
       "failed": 0,
       "skipped": 0,
@@ -65,7 +65,7 @@
     {
       "suite": "career",
       "exitCode": 0,
-      "seconds": 2.2,
+      "seconds": 2.4,
       "passed": 81,
       "failed": 0,
       "skipped": 0,
@@ -74,7 +74,7 @@
     {
       "suite": "security",
       "exitCode": 0,
-      "seconds": 2.5,
+      "seconds": 2.8,
       "passed": 330,
       "failed": 0,
       "skipped": 0,

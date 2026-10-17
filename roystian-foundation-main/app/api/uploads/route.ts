@@ -5,7 +5,7 @@ import { readJson, requireStudent } from "@/lib/server/auth";
 import { withUser } from "@/lib/server/db";
 import { hasPaidForDomain } from "@/lib/server/enrolment";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
-import { isAllowedContentType, MAX_UPLOAD_BYTES, presignUpload, uploadKey } from "@/lib/server/storage";
+import { isAllowedContentType, MAX_UPLOAD_BYTES, presignUpload, uploadKey, uploadsEnabled } from "@/lib/server/storage";
 import { ALLOWED_SUBMISSION_EXTENSIONS } from "@/lib/submission-validation";
 
 const body = z.discriminatedUnion("purpose", [
@@ -32,6 +32,12 @@ const body = z.discriminatedUnion("purpose", [
 export async function POST(req: NextRequest) {
   const auth = await requireStudent();
   if (!auth.ok) return auth.response;
+  if (!uploadsEnabled()) {
+    return NextResponse.json(
+      { error: "File attachments aren't available yet. Submit your work as text instead.", code: "uploads_disabled" },
+      { status: 503 },
+    );
+  }
   const limited = rateLimit(`upload:${auth.user.id}`, 20, 600) ?? rateLimit(`upload-ip:${clientIp(req)}`, 300, 600);
   if (limited) return limited;
 

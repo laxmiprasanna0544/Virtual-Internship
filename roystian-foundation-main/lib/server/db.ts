@@ -55,7 +55,8 @@ function createClient(): Sql {
     idle_timeout: 30,
     connect_timeout: 10,
     ssl: sslOption(mode),
-    prepare: true,
+    // Off behind transaction-mode poolers (e.g. Neon's pooled endpoint on Vercel).
+    prepare: process.env.DATABASE_PREPARE !== "false",
     // Same shapes the mappers have always received: numbers for numeric,
     // ISO strings for timestamps, YYYY-MM-DD for dates.
     types: {

@@ -41,7 +41,9 @@ function sslOption(mode: string): postgres.Options<Record<string, never>>["ssl"]
 }
 
 function createClient(): Sql {
-  const raw = process.env.DATABASE_URL;
+  // APP_DATABASE_URL wins where the platform manages DATABASE_URL itself (e.g. the
+  // Vercel–Neon integration injects the owner role); the app connects as its own role.
+  const raw = process.env.APP_DATABASE_URL || process.env.DATABASE_URL;
   if (!raw) throw new Error("DATABASE_URL is not set");
   // The same URL is used by dbmate, which understands libpq's sslmode and
   // sslrootcert; postgres.js would send them to the server, so strip them.
@@ -49,6 +51,7 @@ function createClient(): Sql {
   const urlMode = url.searchParams.get("sslmode");
   url.searchParams.delete("sslmode");
   url.searchParams.delete("sslrootcert");
+  url.searchParams.delete("channel_binding");
   const mode = process.env.DATABASE_SSL ?? urlMode ?? "verify-full";
   return postgres(url.toString(), {
     max: Number(process.env.DATABASE_POOL_MAX ?? 5),

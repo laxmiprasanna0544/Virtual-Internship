@@ -38,7 +38,16 @@ const nextConfig = {
     imageSizes: [96, 160, 256, 384],
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // Explainer video and poster: cache for a week at the edge and in the browser,
+      // so repeat views and seeks don't go back to the origin. Rename the files to
+      // publish a new cut.
+      {
+        source: "/videos/:file*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }],
+      },
+    ];
   },
 };
 

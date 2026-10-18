@@ -31,3 +31,4 @@ infra/terraform/.terraform.lock.hcl.bak
 # Source files supplied for import (copied into content/guides and public/images/brand)
 /temp_pdfs/
 /logo.jpeg
+/Video.mp4

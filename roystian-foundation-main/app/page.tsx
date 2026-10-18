@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { SiteShell } from "@/components/site/site-shell";
 import { Hero } from "@/components/site/hero";
+import { ExplainerVideo } from "@/components/site/explainer-video";
 import { Reveal, Stagger } from "@/components/motion/reveal";
 import { ParallaxImage, StaticImage } from "@/components/motion/parallax-image";
 import { SplitHeading } from "@/components/motion/split-heading";
@@ -55,6 +56,52 @@ export default function HomePage() {
   return (
     <SiteShell bleed>
       <Hero />
+
+      {/* ── Roystian Foundation in one minute (explainer video) ─────── */}
+      <section id="introduction" className="section border-b border-border" aria-labelledby="introduction-title">
+        <div className="container grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-16">
+          <Reveal>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+              Roystian Foundation in one minute
+            </p>
+            <h2 id="introduction-title" className="h2 mt-3">
+              See what the programme is about.
+            </h2>
+            <p className="lede mt-4 max-w-xl">
+              A one-minute walkthrough of how it works: choose a career domain, learn through
+              structured modules, prove your skills with assessments and a practical task, and
+              earn a certificate anyone can verify.
+            </p>
+            <ul className="mt-7 space-y-4">
+              {[
+                { icon: GraduationCap, title: "Choose your career domain", body: "Twelve domains, from AI/ML to sustainability." },
+                { icon: ClipboardCheck, title: "Learn, practise and get assessed", body: "Modules, assessments and a practical task you complete yourself." },
+                { icon: BadgeCheck, title: "Earn a verifiable certificate", body: "Issued when the work is done, never just on payment." },
+              ].map(({ icon: Icon, title, body }) => (
+                <li key={title} className="flex gap-3.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/8 text-primary">
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-semibold text-foreground">{title}</span>
+                    <span className="block text-sm text-muted-foreground">{body}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8">
+              <Button asChild size="lg">
+                <Link href="/start">
+                  Start My Internship <ArrowRight />
+                </Link>
+              </Button>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <ExplainerVideo />
+          </Reveal>
+        </div>
+      </section>
 
       {/* ═══ 01 · The Student Problem ════════════════════════════════ */}
       <section className="section border-b border-border">

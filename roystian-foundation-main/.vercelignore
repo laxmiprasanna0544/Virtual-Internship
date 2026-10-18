@@ -26,3 +26,6 @@ logo.jpeg
 about-us/
 *.pdf
 !content/guides/*.pdf
+
+# Original explainer video (web encodes live in public/videos/)
+/Video.mp4

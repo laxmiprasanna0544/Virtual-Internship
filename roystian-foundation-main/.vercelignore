@@ -29,3 +29,6 @@ about-us/
 
 # Original explainer video (web encodes live in public/videos/)
 /Video.mp4
+
+# Local ad-hoc QA scripts (may embed test credentials)
+.qa-*

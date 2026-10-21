@@ -1,107 +1,159 @@
 "use client";
 
 import * as React from "react";
+import { Playfair_Display, Source_Serif_4 } from "next/font/google";
 import { QRCode } from "@/components/shared/qr-code";
 import type { Certificate } from "@/types";
 
-const DOMAIN_DESCRIPTIONS: Record<string, string> = {
-  "ai-ml":
-    "machine learning model development, data preprocessing pipelines, AI application prototyping, and algorithmic problem-solving",
-  "data-analytics":
-    "data analysis, interactive dashboard creation, statistical reporting, and business intelligence workflows",
-  "business-analytics":
-    "market research, business data interpretation, analytical reporting, and strategic insights generation",
-  "full-stack-development":
-    "full-stack web application development, REST API integration, frontend UI design, and deployment workflows",
-  "software-testing":
-    "test case design, manual and automated testing, bug tracking, and quality assurance processes",
-  "python-development":
-    "Python scripting, automation workflows, library integration, and application development",
-  "java-development":
-    "Java application development, object-oriented design, and software engineering best practices",
-  "iot-electronics":
-    "IoT sensor integration, embedded systems prototyping, and connected device programming",
-  sustainability:
-    "sustainability research, environmental impact analysis, and green initiative planning",
-  "sales-marketing":
-    "marketing campaigns, sponsorship engagement, sales outreach, and brand awareness programs",
-  "mechanical-engineering":
-    "engineering design, CAD modelling, and mechanical systems analysis",
-  "software-development":
-    "software design, application development, code review, and technical documentation",
-};
+const display = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["700", "800", "900"],
+  variable: "--cert-display",
+});
+const body = Source_Serif_4({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  variable: "--cert-body",
+});
 
-function getDateRange(
-  issueDate: string,
-  duration: string,
-): { start: string; end: string } {
-  const end = new Date(issueDate);
-  const weeks = parseInt(duration) || 4;
-  const start = new Date(end);
-  start.setDate(start.getDate() - weeks * 7);
-  return { start: fmtOrdinal(start), end: fmtOrdinal(end) };
+const NAVY = "#14275e";
+const GOLD = "#c49a45";
+
+/*
+ * Every size below is in container-width units (cqw) taken from the 1280px
+ * reference template — 1cqw = 12.8px there — so the certificate scales as a
+ * single picture on screen and when printed.
+ */
+
+function fmtDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
-function fmtOrdinal(d: Date): string {
-  const day = d.getDate();
-  const ord =
-    day % 10 === 1 && day !== 11
-      ? "st"
-      : day % 10 === 2 && day !== 12
-        ? "nd"
-        : day % 10 === 3 && day !== 13
-          ? "rd"
-          : "th";
-  return `${day}${ord} ${d.toLocaleString("en-IN", { month: "long" })} ${d.getFullYear()}`;
+/** Shrinks long names so they stay on one line inside the ornament rule. */
+function nameSize(name: string): string {
+  return `${Math.min(4.5, 60 / (0.8 * Math.max(name.length, 1)))}cqw`;
 }
 
-function RoystianLogo() {
+function GoldRule({ width }: { width: string }) {
+  return <span style={{ display: "block", height: "0.12cqw", width, background: GOLD }} />;
+}
+
+function Corners() {
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- printed certificate; a plain img prints reliably
-    <img src="/images/brand/roystian-logo.png" width={70} height={70} alt="Roystian Foundation" />
+    <svg
+      viewBox="0 0 1280 853"
+      preserveAspectRatio="none"
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block" }}
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id="cert-band-dark" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#0d2a6e" />
+          <stop offset="1" stopColor="#1c4fb0" />
+        </linearGradient>
+        <linearGradient id="cert-band-light" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#2f78d6" />
+          <stop offset="1" stopColor="#7fb6ef" />
+        </linearGradient>
+        <radialGradient id="cert-paper" cx="0.5" cy="0.45" r="0.75">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="0.7" stopColor="#f5f9fe" />
+          <stop offset="1" stopColor="#e6f0fb" />
+        </radialGradient>
+      </defs>
+
+      <rect width="1280" height="853" fill="url(#cert-paper)" />
+
+      {/* Soft light streaks behind the content */}
+      <polygon points="1040,0 1280,0 1280,120 880,853 700,853" fill="#dcebfa" opacity="0.45" />
+      <polygon points="0,560 0,853 140,853 420,330" fill="#dcebfa" opacity="0.35" />
+
+      {/* Top-left bands */}
+      <polygon points="0,0 275,0 0,250" fill="url(#cert-band-light)" />
+      <polygon points="0,0 230,0 0,200" fill="url(#cert-band-dark)" />
+      <polygon points="0,215 120,110 140,118 0,245" fill="#4d93e3" />
+      <polygon points="150,0 300,0 0,272 0,250 255,22 150,22" fill="#9cc6f2" opacity="0.6" />
+
+      {/* Bottom-right bands */}
+      <polygon points="1280,853 1000,853 1280,590" fill="url(#cert-band-light)" />
+      <polygon points="1280,853 1060,853 1280,650" fill="url(#cert-band-dark)" />
+      <polygon points="1280,620 1150,740 1162,748 1280,640" fill="#4d93e3" />
+      <polygon points="960,853 990,853 1280,585 1280,560" fill="#9cc6f2" opacity="0.6" />
+
+      {/* Frame: navy outer line, gold inner line */}
+      <rect x="16" y="16" width="1248" height="821" fill="none" stroke={NAVY} strokeWidth="2" />
+      <rect x="23" y="23" width="1234" height="807" fill="none" stroke={GOLD} strokeWidth="1.5" />
+    </svg>
   );
 }
 
-function NgoArpanBranding() {
+/** Faint foundation seal behind the body text. */
+function Seal() {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-      <svg viewBox="0 0 38 38" width="34" height="34" aria-hidden="true">
-        <circle cx="19" cy="19" r="17" fill="none" stroke="#1a56db" strokeWidth="2" />
-        <circle cx="19" cy="19" r="11" fill="none" stroke="#1a56db" strokeWidth="1" />
-        <text x="19" y="17" textAnchor="middle" fontSize="5" fontWeight="bold" fill="#1a56db" fontFamily="Arial, sans-serif">NGO</text>
-        <text x="19" y="24" textAnchor="middle" fontSize="4" fill="#1a56db" fontFamily="Arial, sans-serif">DARPAN</text>
-      </svg>
-      <svg viewBox="0 0 38 38" width="34" height="34" aria-hidden="true">
-        <circle cx="19" cy="19" r="17" fill="#f97316" />
-        <text x="19" y="26" textAnchor="middle" fontSize="22" fontWeight="bold" fill="white" fontFamily="Georgia, serif">D</text>
-      </svg>
-      <div>
-        <p style={{ fontSize: "11px", fontWeight: "700", color: "#0f172a", fontFamily: "Arial, sans-serif", letterSpacing: "1px", lineHeight: "1", margin: 0 }}>ARPAN</p>
-      </div>
+    <svg
+      viewBox="-220 -220 440 440"
+      style={{
+        position: "absolute",
+        left: "50%",
+        top: "52%",
+        width: "34cqw",
+        transform: "translate(-50%, -50%)",
+        opacity: 0.07,
+      }}
+      aria-hidden="true"
+    >
+      <defs>
+        <path id="cert-seal-ring" d="M -165,0 A 165,165 0 1 1 165,0 A 165,165 0 1 1 -165,0" />
+      </defs>
+      <circle r="212" fill="none" stroke={NAVY} strokeWidth="6" />
+      <circle r="196" fill="none" stroke={NAVY} strokeWidth="2" />
+      <circle r="132" fill="none" stroke={NAVY} strokeWidth="3" />
+      <text
+        fill={NAVY}
+        fontSize="38"
+        fontWeight="700"
+        letterSpacing="6"
+        fontFamily="var(--cert-display), Georgia, serif"
+      >
+        <textPath href="#cert-seal-ring" startOffset="0">
+          ROYSTIAN FOUNDATION ★ VIRTUAL INTERNSHIP ★
+        </textPath>
+      </text>
+      {/* Globe */}
+      <circle r="105" fill={NAVY} opacity="0.35" />
+      <ellipse rx="45" ry="105" fill="none" stroke="#fff" strokeWidth="4" />
+      <ellipse rx="85" ry="105" fill="none" stroke="#fff" strokeWidth="3" />
+      <line x1="-105" x2="105" stroke="#fff" strokeWidth="4" />
+      <line x1="-92" x2="92" y1="-50" y2="-50" stroke="#fff" strokeWidth="3" />
+      <line x1="-92" x2="92" y1="50" y2="50" stroke="#fff" strokeWidth="3" />
+      <line y1="-105" y2="105" stroke="#fff" strokeWidth="4" />
+    </svg>
+  );
+}
+
+function Signatory({ src, role, name }: { src: string; role: string; name: string }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "19.7cqw" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- printed certificate; a plain img prints reliably */}
+      <img src={src} alt="" style={{ height: "7.2cqw", width: "auto", display: "block" }} />
+      <GoldRule width="100%" />
+      <p style={{ margin: "0.9cqw 0 0", fontSize: "1.25cqw", color: NAVY, lineHeight: 1.2 }}>{role}</p>
+      <p style={{ margin: "0.4cqw 0 0", fontSize: "1.45cqw", fontWeight: 700, color: NAVY, lineHeight: 1.2 }}>
+        {name}
+      </p>
     </div>
   );
 }
 
-function TejasreeSignature() {
+function VerticalRule() {
   return (
-    <svg viewBox="0 0 130 40" width="120" height="36" aria-hidden="true">
-      <path d="M6,30 L12,8 L22,28 L28,8" fill="none" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M6,36 L36,36" fill="none" stroke="#0f172a" strokeWidth="0.6" />
-      <path d="M42,24 Q46,8 56,20 Q62,28 68,18 Q74,8 80,20 L88,30" fill="none" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M88,30 Q96,10 104,22 L112,30" fill="none" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function KiranSignature() {
-  return (
-    <svg viewBox="0 0 130 40" width="120" height="36" aria-hidden="true">
-      <path d="M8,30 L14,8 M12,20 L24,8 M12,20 L26,30" fill="none" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M34,30 Q36,8 44,22" fill="none" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M52,6 L54,30" fill="none" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M60,22 Q66,8 74,22 Q80,30 88,20 L98,12" fill="none" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M104,18 Q110,6 118,18 L124,26" fill="none" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
+    <span
+      style={{ display: "block", width: "0.12cqw", height: "5.2cqw", background: GOLD, alignSelf: "center" }}
+    />
   );
 }
 
@@ -112,236 +164,171 @@ export function CertificateDocument({
   certificate: Certificate;
   verificationUrl: string;
 }) {
-  const { start, end } = getDateRange(certificate.issueDate, certificate.duration);
-  const description =
-    DOMAIN_DESCRIPTIONS[certificate.domainId] ??
-    "technical projects, skill development activities, and professional assignments";
+  const name = certificate.studentName.toUpperCase();
 
   return (
     <div
       id="certificate-document"
-      className="relative mx-auto w-full max-w-[1000px] bg-white"
-      style={{ aspectRatio: "1.414 / 1", overflow: "hidden" }}
+      className={`${display.variable} ${body.variable} relative mx-auto w-full max-w-[1100px] bg-white`}
+      style={{
+        aspectRatio: "3 / 2",
+        overflow: "hidden",
+        containerType: "inline-size",
+        color: NAVY,
+        fontFamily: "var(--cert-body), Georgia, serif",
+      }}
       role="img"
-      aria-label={`Certificate of Internship for ${certificate.studentName}, ${certificate.domainName}, ID ${certificate.id}`}
+      aria-label={`Certificate of Internship Completion for ${certificate.studentName}, ${certificate.domainName} Intern, ID ${certificate.id}`}
     >
-      {/* ── Blue diagonal corner strips ──
-          Using SVG with explicit width/height attrs so it reliably fills the
-          container even when CSS h-full/w-full is overridden by print styles. ── */}
-      <svg
-        width="100%"
-        height="100%"
-        viewBox="0 0 1000 707"
-        preserveAspectRatio="none"
-        style={{ position: "absolute", top: 0, left: 0, zIndex: 0, display: "block" }}
-        aria-hidden="true"
-      >
-        {/* Top-left: outer dark strip */}
-        <polygon points="0,0 215,0 0,707" fill="#0c2d6b" />
-        {/* Top-left: inner lighter strip */}
-        <polygon points="0,0 160,0 0,540" fill="#1246a8" />
-        {/* Bottom-right: outer dark strip */}
-        <polygon points="1000,707 785,707 1000,360" fill="#0c2d6b" />
-        {/* Bottom-right: inner lighter strip */}
-        <polygon points="1000,707 840,707 1000,460" fill="#1246a8" />
-      </svg>
+      <Corners />
+      <Seal />
 
-      {/* ── KR watermark ── */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 1,
-          pointerEvents: "none",
-          overflow: "hidden",
-        }}
-        aria-hidden="true"
-      >
-        <span
-          style={{
-            fontSize: "270px",
-            fontWeight: "900",
-            color: "#0c2d6b",
-            opacity: 0.045,
-            fontFamily: "Georgia, serif",
-            lineHeight: 1,
-            userSelect: "none",
-          }}
-        >
-          KR
-        </span>
-      </div>
-
-      {/* ── Main content — absolute inset so height is always the certificate height ── */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          zIndex: 2,
           display: "flex",
           flexDirection: "column",
-          padding: "3% 22% 2.5% 23%",
+          alignItems: "center",
+          textAlign: "center",
         }}
       >
-        {/* Top-right: KR logo + QR */}
+        {/* Masthead */}
+        <h1
+          style={{
+            margin: "4.1cqw 0 0",
+            fontFamily: "var(--cert-display), Georgia, serif",
+            fontWeight: 800,
+            fontSize: "4.3cqw",
+            lineHeight: 1,
+            letterSpacing: "0.01em",
+          }}
+        >
+          ROYSTIAN FOUNDATION
+        </h1>
+        <p style={{ margin: "1cqw 0 0", fontSize: "1.25cqw", letterSpacing: "0.2em", lineHeight: 1 }}>
+          VIRTUAL INTERNSHIP &amp; SKILL DEVELOPMENT PLATFORM
+        </p>
+        <p style={{ margin: "0.75cqw 0 0", fontSize: "1.02cqw", letterSpacing: "0.2em", lineHeight: 1 }}>
+          SECTION 8 NON-PROFIT ORGANIZATION
+        </p>
+
+        {/* Title */}
+        <p
+          style={{
+            margin: "2.1cqw 0 0",
+            fontFamily: "var(--cert-display), Georgia, serif",
+            fontWeight: 900,
+            fontSize: "6.75cqw",
+            lineHeight: 1,
+            letterSpacing: "0.005em",
+          }}
+        >
+          CERTIFICATE
+        </p>
+        <div style={{ display: "flex", alignItems: "center", gap: "1.4cqw", marginTop: "1cqw" }}>
+          <GoldRule width="8.2cqw" />
+          <span style={{ fontSize: "1.95cqw", letterSpacing: "0.16em", lineHeight: 1 }}>
+            OF INTERNSHIP COMPLETION
+          </span>
+          <GoldRule width="8.2cqw" />
+        </div>
+
+        <p style={{ margin: "2.7cqw 0 0", fontSize: "1.72cqw", lineHeight: 1 }}>This is to certify that</p>
+
+        {/* Recipient */}
+        <p
+          style={{
+            margin: "2.2cqw 0 0",
+            fontFamily: "var(--cert-display), Georgia, serif",
+            fontWeight: 800,
+            fontSize: nameSize(name),
+            lineHeight: 1,
+            letterSpacing: "0.04em",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {name}
+        </p>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.9cqw", marginTop: "0.9cqw" }}>
+          <GoldRule width="26.6cqw" />
+          <span
+            style={{
+              display: "block",
+              width: "0.85cqw",
+              height: "0.85cqw",
+              background: GOLD,
+              transform: "rotate(45deg)",
+            }}
+          />
+          <GoldRule width="26.6cqw" />
+        </div>
+
+        {/* Statement */}
+        <p style={{ margin: "1.4cqw 0 0", fontSize: "1.72cqw", lineHeight: 1.45 }}>
+          has successfully completed their internship at Roystian Foundation
+          <br />
+          as a <strong style={{ fontWeight: 700 }}>{certificate.domainName} Intern</strong>,
+          <br />
+          demonstrating practical learning, project work, and
+          <br />
+          valuable contributions to the organization.
+        </p>
+
+        {/* Signatures and recognitions */}
         <div
           style={{
             position: "absolute",
-            top: "4%",
-            right: "3%",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "4px",
-          }}
-        >
-          <RoystianLogo />
-          <QRCode value={verificationUrl} size={66} alt="Certificate verification QR code" />
-          <p style={{ fontSize: "0.42rem", letterSpacing: "0.2em", color: "#475569", textTransform: "uppercase", fontFamily: "Arial, sans-serif", margin: 0 }}>
-            SCAN TO VERIFY
-          </p>
-        </div>
-
-        {/* Title */}
-        <header style={{ textAlign: "center", marginBottom: "2%" }}>
-          <h1
-            style={{
-              fontSize: "clamp(0.85rem, 2vw, 1.55rem)",
-              fontWeight: "800",
-              letterSpacing: "0.22em",
-              color: "#0f172a",
-              textTransform: "uppercase",
-              fontFamily: "Arial, sans-serif",
-              lineHeight: 1.2,
-              margin: 0,
-            }}
-          >
-            CERTIFICATE OF INTERNSHIP
-          </h1>
-          <p
-            style={{
-              fontSize: "clamp(0.5rem, 0.75vw, 0.65rem)",
-              letterSpacing: "0.14em",
-              color: "#475569",
-              marginTop: "4px",
-              fontFamily: "Arial, sans-serif",
-              fontWeight: "600",
-            }}
-          >
-            This is to certify that
-          </p>
-        </header>
-
-        {/* Student name */}
-        <div style={{ textAlign: "center", marginBottom: "3%" }}>
-          <h2
-            style={{
-              fontSize: "clamp(1.5rem, 3.8vw, 3rem)",
-              fontWeight: "900",
-              color: "#0f172a",
-              letterSpacing: "0.04em",
-              lineHeight: 1,
-              fontFamily: "'Arial Black', Arial, sans-serif",
-              margin: 0,
-            }}
-          >
-            {certificate.studentName.toUpperCase()}
-          </h2>
-          <div
-            style={{
-              height: "2px",
-              background: "linear-gradient(to right, transparent, #0c2d6b 15%, #0c2d6b 85%, transparent)",
-              margin: "6px auto 0",
-              width: "88%",
-            }}
-          />
-        </div>
-
-        {/* Body — flex-1 pushes footer down proportionally */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", textAlign: "center", gap: "3%" }}>
-          <p
-            style={{
-              fontSize: "clamp(0.55rem, 0.95vw, 0.78rem)",
-              fontWeight: "700",
-              lineHeight: 1.9,
-              color: "#1e293b",
-              fontFamily: "Arial, sans-serif",
-              margin: 0,
-            }}
-          >
-            has successfully completed their internship at{" "}
-            <strong>Roystian Foundation</strong>
-            <br />
-            as a{" "}
-            <strong>
-              {certificate.domainName} Intern ({certificate.programName})
-            </strong>
-            <br />
-            from <strong>{start}</strong> to <strong>{end}</strong>.
-          </p>
-
-          <p
-            style={{
-              fontSize: "clamp(0.5rem, 0.88vw, 0.72rem)",
-              fontWeight: "700",
-              lineHeight: 1.9,
-              color: "#334155",
-              fontFamily: "Arial, sans-serif",
-              margin: 0,
-            }}
-          >
-            During this period, they contributed to {description}.
-          </p>
-        </div>
-
-        {/* Footer: 3-column — aligned to bottom */}
-        <footer
-          style={{
+            left: 0,
+            right: 0,
+            bottom: "5.3cqw",
             display: "flex",
             alignItems: "flex-end",
-            justifyContent: "space-between",
-            marginTop: "auto",
-            paddingTop: "1.5%",
+            justifyContent: "center",
+            gap: "1.6cqw",
           }}
         >
-          {/* Left: Development Director */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: "26%" }}>
-            <TejasreeSignature />
-            <div style={{ height: "1px", background: "#0f172a", width: "100%", margin: "3px 0 4px" }} />
-            <p style={{ fontSize: "clamp(0.42rem, 0.65vw, 0.55rem)", fontWeight: "700", color: "#0f172a", fontFamily: "Arial, sans-serif", margin: 0 }}>
-              Development Director
-            </p>
-            <p style={{ fontSize: "clamp(0.38rem, 0.6vw, 0.52rem)", color: "#475569", fontFamily: "Arial, sans-serif", margin: 0 }}>
-              TejasreeAkula
-            </p>
-          </div>
+          <Signatory
+            src="/images/certificate/signature-ceo.png"
+            role="CEO & Founder"
+            name="Kiran Bavikatti"
+          />
+          <VerticalRule />
+          {/* eslint-disable-next-line @next/next/no-img-element -- printed certificate; a plain img prints reliably */}
+          <img
+            src="/images/certificate/partner-logos.png"
+            alt="NITI Aayog and NGO Darpan"
+            style={{ width: "27cqw", height: "auto", display: "block", marginBottom: "-0.6cqw" }}
+          />
+          <VerticalRule />
+          <Signatory
+            src="/images/certificate/signature-director.png"
+            role="Development Director"
+            name="Tejasree Akula"
+          />
+        </div>
+      </div>
 
-          {/* Center: NGO ARPAN + Foundation + Unique ID */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3px" }}>
-            <NgoArpanBranding />
-            <p style={{ fontSize: "clamp(0.46rem, 0.72vw, 0.6rem)", fontWeight: "800", letterSpacing: "0.14em", color: "#0f172a", fontFamily: "Arial, sans-serif", margin: 0 }}>
-              ROYSTIAN FOUNDATION
-            </p>
-            <p style={{ fontSize: "clamp(0.38rem, 0.6vw, 0.52rem)", color: "#475569", fontFamily: "Arial, sans-serif", margin: 0 }}>
-              UNIQUE ID - {certificate.id}
-            </p>
-          </div>
-
-          {/* Right: CEO & Founder */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: "26%" }}>
-            <KiranSignature />
-            <div style={{ height: "1px", background: "#0f172a", width: "100%", margin: "3px 0 4px" }} />
-            <p style={{ fontSize: "clamp(0.42rem, 0.65vw, 0.55rem)", fontWeight: "700", color: "#0f172a", fontFamily: "Arial, sans-serif", margin: 0 }}>
-              Ceo &amp; Founder
-            </p>
-            <p style={{ fontSize: "clamp(0.38rem, 0.6vw, 0.52rem)", color: "#475569", fontFamily: "Arial, sans-serif", margin: 0 }}>
-              Kiran Bavikatti
-            </p>
-          </div>
-        </footer>
+      {/* Verification — the template has no slot for this, so it sits in the
+          empty top-right corner inside the frame. */}
+      <div
+        style={{
+          position: "absolute",
+          top: "3.4cqw",
+          right: "3.4cqw",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "0.5cqw",
+          fontSize: "0.72cqw",
+          lineHeight: 1.35,
+          color: "#334a80",
+        }}
+      >
+        <QRCode value={verificationUrl} size={96} className="!h-[6cqw] !w-[6cqw] !rounded-none" alt="Certificate verification QR code" />
+        <p style={{ margin: 0, letterSpacing: "0.14em", fontWeight: 700 }}>SCAN TO VERIFY</p>
+        <p style={{ margin: 0 }}>{certificate.id}</p>
+        <p style={{ margin: 0 }}>Issued {fmtDate(certificate.issueDate)}</p>
       </div>
     </div>
   );

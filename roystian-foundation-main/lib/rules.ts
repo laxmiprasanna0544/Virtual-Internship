@@ -137,6 +137,11 @@ export function summariseProgress(
   };
 }
 
+/** The final assessment opens only once every module assessment is passed. */
+export function isFinalAssessmentUnlocked(summary: ProgressSummary): boolean {
+  return summary.assessmentTotal > 0 && summary.assessmentsPassed === summary.assessmentTotal;
+}
+
 /** Minimum programme days that must elapse before the ₹5,000 Industry-Led
  *  certificate can be generated, regardless of how fast other requirements
  *  are completed. */
@@ -230,15 +235,19 @@ export function completionRequirements(
     },
     {
       key: "practical",
-      label: "Practical task submitted / reviewed",
+      label: "Practical task reviewed and approved",
+      // Submitting is not enough: a reviewer has to accept the work.
       done:
-        summary.practicalStatus === "submitted" ||
         summary.practicalStatus === "reviewed" ||
         summary.practicalStatus === "approved",
       detail:
         summary.practicalStatus === "pending"
           ? "Your practical activity has not been submitted yet."
-          : `Practical task status: ${summary.practicalStatus.replace("-", " ")}.`,
+          : summary.practicalStatus === "submitted"
+            ? "Submitted. Waiting for a reviewer to approve it."
+            : summary.practicalStatus === "needs-revision"
+              ? "The reviewer asked for changes. Revise and resubmit it."
+              : `Practical task status: ${summary.practicalStatus}.`,
       href: "/dashboard/assignments",
     },
     {

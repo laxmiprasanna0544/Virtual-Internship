@@ -5,6 +5,7 @@ export {
   emptyProgress,
   INDUSTRY_LED_MIN_DAYS,
   isCertificateUnlocked,
+  isFinalAssessmentUnlocked,
   isProfileComplete,
   scoreAssessment,
   summariseProgress,

@@ -93,6 +93,16 @@ for (let i = 0; i < 7; i += 1) {
 }
 check("6th attempt within 24h is refused with 429", capped === 5, `refused at attempt ${capped === null ? "never" : capped + 1}`);
 
+section("Final assessment stays locked until every module assessment is passed");
+const earlyFinal = finalAssessment(DOMAIN);
+res = await student.get(`/api/assessments/${earlyFinal.id}`);
+check("final questions refused while module assessments are unpassed (403)", res.status === 403, res.text);
+res = await student.post("/api/assessments/submit", { assessmentId: earlyFinal.id, answers: correctAnswers(earlyFinal) });
+check("final attempt refused while module assessments are unpassed (403)", res.status === 403, res.text);
+const [{ count: earlyFinalRows }] = await sql`
+  select count(*)::int as count from public.assessment_attempts where student_id = ${me.id} and kind = 'final'`;
+check("no final attempt recorded", earlyFinalRows === 0, earlyFinalRows);
+
 section("Pass every module assessment");
 for (const assessment of assessments.slice(1)) {
   if (assessment.id === second.id) {
@@ -136,6 +146,9 @@ res = await student.post("/api/student/submission", { domainId: DOMAIN, response
 check("practical task submitted with the uploaded file", res.status === 200, res.text);
 const [submission] = await sql`select * from public.submissions where student_id = ${me.id} and domain_id = ${DOMAIN}`;
 check("submission stored with the S3 key", submission?.status === "submitted" && submission?.file_path === upload.key, submission);
+
+res = await student.post("/api/certificates/issue", {});
+check("certificate refused while the practical is only submitted, not approved (403)", res.status === 403, res.text);
 
 section("Trainer reviews the submission");
 const trainer = new Client("journey-trainer");

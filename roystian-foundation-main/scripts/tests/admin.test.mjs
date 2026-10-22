@@ -164,6 +164,11 @@ check("admin records the final as passed (override)", res.status === 200, res.te
 const [finalOverride] = await sql`select * from public.assessment_attempts where student_id = ${inAccount.id} and assessment_id = ${final.id}`;
 check("final override marked with overridden_by", finalOverride?.overridden_by === adminAccount.id, finalOverride);
 res = await inDomain.post("/api/assessments/submit", { assessmentId: final.id, answers: correctAnswers(final) });
+check("the student's own final stays locked while module assessments are unpassed (403)", res.status === 403, res.text);
+for (const assessment of assessments.slice(1)) {
+  await inDomain.post("/api/assessments/submit", { assessmentId: assessment.id, answers: correctAnswers(assessment) });
+}
+res = await inDomain.post("/api/assessments/submit", { assessmentId: final.id, answers: correctAnswers(final) });
 check("student also passes the final themselves", res.json?.attempt?.passed === true, res.text);
 res = await admin.post("/api/admin/students/progress", { action: "final", studentId: inAccount.id, passed: false });
 check("removing the override keeps the earned final (notice)", res.status === 200 && /stays/.test(res.json?.notice ?? ""), res.text);

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAssessmentWithAnswers } from "@/data/assessment-bank";
 import { requireStudent } from "@/lib/server/auth";
 import { withUser } from "@/lib/server/db";
-import { hasPaidForDomain } from "@/lib/server/enrolment";
+import { hasPaidForDomain, hasPassedAllModuleAssessments } from "@/lib/server/enrolment";
 import type { PublicQuestion } from "@/types";
 
 /**
@@ -23,6 +23,12 @@ export async function GET(
   const paid = await withUser(auth.user.id, (tx) => hasPaidForDomain(tx, assessment.domainId));
   if (!paid) {
     return NextResponse.json({ error: "You are not enrolled in this domain." }, { status: 403 });
+  }
+  if (
+    assessment.kind === "final" &&
+    !(await withUser(auth.user.id, (tx) => hasPassedAllModuleAssessments(tx, assessment.domainId)))
+  ) {
+    return NextResponse.json({ error: "Pass every module assessment to unlock the final assessment." }, { status: 403 });
   }
 
   const questions: PublicQuestion[] = assessment.questions.map(({ id, type, prompt, options }) => ({

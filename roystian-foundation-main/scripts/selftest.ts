@@ -5,7 +5,13 @@ import { allAssessmentsWithAnswers, getAssessmentWithAnswers } from "../data/ass
 const ASSESSMENTS = allAssessmentsWithAnswers();
 const getFinalAssessment = (domainId: string) => getAssessmentWithAnswers(`${domainId}-final`);
 import { buildSeedDatabase } from "../data/seed";
-import { scoreAssessment, summariseProgress, completionRequirements, isCertificateUnlocked } from "../lib/progress";
+import {
+  scoreAssessment,
+  summariseProgress,
+  completionRequirements,
+  isCertificateUnlocked,
+  isFinalAssessmentUnlocked,
+} from "../lib/progress";
 import { computeKpis, registrationsOverTime, domainBreakdown, programSplit } from "../lib/analytics";
 import { buildSchedule } from "../lib/schedule";
 import { buildRecommendation } from "../lib/recommendation";
@@ -159,6 +165,38 @@ check(
   "completed student meets every requirement",
   isCertificateUnlocked(finished, finishedProgress, finishedSubmission),
   completionRequirements(finished, finishedProgress, finishedSubmission).filter((r) => !r.done),
+);
+
+// A practical that is submitted but not yet approved keeps the certificate locked.
+check(
+  "a submitted-but-unreviewed practical does not unlock the certificate",
+  !isCertificateUnlocked(finished, finishedProgress, { ...finishedSubmission, status: "submitted" }),
+);
+check(
+  "a practical sent back for revision does not unlock the certificate",
+  !isCertificateUnlocked(finished, finishedProgress, { ...finishedSubmission, status: "needs-revision" }),
+);
+
+// The final assessment opens only after every module assessment is passed.
+check(
+  "final assessment unlocked once every module assessment is passed",
+  isFinalAssessmentUnlocked(summariseProgress(finished, finishedProgress, finishedSubmission)),
+);
+const [firstModuleAttempt] = Object.keys(finishedProgress.moduleAttempts);
+const oneFailed = {
+  ...finishedProgress,
+  moduleAttempts: {
+    ...finishedProgress.moduleAttempts,
+    [firstModuleAttempt]: { ...finishedProgress.moduleAttempts[firstModuleAttempt], passed: false },
+  },
+};
+check(
+  "final assessment locked while one module assessment is unpassed",
+  !isFinalAssessmentUnlocked(summariseProgress(finished, oneFailed, finishedSubmission)),
+);
+check(
+  "final assessment locked for a fresh student",
+  !isFinalAssessmentUnlocked(summariseProgress(demo, null, null)),
 );
 
 // A paid-but-untouched student must never be certificate-eligible.

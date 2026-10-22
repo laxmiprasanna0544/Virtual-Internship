@@ -1,5 +1,6 @@
 import "server-only";
 
+import { getDomainAssessments } from "@/data/domains";
 import type { Tx } from "@/lib/server/db";
 
 /**
@@ -12,6 +13,21 @@ export async function hasPaidForDomain(tx: Tx, domainId: string): Promise<boolea
     where student_id = auth.uid() and domain_id = ${domainId} and payment_status = 'successful'
     limit 1`;
   return rows.length > 0;
+}
+
+/**
+ * Has the student (auth.uid()) passed every module assessment in `domainId`?
+ * The final assessment is closed until they have. Results an admin recorded
+ * count, as they do everywhere else.
+ */
+export async function hasPassedAllModuleAssessments(tx: Tx, domainId: string): Promise<boolean> {
+  const required = getDomainAssessments(domainId).map((a) => a.id);
+  if (required.length === 0) return false;
+  const rows = await tx`
+    select distinct assessment_id from public.assessment_attempts
+    where student_id = auth.uid() and domain_id = ${domainId} and kind = 'module' and passed
+      and assessment_id in ${tx(required)}`;
+  return rows.length === required.length;
 }
 
 /** The database's own message for an exception raised by a guard trigger. */

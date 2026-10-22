@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, ClipboardList, GraduationCap, RotateCcw } from "lucide-react";
+import { ArrowRight, ClipboardList, GraduationCap, Lock, RotateCcw } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState, LoadingState } from "@/components/shared/states";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { getDomainAssessments } from "@/data/domains";
+import { isFinalAssessmentUnlocked } from "@/lib/rules";
 import { useStudentContext } from "@/lib/use-student";
 import { formatDate } from "@/lib/utils";
 
@@ -31,6 +32,8 @@ export function AssessmentsList() {
 
   const assessments = getDomainAssessments(ctx.domain.id);
   const { progress, summary, finalAssessment } = ctx;
+  const finalUnlocked = isFinalAssessmentUnlocked(summary);
+  const modulesLeft = summary.assessmentTotal - summary.assessmentsPassed;
 
   return (
     <div className="space-y-6">
@@ -95,7 +98,18 @@ export function AssessmentsList() {
                   {formatDate(progress.finalAttempt.submittedAt)}
                 </p>
               )}
+              {!finalUnlocked && (
+                <p className="mt-2 text-sm font-medium text-warning-ink">
+                  Pass all {summary.assessmentTotal} module assessments to unlock the final ({modulesLeft}{" "}
+                  remaining).
+                </p>
+              )}
             </div>
+            {!finalUnlocked ? (
+              <Button size="lg" className="shrink-0" disabled>
+                <Lock /> Final assessment locked
+              </Button>
+            ) : (
             <Button asChild size="lg" className="shrink-0">
               <Link href="/dashboard/assessments/final">
                 {progress?.finalAttempt ? (
@@ -109,6 +123,7 @@ export function AssessmentsList() {
                 )}
               </Link>
             </Button>
+            )}
           </div>
         </section>
       )}

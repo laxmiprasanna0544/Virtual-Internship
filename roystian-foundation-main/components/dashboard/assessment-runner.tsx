@@ -9,6 +9,7 @@ import {
   Award,
   CheckCircle2,
   ClipboardList,
+  Lock,
   RotateCcw,
   XCircle,
 } from "lucide-react";
@@ -23,6 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { getAssessment, getFinalAssessment } from "@/data/domains";
+import { isFinalAssessmentUnlocked } from "@/lib/rules";
 import { useStudentContext } from "@/lib/use-student";
 import { fetchAssessmentQuestions, requestCertificate, submitAssessment } from "@/lib/student-data";
 import { EASE } from "@/lib/motion";
@@ -53,8 +55,11 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
   const total = questions?.length ?? 0;
   const activeQuestion = questions?.[index];
 
+  const finalLocked = assessment?.kind === "final" && !isFinalAssessmentUnlocked(ctx.summary);
+
   // Questions come from the server without their answers.
-  const loadId = ctx.ready && assessment && assessment.domainId === ctx.domain?.id ? assessment.id : null;
+  const loadId =
+    ctx.ready && assessment && assessment.domainId === ctx.domain?.id && !finalLocked ? assessment.id : null;
   React.useEffect(() => {
     if (!loadId) return;
     let active = true;
@@ -130,6 +135,19 @@ export function AssessmentRunner({ assessmentId }: { assessmentId: string }) {
         icon={ClipboardList}
         title="Assessment not available"
         description="This assessment is not part of your current internship track."
+        actionLabel="Back to assessments"
+        actionHref="/dashboard/assessments"
+      />
+    );
+  }
+
+  if (finalLocked) {
+    const left = ctx.summary.assessmentTotal - ctx.summary.assessmentsPassed;
+    return (
+      <EmptyState
+        icon={Lock}
+        title="Final assessment locked"
+        description={`Pass all ${ctx.summary.assessmentTotal} module assessments to unlock the final assessment. ${left} still to pass.`}
         actionLabel="Back to assessments"
         actionHref="/dashboard/assessments"
       />

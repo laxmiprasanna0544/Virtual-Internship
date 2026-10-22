@@ -4,7 +4,7 @@ import { getAssessmentWithAnswers } from "@/data/assessment-bank";
 import { scoreAssessment } from "@/lib/rules";
 import { readJson, requireStudent } from "@/lib/server/auth";
 import { getSql, withUser } from "@/lib/server/db";
-import { hasPaidForDomain } from "@/lib/server/enrolment";
+import { hasPaidForDomain, hasPassedAllModuleAssessments } from "@/lib/server/enrolment";
 import { notify } from "@/lib/server/notify";
 import { toAttempt, type AttemptRow } from "@/lib/records/mappers";
 import type { QuestionReview } from "@/types";
@@ -37,6 +37,12 @@ export async function POST(req: NextRequest) {
   const paid = await withUser(userId, (tx) => hasPaidForDomain(tx, assessment.domainId));
   if (!paid) {
     return NextResponse.json({ error: "You are not enrolled in this domain." }, { status: 403 });
+  }
+  if (
+    assessment.kind === "final" &&
+    !(await withUser(userId, (tx) => hasPassedAllModuleAssessments(tx, assessment.domainId)))
+  ) {
+    return NextResponse.json({ error: "Pass every module assessment to unlock the final assessment." }, { status: 403 });
   }
 
   const [{ count }] = await sql<{ count: number }[]>`

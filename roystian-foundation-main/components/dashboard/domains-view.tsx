@@ -114,6 +114,13 @@ export function DomainsView() {
 
   const { student, registrations } = ctx;
   const enrolledDomainIds = new Set(registrations.map((r) => r.domainId));
+  // Domains taken only self-paced so far can be started again on the guided
+  // (Industry-Led) programme, from scratch.
+  const guidedRestartDomainIds = new Set(
+    [...enrolledDomainIds].filter((id) =>
+      registrations.filter((r) => r.domainId === id).every((r) => r.programId === "self-paced"),
+    ),
+  );
 
   const filteredDomains = DOMAINS.filter((d) => {
     const matchesCluster = activeCluster === "all" || d.cluster === activeCluster;
@@ -130,6 +137,7 @@ export function DomainsView() {
 
   const selectedDomain = selectedDomainId ? getDomain(selectedDomainId) : null;
   const selectedProgram = getProgram(selectedProgramId);
+  const isGuidedRestart = Boolean(selectedDomain && enrolledDomainIds.has(selectedDomain.id));
   const recommendation = selectedDomain
     ? buildRecommendation(
         selectedDomain.id,
@@ -140,6 +148,13 @@ export function DomainsView() {
 
   function handleSelectDomainToEnroll(domainId: string) {
     setSelectedDomainId(domainId);
+    setStep("experience");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function handleStartGuided(domainId: string) {
+    setSelectedDomainId(domainId);
+    setSelectedProgramId("industry-led");
     setStep("experience");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -433,6 +448,16 @@ export function DomainsView() {
                         Enroll in this Domain <ArrowRight className="h-3.5 w-3.5" />
                       </Button>
                     )}
+                    {guidedRestartDomainIds.has(domain.id) && (
+                      <Button
+                        className="mt-2 w-full gap-2"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleStartGuided(domain.id)}
+                      >
+                        Start the guided programme <ArrowRight className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               );
@@ -577,8 +602,10 @@ export function DomainsView() {
             </p>
           </div>
 
+          {isGuidedRestart && <GuidedRestartNotice domainName={selectedDomain.name} />}
+
           <div className="grid gap-6 lg:grid-cols-2">
-            {PROGRAMS.map((prog) => {
+            {PROGRAMS.filter((prog) => !isGuidedRestart || prog.id === "industry-led").map((prog) => {
               const isSelected = selectedProgramId === prog.id;
               const isIndustryLed = prog.id === "industry-led";
 
@@ -658,6 +685,7 @@ export function DomainsView() {
       {/* ── STEP 4: CHECKOUT & PAYMENT GATEWAY ────────────────────────────── */}
       {step === "checkout" && selectedDomain && selectedProgram && (
         <div className="space-y-6">
+          {isGuidedRestart && <GuidedRestartNotice domainName={selectedDomain.name} />}
           {failureError && (
             <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-xs text-destructive">
               <p className="font-semibold">Payment Unsuccessful</p>
@@ -833,6 +861,20 @@ export function DomainsView() {
 
         </div>
       )}
+    </div>
+  );
+}
+
+/** Shown while buying the guided programme in a domain already taken self-paced. */
+function GuidedRestartNotice({ domainName }: { domainName: string }) {
+  return (
+    <div className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm text-foreground">
+      <p className="font-semibold">This starts {domainName} again from the beginning</p>
+      <p className="mt-1 text-muted-foreground">
+        The guided programme is a fresh enrolment. Your self-paced modules, assessments and practical
+        task in this domain are archived and you complete everything again with live classes. Any
+        self-paced certificate you already have stays valid.
+      </p>
     </div>
   );
 }

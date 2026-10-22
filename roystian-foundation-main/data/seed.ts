@@ -822,6 +822,7 @@ export function buildSeedDatabase(): Database {
             ? "Industry-Led Virtual Internship"
             : "Self-Paced Virtual Internship",
         duration: "15 Days",
+        startDate: iso(person.daysAgo),
         issueDate: iso(Math.max(1, person.daysAgo - moduleCount - 1)),
         status: "valid",
         registrationId,

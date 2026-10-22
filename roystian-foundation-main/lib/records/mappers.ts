@@ -184,6 +184,7 @@ export function toCertificate(row: CertificateRow): Certificate {
     programId: row.program_id,
     programName: row.program_name,
     duration: row.duration,
+    startDate: row.start_date,
     issueDate: row.issue_date,
     status: row.status,
     registrationId: row.registration_id,

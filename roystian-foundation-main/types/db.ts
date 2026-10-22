@@ -74,6 +74,7 @@ export interface Tables {
       revoked_at: string | null;
       revoked_reason: string | null;
       created_at: string;
+      start_date: string | null;
     };
   };
   challenge_entries: {
@@ -146,6 +147,17 @@ export interface Tables {
       badge_id: string;
       evidence: string;
       earned_at: string;
+    };
+  };
+  enrolment_archive: {
+    Row: {
+      id: string;
+      student_id: string;
+      domain_id: string;
+      registration_id: string | null;
+      source_table: string;
+      row_data: Json;
+      archived_at: string;
     };
   };
   fellowship_applications: {

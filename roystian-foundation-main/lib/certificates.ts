@@ -24,7 +24,7 @@ export async function verifyCertificatePublic(certificateId: string): Promise<Ve
   if (!res?.ok) throw new Error("Verification is temporarily unavailable.");
   const { certificate: row } = (await res.json()) as { certificate: PublicCertificate | null };
   if (!row) return { status: "not-found" };
-  const certificate: Certificate = { ...row, studentId: "", registrationId: "", finalScore: 0 };
+  const certificate: Certificate = { ...row, studentId: "", registrationId: "", finalScore: 0, startDate: null };
   return row.status === "revoked" ? { status: "revoked", certificate } : { status: "valid", certificate };
 }
 

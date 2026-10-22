@@ -25,11 +25,13 @@ const GOLD = "#c49a45";
  * single picture on screen and when printed.
  */
 
+/** Certificate dates are Indian calendar dates, wherever the viewer is. */
 function fmtDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-IN", {
     day: "numeric",
     month: "long",
     year: "numeric",
+    timeZone: "Asia/Kolkata",
   });
 }
 
@@ -268,7 +270,14 @@ export function CertificateDocument({
         <p style={{ margin: "1.4cqw 0 0", fontSize: "1.72cqw", lineHeight: 1.45 }}>
           has successfully completed their internship at Roystian Foundation
           <br />
-          as a <strong style={{ fontWeight: 700 }}>{certificate.domainName} Intern</strong>,
+          as a <strong style={{ fontWeight: 700 }}>{certificate.domainName} Intern</strong>
+          {certificate.startDate && (
+            <>
+              {" "}from <strong style={{ fontWeight: 700 }}>{fmtDate(certificate.startDate)}</strong> to{" "}
+              <strong style={{ fontWeight: 700 }}>{fmtDate(certificate.issueDate)}</strong>
+            </>
+          )}
+          ,
           <br />
           demonstrating practical learning, project work, and
           <br />

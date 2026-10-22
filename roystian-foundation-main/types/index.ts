@@ -276,6 +276,8 @@ export interface Certificate {
   programId: ProgramId;
   programName: string;
   duration: string;
+  /** First day of the internship period (the enrolment's start date). */
+  startDate: string | null;
   issueDate: string;
   status: CertificateStatus;
   registrationId: string;

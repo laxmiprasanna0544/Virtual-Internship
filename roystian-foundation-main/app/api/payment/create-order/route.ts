@@ -73,12 +73,26 @@ export async function POST(req: NextRequest) {
     where p.id = ${userId}`;
   if (!profile) return NextResponse.json({ error: "Student record not found." }, { status: 404 });
 
-  const [existing] = await sql`
-    select 1 from public.registrations
-    where student_id = ${userId} and domain_id = ${domain.id} and payment_status = 'successful'
-    limit 1`;
-  if (existing) {
-    return NextResponse.json({ error: "You are already enrolled in this domain." }, { status: 409 });
+  // A domain can be taken once per programme, and only upwards: a student who
+  // did it self-paced may start again on the Industry-Led programme, which
+  // archives the self-paced work. Nothing moves a student back down.
+  const existing = await sql<{ program_id: string }[]>`
+    select program_id from public.registrations
+    where student_id = ${userId} and domain_id = ${domain.id} and payment_status = 'successful'`;
+  if (existing.length > 0) {
+    const freshGuided =
+      program.id === "industry-led" && existing.every((r) => r.program_id === "self-paced");
+    if (!freshGuided) {
+      return NextResponse.json(
+        {
+          error:
+            existing.some((r) => r.program_id === program.id)
+              ? `You are already enrolled in the ${program.name} for this domain.`
+              : "You are already enrolled in this domain.",
+        },
+        { status: 409 },
+      );
+    }
   }
 
   const phone = tenDigitPhone(profile.mobile);

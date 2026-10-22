@@ -22,7 +22,7 @@ import {
   waitFor,
 } from "./lib.mjs";
 
-const { getProgram, moduleAssessments } = curriculum();
+const { getProgram, moduleAssessments, correctAnswers } = curriculum();
 
 /** Posts a webhook exactly as Cashfree does, optionally with a bad signature. */
 async function sendWebhook(payload, { secret = env.CASHFREE_SECRET_KEY, signature, timestamp } = {}) {
@@ -201,6 +201,44 @@ const after = (await (await fetch(`${CASHFREE}/__test/orders`)).json()).find((o)
 check("no second refund at the gateway", after?.refunds?.length === 1, after?.refunds?.length);
 res = await staffClient.post("/api/admin/payments/refund", { paymentId: failedRow.id });
 check("a failed payment cannot be refunded (409)", res.status === 409, res.status);
+section("Guided programme after self-paced starts the domain fresh");
+const restarter = new Client("guided-restart");
+const restarterAccount = await newStudent(restarter, { name: "Guided Restart" });
+const selfPaced = await enrol(restarter, "data-analytics", "self-paced");
+const firstAnalytics = moduleAssessments("data-analytics")[0];
+res = await restarter.post("/api/assessments/submit", { assessmentId: firstAnalytics.id, answers: correctAnswers(firstAnalytics) });
+check("self-paced work recorded", res.json?.attempt?.passed === true, res.text);
+
+res = await restarter.post("/api/payment/create-order", { domainId: "data-analytics", programId: "self-paced", experience: "beginner" });
+check("the same programme twice in one domain → 409", res.status === 409, res.status);
+
+const guided = await enrol(restarter, "data-analytics", "industry-led");
+check("guided enrolment is a new registration", Boolean(guided.registrationId) && guided.registrationId !== selfPaced.registrationId, guided);
+const [restarterRow] = await sql`select active_registration_id, program_id from public.students where id = ${restarterAccount.id}`;
+check("guided enrolment is the active one", restarterRow?.active_registration_id === guided.registrationId && restarterRow?.program_id === "industry-led", restarterRow);
+const [{ count: liveAttempts }] = await sql`
+  select count(*)::int as count from public.assessment_attempts
+  where student_id = ${restarterAccount.id} and domain_id = 'data-analytics'`;
+check("the guided enrolment starts with no assessment attempts", liveAttempts === 0, liveAttempts);
+const [freshProgress] = await sql`
+  select completed_modules from public.module_progress
+  where student_id = ${restarterAccount.id} and domain_id = 'data-analytics'`;
+check("the guided enrolment starts with no completed modules", freshProgress?.completed_modules?.length === 0, freshProgress);
+const archived = await sql`
+  select source_table, registration_id from public.enrolment_archive where student_id = ${restarterAccount.id}`;
+check(
+  "self-paced attempts and progress are archived against the self-paced registration",
+  ["assessment_attempts", "module_progress"].every((t) =>
+    archived.some((r) => r.source_table === t && r.registration_id === selfPaced.registrationId),
+  ),
+  archived,
+);
+
+res = await restarter.post("/api/payment/create-order", { domainId: "data-analytics", programId: "industry-led", experience: "beginner" });
+check("guided twice in one domain → 409", res.status === 409, res.status);
+res = await restarter.post("/api/payment/create-order", { domainId: "data-analytics", programId: "self-paced", experience: "beginner" });
+check("no move back down to self-paced → 409", res.status === 409, res.status);
+
 void learnerAccount;
 void reconAccount;
 

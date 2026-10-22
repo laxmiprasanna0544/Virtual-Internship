@@ -99,8 +99,11 @@ export function useStudentContext(): StudentContext {
       null;
     const summary = summariseProgress(student, progress, submission);
     const requirements = completionRequirements(student, progress, submission);
-    const certificate =
-      certificates.find((c) => c.domainId === student.domainId) ?? certificates[0] ?? null;
+    // The certificate for the active enrolment. A domain can have two (self-paced,
+    // then a fresh guided enrolment), so matching on domain alone is not enough.
+    const certificate = student.registrationId
+      ? (certificates.find((c) => c.registrationId === student.registrationId) ?? null)
+      : (certificates.find((c) => c.domainId === student.domainId) ?? null);
     const nextModule =
       domain?.modules.find((m) => m.id === summary.nextModuleId) ?? null;
 

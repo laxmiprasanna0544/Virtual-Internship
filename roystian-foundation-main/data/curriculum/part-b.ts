@@ -30,7 +30,7 @@ export const partB: RawDomain[] = [
     practicalTask: {
       title: "Build or modify a web application component",
       brief:
-        "Build a small web application component, or modify a provided one, and explain your implementation decisions.",
+        "Modify the Team Task List starter component (or rebuild it), and explain your implementation decisions.",
       requirements: [
         "Describe the component's responsibility and its props or inputs",
         "Explain how state is held and why it lives at that level",
@@ -227,7 +227,7 @@ export const partB: RawDomain[] = [
     practicalTask: {
       title: "Test case design activity",
       brief:
-        "Write test cases for the provided feature covering positive, negative and edge cases.",
+        "Write test cases for the checkout coupon code feature, covering positive, negative and edge cases.",
       requirements: [
         "Write at least four positive cases with expected results",
         "Write at least four negative cases including invalid input handling",
@@ -424,7 +424,7 @@ export const partB: RawDomain[] = [
     practicalTask: {
       title: "Programming and OOP problem set",
       brief:
-        "Solve the provided practical programming problems and complete an object-oriented design task.",
+        "Solve the practical programming problems in the problem set and complete its object-oriented design task.",
       requirements: [
         "Solve the given problems with working, readable code",
         "Design one class with clear attributes, methods and encapsulation",

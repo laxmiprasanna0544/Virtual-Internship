@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   CheckCircle2,
   ClipboardList,
+  Download,
   FileText,
   Loader2,
   Paperclip,
@@ -18,6 +19,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getPracticalBriefing } from "@/data/practical-materials";
 import { useStudentContext } from "@/lib/use-student";
 import { submitPracticalTask } from "@/lib/student-data";
 import {
@@ -65,6 +67,7 @@ export function AssignmentView() {
 
   const { domain, student, submission } = ctx;
   const task = domain.practicalTask;
+  const briefing = getPracticalBriefing(domain.id);
   const status = submission?.status ?? "pending";
   const locked = status === "approved";
 
@@ -142,7 +145,7 @@ export function AssignmentView() {
     setFile(null);
     setSubmitting(false);
     toast.success("Practical task submitted", {
-      description: "It now moves to the review queue.",
+      description: "A reviewer will check it. Your certificate unlocks once it is approved.",
     });
   }
 
@@ -150,7 +153,7 @@ export function AssignmentView() {
     <div className="space-y-6">
       <PageHeader
         title="Practical Task"
-        description={`The applied activity for your ${domain.name} internship. Submitting it is one of the certificate requirements.`}
+        description={`The applied activity for your ${domain.name} internship. It has to be reviewed and approved before your certificate unlocks.`}
         breadcrumbs={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Assignments" },
@@ -174,6 +177,8 @@ export function AssignmentView() {
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               {task.brief}
             </p>
+
+            {briefing && <BriefingDetails briefing={briefing} />}
 
             <h4 className="mt-6 text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
               Requirements
@@ -398,5 +403,68 @@ export function AssignmentView() {
         </aside>
       </div>
     </div>
+  );
+}
+
+/** The scenario, key facts and downloads the task works from. */
+function BriefingDetails({
+  briefing,
+}: {
+  briefing: NonNullable<ReturnType<typeof getPracticalBriefing>>;
+}) {
+  return (
+    <>
+      <h4 className="mt-6 text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+        Scenario
+      </h4>
+      <div className="mt-2 space-y-3 text-sm leading-relaxed text-foreground/90">
+        {briefing.scenario.map((paragraph) => (
+          <p key={paragraph}>{paragraph}</p>
+        ))}
+      </div>
+
+      {briefing.facts && briefing.facts.length > 0 && (
+        <dl className="mt-4 grid gap-x-6 gap-y-2 rounded-xl border border-border bg-muted/30 p-4 text-sm sm:grid-cols-2">
+          {briefing.facts.map((fact) => (
+            <div key={fact.label}>
+              <dt className="text-xs text-muted-foreground">{fact.label}</dt>
+              <dd className="font-medium text-foreground">{fact.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      {briefing.materials.length > 0 && (
+        <>
+          <h4 className="mt-6 text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+            Downloads
+          </h4>
+          <ul className="mt-3 space-y-2.5">
+            {briefing.materials.map((material) => (
+              <li key={material.href}>
+                <a
+                  href={material.href}
+                  download
+                  className="flex items-start gap-3 rounded-xl border border-border p-3 transition-colors hover:border-primary/40 hover:bg-primary/[0.03]"
+                >
+                  <Download className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                  <span className="min-w-0">
+                    <span className="block font-mono text-sm font-semibold text-foreground">
+                      {material.label}{" "}
+                      <span className="font-sans text-xs font-normal text-muted-foreground">
+                        · {material.size}
+                      </span>
+                    </span>
+                    <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
+                      {material.description}
+                    </span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </>
   );
 }

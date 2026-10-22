@@ -30,7 +30,7 @@ export const partD: RawDomain[] = [
     practicalTask: {
       title: "Campaign design activity",
       brief:
-        "Design a basic marketing campaign including target audience, channels, message and measurement.",
+        "Design a launch campaign for the BrewBuddy product, including target audience, channels, message and measurement.",
       requirements: [
         "Define the target audience with at least four specific attributes",
         "State the core message and the positioning behind it",
@@ -227,7 +227,7 @@ export const partD: RawDomain[] = [
     practicalTask: {
       title: "Engineering design activity",
       brief:
-        "Work through a design problem from requirements to a manufacturable proposal.",
+        "Work through the AC outdoor-unit bracket design problem, from requirements to a manufacturable proposal.",
       requirements: [
         "State the functional requirements and the operating constraints",
         "Select a material and justify it against at least two properties",
@@ -424,7 +424,7 @@ export const partD: RawDomain[] = [
     practicalTask: {
       title: "Applied development task",
       brief:
-        "Solve the provided problem and document your approach, trade-offs and testing strategy.",
+        "Solve the clinic room-allocation problem and document your approach, trade-offs and testing strategy.",
       requirements: [
         "Describe your approach before the code, including the data structure you chose",
         "Provide a working solution with meaningful names and structure",

@@ -30,7 +30,7 @@ export const partC: RawDomain[] = [
     practicalTask: {
       title: "Object-oriented design task",
       brief:
-        "Design and implement a small Java class hierarchy for the provided scenario and justify your design.",
+        "Design and implement a small Java class hierarchy for the CityPark parking scenario and justify your design.",
       requirements: [
         "Model the scenario with at least three classes or interfaces",
         "Demonstrate encapsulation and one use of polymorphism",
@@ -227,7 +227,7 @@ export const partC: RawDomain[] = [
     practicalTask: {
       title: "IoT system design activity",
       brief:
-        "Design an IoT solution for the provided scenario, from sensor selection to dashboard output.",
+        "Design an IoT solution for the cold-room monitoring scenario, from sensor selection to dashboard output.",
       requirements: [
         "Specify the sensors and actuators required and the quantity each measures",
         "Describe the microcontroller, connectivity choice and why it suits the environment",
@@ -424,7 +424,7 @@ export const partC: RawDomain[] = [
     practicalTask: {
       title: "Environmental challenge analysis",
       brief:
-        "Analyse an environmental challenge and propose a structured intervention with measurable outcomes.",
+        "Analyse an environmental challenge on the campus, using its resource data, and propose a structured intervention with measurable outcomes.",
       requirements: [
         "Describe the challenge, affected stakeholders and current baseline",
         "Identify the main drivers using system thinking rather than a single cause",

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Starter: Team Task List</title>
+<!--
+  ROYSTIAN FOUNDATION — Full Stack Development practical task
+  Starter component: "Team Task List"
+
+  Open this file in any browser. It works, but it is incomplete and has bugs.
+  Your job is to modify it (or rebuild it in React/Vue if you prefer) and
+  explain your decisions in your submission.
+
+  The component's responsibility: show the tasks for one team, let a user add,
+  complete and delete tasks, and filter what is shown.
+
+  Tasks are "fetched" from fakeApi below, which takes about a second and
+  fails roughly one time in five, like a real network call.
+
+  TODO list (address as many as you can, and explain what you did):
+    1. LOADING STATE   – nothing is shown while tasks are loading.
+    2. ERROR STATE     – if fakeApi.fetchTasks() rejects, the list silently
+                         stays empty. Show an error with a "Retry" button.
+    3. EMPTY STATE     – when there are no tasks (or none match the filter),
+                         show a helpful message instead of a blank list.
+    4. VALIDATION      – the form accepts an empty or whitespace-only title and
+                         titles over 120 characters. Reject both with a message.
+    5. BUG: DELETE     – deleting a task sometimes deletes the wrong one.
+                         Find out why (hint: look at how the index is used
+                         after the list is filtered) and fix it.
+    6. FILTER          – the All / Active / Done buttons do nothing yet.
+    7. PERSISTENCE     – tasks added by the user disappear on reload.
+                         Persist them (localStorage is fine) and explain the
+                         trade-off versus saving to a server.
+    8. ACCESSIBILITY   – the checkbox has no accessible name and the delete
+                         button is an unlabeled "×". Fix and explain.
+    9. PERFORMANCE     – render() rebuilds the whole list on every change.
+                         Say whether that matters at 20 tasks vs 5,000 and
+                         what you would do about it.
+-->
+<style>
+  :root { --ink: #14275e; --muted: #64748b; --line: #e2e8f0; --accent: #1d4ed8; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 32px 16px; background: #f8fafc; color: var(--ink); }
+  .card { max-width: 520px; margin: 0 auto; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+  h1 { font-size: 20px; margin: 0 0 16px; }
+  form { display: flex; gap: 8px; }
+  input[type="text"] { flex: 1; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+  button { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font: inherit; cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .filters { display: flex; gap: 6px; margin: 16px 0 8px; }
+  .filters button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+  ul { list-style: none; padding: 0; margin: 0; }
+  li { display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--line); }
+  li.done span { text-decoration: line-through; color: var(--muted); }
+  li span { flex: 1; }
+  .meta { color: var(--muted); font-size: 13px; margin-top: 12px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Team Task List</h1>
+
+    <form id="add-form">
+      <input id="title" type="text" placeholder="What needs doing?" />
+      <button class="primary" type="submit">Add</button>
+    </form>
+
+    <div class="filters">
+      <button type="button" data-filter="all" aria-pressed="true">All</button>
+      <button type="button" data-filter="active" aria-pressed="false">Active</button>
+      <button type="button" data-filter="done" aria-pressed="false">Done</button>
+    </div>
+
+    <ul id="list"></ul>
+    <p class="meta" id="count"></p>
+  </div>
+
+<script>
+  // ---- Fake network layer (do not change; treat it as the server) ----------
+  const fakeApi = {
+    fetchTasks() {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (Math.random() < 0.2) reject(new Error("Network error: 503"));
+          else resolve([
+            { id: "t1", title: "Draft sprint goals", done: true },
+            { id: "t2", title: "Review pull request #42", done: false },
+            { id: "t3", title: "Update API docs for /orders", done: false },
+            { id: "t4", title: "Fix flaky login test", done: false },
+          ]);
+        }, 1000);
+      });
+    },
+  };
+
+  // ---- Component state -------------------------------------------------------
+  let tasks = [];
+  let filter = "all";
+
+  const list = document.getElementById("list");
+  const count = document.getElementById("count");
+  const form = document.getElementById("add-form");
+  const input = document.getElementById("title");
+
+  function visibleTasks() {
+    // TODO 6: apply the filter.
+    return tasks.filter((t) => !t.done || t.done);
+  }
+
+  function render() {
+    list.innerHTML = "";
+    visibleTasks().forEach((task, index) => {
+      const li = document.createElement("li");
+      if (task.done) li.className = "done";
+
+      const box = document.createElement("input");
+      box.type = "checkbox";
+      box.checked = task.done;
+      box.addEventListener("change", () => {
+        task.done = box.checked;
+        render();
+      });
+
+      const label = document.createElement("span");
+      label.textContent = task.title;
+
+      const del = document.createElement("button");
+      del.textContent = "×";
+      // BUG (TODO 5): `index` is the position in the *visible* list,
+      // but it is used to delete from the full `tasks` array.
+      del.addEventListener("click", () => {
+        tasks.splice(index, 1);
+        render();
+      });
+
+      li.append(box, label, del);
+      list.append(li);
+    });
+    const remaining = tasks.filter((t) => !t.done).length;
+    count.textContent = `${remaining} of ${tasks.length} tasks remaining`;
+  }
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    // TODO 4: validate the title.
+    tasks.push({ id: "t" + Date.now(), title: input.value, done: false });
+    input.value = "";
+    render();
+  });
+
+  document.querySelectorAll("[data-filter]").forEach((button) => {
+    button.addEventListener("click", () => {
+      // TODO 6: set `filter`, update aria-pressed on all buttons, re-render.
+    });
+  });
+
+  // TODO 1 / 2: show loading and error states around this call.
+  fakeApi.fetchTasks().then((loaded) => {
+    tasks = loaded;
+    render();
+  });
+</script>
+</body>
+</html>

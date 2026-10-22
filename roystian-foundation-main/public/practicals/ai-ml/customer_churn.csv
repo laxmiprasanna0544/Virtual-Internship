@@ -1,0 +1,1001 @@
+customer_id,tenure_months,plan,monthly_charge_inr,support_tickets_90d,payment_method,auto_renew,last_login_days,city,churned
+CUST10001,17,Basic,294.74,0,Debit Card,No,17,Mumbai,0
+CUST10002,15,Basic,287.69,0,Debit Card,No,10,Jaipur,1
+CUST10003,9,Basic,294.86,2,Net Banking,Yes,4,Pune,0
+CUST10004,3,Premium,794.01,0,UPI Autopay,No,7,Bengaluru,1
+CUST10005,21,Standard,537.18,0,Credit Card,No,7,Chennai,0
+CUST10006,14,Standard,477.02,0,UPI Autopay,Yes,2,Mumbai,0
+CUST10007,8,Standard,528.16,0,UPI Autopay,Yes,9,Mumbai,1
+CUST10008,16,Basic,312.39,0,UPI Autopay,No,8,Jaipur,0
+CUST10009,4,Basic,313.91,0,Net Banking,No,4,Mumbai,1
+CUST10010,4,Premium,850.08,0,Debit Card,No,19,Ahmedabad,0
+CUST10011,3,Basic,313.01,0,Debit Card,No,7,Chennai,1
+CUST10012,4,Premium,811.97,0,UPI Autopay,Yes,7,Kolkata,1
+CUST10013,15,Basic,307.21,0,UPI Autopay,Yes,22,Mumbai,0
+CUST10014,19,Standard,491.36,1,UPI Autopay,Yes,4,Pune,0
+CUST10015,58,Standard,506.98,0,Debit Card,No,5,Hyderabad,0
+CUST10016,3,Standard,509.04,1,Credit Card,Yes,3,Bengaluru,0
+CUST10017,2,Basic,322.35,1,UPI Autopay,Yes,6,Mumbai,0
+CUST10018,2,Standard,478.54,1,Net Banking,Yes,5,Jaipur,0
+CUST10019,3,Standard,513.4,4,Wallet,No,9,Pune,1
+CUST10020,9,Standard,498.27,2,Credit Card,Yes,0,Bengaluru,0
+CUST10021,15,Basic,292.61,0,Debit Card,Yes,18,Chennai,0
+CUST10022,2,Basic,310.05,0,UPI Autopay,No,6,Ahmedabad,1
+CUST10023,5,Standard,500.46,0,Debit Card,No,4,Bengaluru,0
+CUST10024,18,Premium,769.27,0,UPI Autopay,No,2,Hyderabad,0
+CUST10025,13,Basic,291.18,0,Wallet,Yes,13,Jaipur,0
+CUST10026,2,Standard,509.12,0,UPI Autopay,No,2,Kolkata,1
+CUST10027,11,Basic,0.0,0,UPI Autopay,No,2,Ahmedabad,0
+CUST10028,6,Standard,521.44,1,Debit Card,No,1,Hyderabad,0
+CUST10029,56,Standard,509.22,1,UPI Autopay,Yes,5,Jaipur,0
+CUST10030,3,Premium,767.37,0,Credit Card,No,2,Mumbai,0
+CUST10031,46,Standard,511.6,0,UPI Autopay,Yes,6,Chennai,0
+CUST10032,44,Basic,311.89,0,Credit Card,No,2,Chennai,0
+CUST10033,43,Premium,760.02,1,Credit Card,Yes,6,Jaipur,0
+CUST10034,5,Premium,850.55,2,UPI Autopay,Yes,14,Pune,1
+CUST10035,16,Premium,826.98,0,Net Banking,Yes,8,Delhi,0
+CUST10036,5,Premium,836.16,0,UPI Autopay,Yes,3,Pune,0
+CUST10037,12,Basic,319.35,0,Debit Card,No,0,Chennai,0
+CUST10038,24,Standard,491.04,1,Credit Card,No,,Mumbai,0
+CUST10039,47,Standard,483.72,0,UPI Autopay,Yes,4,Bengaluru,0
+CUST10040,6,Premium,841.74,2,Wallet,Yes,2,Mumbai,0
+CUST10041,7,Standard,530.79,4,Debit Card,No,2,Delhi,0
+CUST10042,60,Standard,531.23,0,Debit Card,Yes,21,Hyderabad,0
+CUST10043,5,Standard,481.06,2,Wallet,Yes,13,Ahmedabad,0
+CUST10044,7,Standard,530.57,0,Debit Card,No,2,Mumbai,0
+CUST10045,55,Basic,308.98,0,Wallet,No,22,Mumbai,0
+CUST10046,34,Basic,306.62,4,UPI Autopay,Yes,3,Chennai,0
+CUST10047,10,Premium,771.06,2,UPI Autopay,Yes,4,Jaipur,0
+CUST10048,42,Standard,520.72,1,Debit Card,No,0,Chennai,0
+CUST10049,16,Standard,482.13,2,Credit Card,No,3,Pune,0
+CUST10050,13,Basic,309.9,0,Debit Card,Yes,,Kolkata,0
+CUST10051,13,Basic,295.2,0,Credit Card,No,5,Ahmedabad,0
+CUST10052,19,Standard,525.54,3,Debit Card,No,2,Lucknow,1
+CUST10053,7,Standard,522.78,1,UPI Autopay,Yes,0,Hyderabad,0
+CUST10054,60,Standard,523.9,0,Wallet,No,10,Kolkata,0
+CUST10055,11,Basic,309.55,0,Net Banking,No,0,Kolkata,0
+CUST10056,4,Standard,519.19,0,Credit Card,No,1,Delhi,0
+CUST10057,26,Standard,538.13,1,Wallet,No,7,Jaipur,1
+CUST10058,9,Premium,805.37,0,Wallet,No,11,Pune,0
+CUST10059,24,Standard,514.71,0,UPI Autopay,Yes,2,Chennai,0
+CUST10060,36,Basic,289.91,0,UPI Autopay,Yes,4,Chennai,0
+CUST10061,13,Basic,292.09,0,Wallet,No,9,Lucknow,0
+CUST10062,8,Basic,297.72,1,Wallet,No,4,Jaipur,1
+CUST10063,26,Premium,809.76,0,Credit Card,No,8,Kolkata,0
+CUST10064,21,Premium,854.56,4,Credit Card,No,7,Bengaluru,0
+CUST10065,2,Basic,317.74,0,UPI Autopay,Yes,4,Chennai,0
+CUST10066,23,Basic,313.28,2,UPI Autopay,Yes,0,Jaipur,0
+CUST10067,1,Premium,782.34,0,Wallet,Yes,0,Hyderabad,0
+CUST10068,4,Basic,7990.0,0,Debit Card,No,1,Pune,0
+CUST10069,24,Basic,307.65,1,UPI Autopay,No,26,Mumbai,0
+CUST10070,14,Premium,818.86,2,UPI Autopay,No,1,Lucknow,0
+CUST10071,19,Standard,480.66,1,Wallet,No,1,Lucknow,1
+CUST10072,25,Basic,300.7,0,Credit Card,Yes,15,Ahmedabad,0
+CUST10073,2,Premium,825.07,2,Debit Card,No,10,Pune,0
+CUST10074,16,Premium,839.51,0,Net Banking,No,3,Hyderabad,0
+CUST10075,29,Basic,318.32,0,Credit Card,No,3,Bengaluru,0
+CUST10076,11,Basic,303.0,0,UPI Autopay,Yes,7,Pune,0
+CUST10077,13,Standard,486.44,0,Credit Card,No,2,Ahmedabad,0
+CUST10078,17,Standard,525.49,0,UPI Autopay,Yes,2,Lucknow,0
+CUST10079,8,Standard,496.35,6,Credit Card,No,4,Pune,1
+CUST10080,5,Basic,291.54,0,Credit Card,No,1,Hyderabad,0
+CUST10081,22,Basic,306.97,1,Credit Card,No,14,Pune,1
+CUST10082,5,Basic,284.6,0,UPI Autopay,No,6,Delhi,1
+CUST10083,17,Standard,480.7,0,UPI Autopay,Yes,3,Bengaluru,0
+CUST10084,5,Premium,770.9,0,,No,9,Delhi,0
+CUST10085,3,Standard,493.76,6,UPI Autopay,No,7,Lucknow,1
+CUST10086,5,Standard,503.27,0,Wallet,No,2,Lucknow,0
+CUST10087,1,Premium,769.36,1,Debit Card,Yes,0,Hyderabad,0
+CUST10088,4,Basic,284.15,0,Credit Card,Yes,2,Pune,0
+CUST10089,20,Standard,518.64,3,Net Banking,No,8,Hyderabad,1
+CUST10090,9,Standard,516.06,2,Net Banking,Yes,1,Pune,0
+CUST10091,15,Standard,533.81,0,Credit Card,Yes,4,Pune,0
+CUST10092,12,Standard,479.27,0,Credit Card,Yes,2,Mumbai,0
+CUST10093,5,Standard,529.87,1,UPI Autopay,No,13,Lucknow,0
+CUST10094,1,Standard,504.57,1,Wallet,Yes,7,Ahmedabad,0
+CUST10095,56,Standard,500.54,0,UPI Autopay,Yes,4,Ahmedabad,0
+CUST10096,6,Premium,843.56,0,Credit Card,Yes,3,Kolkata,0
+CUST10097,33,Standard,474.12,2,Credit Card,Yes,5,Lucknow,0
+CUST10098,23,Standard,523.35,0,Credit Card,No,4,Ahmedabad,0
+CUST10099,3,Premium,822.29,0,UPI Autopay,Yes,6,Mumbai,0
+CUST10100,5,Premium,770.84,3,Debit Card,Yes,21,Pune,1
+CUST10101,12,Basic,316.5,4,UPI Autopay,Yes,3,Lucknow,1
+CUST10102,12,Premium,848.8,0,Net Banking,No,21,Jaipur,0
+CUST10103,5,Basic,312.27,2,Credit Card,No,16,Ahmedabad,1
+CUST10104,13,Basic,305.5,0,Credit Card,Yes,1,Hyderabad,0
+CUST10105,14,Basic,314.2,0,Debit Card,No,13,Kolkata,0
+CUST10106,60,Standard,516.35,0,Wallet,Yes,26,Chennai,0
+CUST10107,33,Premium,804.78,0,Credit Card,No,4,Delhi,1
+CUST10108,2,Standard,491.24,1,,Yes,3,Jaipur,0
+CUST10109,8,Basic,311.99,1,Wallet,Yes,0,Pune,0
+CUST10110,60,Standard,502.2,0,Debit Card,No,4,Pune,0
+CUST10111,38,Basic,315.0,0,UPI Autopay,Yes,6,Lucknow,0
+CUST10112,19,Basic,290.85,1,Credit Card,No,5,Lucknow,0
+CUST10113,3,Standard,490.53,0,UPI Autopay,No,18,Jaipur,0
+CUST10114,3,Basic,297.48,1,Debit Card,No,2,Pune,0
+CUST10115,4,Basic,302.83,0,Credit Card,No,39,Pune,0
+CUST10116,1,Premium,800.16,0,Wallet,No,29,Lucknow,1
+CUST10117,22,Premium,852.84,1,UPI Autopay,No,1,Hyderabad,0
+CUST10118,16,Standard,520.82,1,Net Banking,No,,Bengaluru,0
+CUST10119,6,Basic,306.58,1,UPI Autopay,Yes,11,Delhi,0
+CUST10120,4,Standard,530.91,0,Credit Card,Yes,1,Ahmedabad,0
+CUST10121,55,Basic,317.88,1,Credit Card,Yes,11,Hyderabad,0
+CUST10122,32,Standard,537.62,4,Net Banking,No,12,Bengaluru,0
+CUST10123,5,Basic,298.38,1,UPI Autopay,Yes,8,Chennai,1
+CUST10124,2,Basic,285.02,2,Credit Card,No,2,Mumbai,0
+CUST10125,17,Standard,519.53,1,UPI Autopay,Yes,0,Ahmedabad,0
+CUST10126,2,Basic,304.94,0,UPI Autopay,No,9,Jaipur,1
+CUST10127,9,Standard,484.07,0,UPI Autopay,Yes,4,Pune,0
+CUST10128,1,Basic,301.28,3,Wallet,Yes,9,Jaipur,1
+CUST10129,38,Standard,477.98,0,Wallet,No,13,Mumbai,0
+CUST10130,18,Standard,512.79,0,Net Banking,Yes,1,Lucknow,0
+CUST10131,4,Standard,510.0,1,Net Banking,Yes,11,Lucknow,1
+CUST10132,1,Premium,774.08,0,UPI Autopay,Yes,8,Bengaluru,0
+CUST10133,3,Basic,314.7,1,UPI Autopay,Yes,1,Kolkata,1
+CUST10134,12,Standard,504.94,1,Credit Card,Yes,5,Lucknow,0
+CUST10135,1,Standard,530.29,0,Credit Card,No,0,Ahmedabad,1
+CUST10136,31,Basic,288.25,1,Credit Card,No,3,Delhi,0
+CUST10137,2,Basic,308.66,0,UPI Autopay,No,6,Ahmedabad,0
+CUST10138,12,Basic,314.88,0,Debit Card,No,6,Hyderabad,1
+CUST10139,9,Premium,802.03,2,Credit Card,No,2,Chennai,0
+CUST10140,18,Basic,7990.0,3,UPI Autopay,No,0,Mumbai,0
+CUST10141,22,Basic,289.11,0,Wallet,No,8,Kolkata,0
+CUST10142,7,Standard,522.72,2,Debit Card,No,7,Chennai,1
+CUST10143,2,Standard,484.09,0,Net Banking,No,6,Mumbai,0
+CUST10144,24,Standard,526.41,2,Wallet,No,7,Jaipur,0
+CUST10145,1,Premium,845.21,0,UPI Autopay,Yes,2,Chennai,0
+CUST10146,7,Basic,289.62,1,UPI Autopay,Yes,28,Mumbai,0
+CUST10147,22,Basic,300.37,0,UPI Autopay,Yes,11,Lucknow,0
+CUST10148,15,Premium,775.21,1,UPI Autopay,Yes,,Kolkata,0
+CUST10149,11,Basic,294.67,1,UPI Autopay,Yes,2,Lucknow,0
+CUST10150,11,Standard,477.0,0,,Yes,2,Hyderabad,0
+CUST10151,24,Standard,492.83,0,Credit Card,No,1,Jaipur,0
+CUST10152,20,Standard,528.11,1,UPI Autopay,No,0,Bengaluru,0
+CUST10153,10,Basic,296.22,0,Credit Card,No,2,Kolkata,1
+CUST10154,1,Basic,315.2,1,Net Banking,No,0,Mumbai,0
+CUST10155,5,Standard,508.04,0,UPI Autopay,Yes,3,Delhi,0
+CUST10156,2,Standard,508.47,0,Net Banking,No,25,Delhi,1
+CUST10157,5,Basic,291.72,1,Net Banking,No,1,Ahmedabad,0
+CUST10158,10,Standard,511.64,1,Wallet,No,34,Chennai,1
+CUST10159,32,Standard,483.84,0,Credit Card,Yes,2,Bengaluru,0
+CUST10160,7,Basic,302.0,0,UPI Autopay,Yes,8,Mumbai,0
+CUST10161,16,Standard,504.07,0,Net Banking,No,4,Lucknow,0
+CUST10162,17,Basic,302.54,0,UPI Autopay,Yes,18,Chennai,0
+CUST10163,60,Basic,309.16,0,Debit Card,No,,Lucknow,0
+CUST10164,3,Basic,295.05,0,UPI Autopay,Yes,12,Chennai,0
+CUST10165,2,Basic,310.42,0,Debit Card,No,18,Delhi,1
+CUST10166,7,Standard,483.22,0,Wallet,No,,Lucknow,0
+CUST10167,20,Basic,305.78,1,UPI Autopay,Yes,9,Jaipur,0
+CUST10168,2,Standard,507.04,0,UPI Autopay,No,3,Ahmedabad,0
+CUST10169,4,Premium,775.14,0,Net Banking,No,6,Jaipur,0
+CUST10170,1,Basic,313.84,0,UPI Autopay,Yes,14,Lucknow,0
+CUST10171,27,Basic,301.06,0,Debit Card,Yes,4,Pune,0
+CUST10172,23,Standard,489.23,0,Wallet,No,18,Hyderabad,0
+CUST10173,8,Premium,861.3,0,UPI Autopay,Yes,,Delhi,0
+CUST10174,28,Standard,483.03,0,Debit Card,No,6,Mumbai,0
+CUST10175,20,Standard,482.14,0,UPI Autopay,Yes,5,Kolkata,0
+CUST10176,2,Premium,843.88,2,Wallet,No,4,Chennai,0
+CUST10177,5,Premium,797.99,0,Wallet,No,8,Delhi,1
+CUST10178,3,Basic,316.3,1,UPI Autopay,Yes,4,Bengaluru,0
+CUST10179,38,Basic,292.43,0,Wallet,No,4,Pune,0
+CUST10180,5,Basic,293.32,1,Debit Card,Yes,14,Ahmedabad,1
+CUST10181,15,Basic,304.08,0,,Yes,7,Hyderabad,1
+CUST10182,14,Basic,310.02,0,UPI Autopay,No,6,Jaipur,0
+CUST10183,13,Basic,302.32,1,Wallet,Yes,0,Mumbai,0
+CUST10184,7,Standard,514.81,1,Debit Card,Yes,0,Jaipur,0
+CUST10185,7,Standard,527.92,1,Wallet,No,1,Delhi,0
+CUST10186,2,Standard,503.74,0,UPI Autopay,Yes,0,Pune,0
+CUST10187,12,Premium,815.45,0,Net Banking,Yes,,Bengaluru,0
+CUST10188,33,Basic,288.89,0,Wallet,No,18,Kolkata,0
+CUST10189,7,Basic,310.95,0,Net Banking,Yes,0,Kolkata,0
+CUST10190,2,Standard,527.4,0,UPI Autopay,Yes,8,Pune,0
+CUST10191,10,Standard,484.86,0,Credit Card,No,19,Lucknow,1
+CUST10192,60,Basic,322.14,3,UPI Autopay,Yes,3,Delhi,0
+CUST10193,49,Basic,307.67,1,UPI Autopay,Yes,12,Chennai,0
+CUST10194,8,Premium,762.41,0,Credit Card,No,4,Mumbai,0
+CUST10195,14,Standard,499.87,1,UPI Autopay,Yes,10,Ahmedabad,0
+CUST10196,12,Premium,771.28,1,Debit Card,Yes,7,Ahmedabad,0
+CUST10197,4,Basic,286.93,0,Debit Card,No,13,Chennai,0
+CUST10198,18,Standard,509.73,0,UPI Autopay,Yes,9,Delhi,0
+CUST10199,26,Standard,481.92,0,UPI Autopay,No,0,Jaipur,0
+CUST10200,14,Standard,537.82,0,Wallet,Yes,4,Ahmedabad,0
+CUST10201,12,Standard,527.46,0,Wallet,No,4,Jaipur,1
+CUST10202,7,Premium,840.1,1,UPI Autopay,No,4,Bengaluru,0
+CUST10203,29,Standard,493.78,0,Wallet,Yes,23,Jaipur,0
+CUST10204,37,Premium,785.08,1,Credit Card,Yes,,Jaipur,0
+CUST10205,2,Standard,512.44,1,UPI Autopay,Yes,18,Chennai,0
+CUST10206,30,Standard,527.58,0,UPI Autopay,Yes,6,Hyderabad,0
+CUST10207,24,Basic,308.89,0,Debit Card,Yes,25,Ahmedabad,0
+CUST10208,5,Standard,500.39,0,Debit Card,Yes,4,Ahmedabad,0
+CUST10209,4,Standard,494.33,1,Debit Card,No,29,Delhi,1
+CUST10210,23,Standard,480.94,0,UPI Autopay,Yes,1,Bengaluru,0
+CUST10211,6,Basic,307.97,0,Wallet,Yes,3,Lucknow,0
+CUST10212,21,Basic,290.24,6,Credit Card,No,5,Mumbai,1
+CUST10213,47,Standard,536.76,0,UPI Autopay,Yes,5,Ahmedabad,0
+CUST10214,6,Basic,288.23,0,UPI Autopay,Yes,,Bengaluru,0
+CUST10215,9,Standard,486.68,0,UPI Autopay,Yes,11,Pune,0
+CUST10216,28,Standard,513.69,0,UPI Autopay,Yes,34,Jaipur,0
+CUST10217,45,Standard,486.96,0,Credit Card,Yes,1,Chennai,0
+CUST10218,27,Standard,483.71,2,UPI Autopay,No,3,Kolkata,0
+CUST10219,60,Standard,493.46,0,Net Banking,No,9,Pune,0
+CUST10220,11,Basic,296.93,0,Credit Card,Yes,18,Bengaluru,0
+CUST10221,15,Basic,309.53,4,Credit Card,Yes,0,Ahmedabad,1
+CUST10222,3,Standard,514.25,2,UPI Autopay,Yes,0,Mumbai,0
+CUST10223,4,Basic,300.33,0,UPI Autopay,Yes,7,Ahmedabad,0
+CUST10224,33,Standard,478.09,0,UPI Autopay,Yes,8,Jaipur,0
+CUST10225,8,Premium,806.8,0,Credit Card,No,16,Pune,0
+CUST10226,16,Basic,293.63,0,UPI Autopay,No,2,Pune,0
+CUST10227,20,Standard,505.77,0,Credit Card,No,10,Pune,0
+CUST10228,3,Standard,498.68,4,Net Banking,No,13,Pune,1
+CUST10229,1,Premium,767.26,3,Debit Card,No,1,Jaipur,0
+CUST10230,6,Standard,491.67,0,Debit Card,Yes,0,Jaipur,0
+CUST10231,5,Basic,287.94,0,Credit Card,No,1,Jaipur,0
+CUST10232,60,Basic,309.43,2,Credit Card,No,11,Pune,0
+CUST10233,7,Standard,532.95,0,Credit Card,No,10,Bengaluru,0
+CUST10234,40,Basic,318.34,0,Wallet,No,4,Ahmedabad,0
+CUST10235,4,Standard,530.64,0,UPI Autopay,Yes,7,Chennai,0
+CUST10236,6,Premium,815.48,0,,No,5,Hyderabad,1
+CUST10237,27,Basic,312.47,1,Debit Card,Yes,3,Pune,0
+CUST10238,14,Standard,485.43,2,Wallet,No,5,Mumbai,0
+CUST10239,9,Basic,322.21,0,Wallet,Yes,3,Ahmedabad,0
+CUST10240,23,Premium,790.41,1,UPI Autopay,Yes,9,Bengaluru,0
+CUST10241,18,Standard,484.41,1,Wallet,No,11,Mumbai,0
+CUST10242,17,Premium,797.23,0,Wallet,No,4,Lucknow,0
+CUST10243,8,Standard,533.26,1,Net Banking,No,11,Lucknow,1
+CUST10244,34,Basic,301.42,1,UPI Autopay,Yes,,Jaipur,0
+CUST10245,38,Basic,304.91,0,Wallet,No,9,Lucknow,0
+CUST10246,11,Premium,805.32,0,UPI Autopay,Yes,6,Jaipur,0
+CUST10247,10,Standard,520.97,0,Net Banking,No,6,Bengaluru,0
+CUST10248,9,Standard,509.16,0,Wallet,No,5,Pune,0
+CUST10249,9,Standard,523.73,4,Debit Card,No,39,Kolkata,1
+CUST10250,10,Premium,798.26,0,Wallet,No,1,Chennai,0
+CUST10251,3,Premium,799.88,0,Wallet,No,11,Pune,0
+CUST10252,10,Standard,501.56,0,UPI Autopay,Yes,1,Hyderabad,0
+CUST10253,45,Standard,481.37,1,Credit Card,No,17,Bengaluru,0
+CUST10254,5,Basic,307.14,0,Debit Card,No,2,Bengaluru,1
+CUST10255,9,Basic,292.5,2,UPI Autopay,Yes,2,Lucknow,0
+CUST10256,7,Standard,517.68,0,UPI Autopay,Yes,8,Hyderabad,0
+CUST10257,9,Basic,305.69,1,Debit Card,Yes,9,Jaipur,1
+CUST10258,11,Premium,856.85,1,Net Banking,Yes,4,Delhi,0
+CUST10259,6,Basic,304.96,0,,No,,Ahmedabad,1
+CUST10260,40,Standard,536.83,0,UPI Autopay,Yes,1,Mumbai,0
+CUST10261,41,Premium,768.65,1,UPI Autopay,Yes,,Lucknow,0
+CUST10262,1,Basic,315.33,1,Debit Card,Yes,1,Chennai,0
+CUST10263,6,Premium,781.05,0,Debit Card,No,11,Hyderabad,0
+CUST10264,20,Standard,499.78,0,UPI Autopay,Yes,5,Chennai,0
+CUST10265,6,Basic,318.36,0,Net Banking,No,11,Chennai,0
+CUST10266,40,Basic,300.14,0,UPI Autopay,Yes,2,Lucknow,0
+CUST10267,14,Basic,289.97,0,UPI Autopay,No,5,Chennai,1
+CUST10268,5,Standard,536.75,1,Credit Card,Yes,12,Delhi,0
+CUST10269,3,Standard,485.99,2,Wallet,No,5,Mumbai,1
+CUST10270,47,Standard,523.63,0,Net Banking,Yes,,Bengaluru,0
+CUST10271,4,Standard,477.97,1,Wallet,No,,Bengaluru,0
+CUST10272,1,Standard,474.82,0,,No,0,Kolkata,0
+CUST10273,27,Premium,770.17,0,UPI Autopay,Yes,5,Chennai,0
+CUST10274,5,Basic,298.55,0,Credit Card,No,2,Mumbai,0
+CUST10275,17,Premium,837.95,0,UPI Autopay,Yes,0,Bengaluru,0
+CUST10276,20,Basic,316.91,1,UPI Autopay,No,29,Jaipur,0
+CUST10277,41,Basic,319.08,1,Credit Card,Yes,20,Pune,0
+CUST10278,37,Standard,476.18,3,UPI Autopay,No,7,Kolkata,0
+CUST10279,43,Basic,305.97,1,Net Banking,No,6,Kolkata,0
+CUST10280,23,Basic,322.47,1,Credit Card,No,0,Kolkata,0
+CUST10281,5,Basic,307.57,1,Credit Card,No,3,Pune,0
+CUST10282,25,Standard,488.85,0,UPI Autopay,Yes,,Kolkata,0
+CUST10283,2,Standard,525.82,1,UPI Autopay,Yes,9,Delhi,0
+CUST10284,22,Basic,288.19,0,UPI Autopay,Yes,2,Delhi,0
+CUST10285,2,Basic,305.7,0,UPI Autopay,Yes,,Lucknow,0
+CUST10286,15,Basic,299.02,0,Credit Card,Yes,18,Hyderabad,0
+CUST10287,14,Basic,298.85,0,UPI Autopay,Yes,0,Kolkata,0
+CUST10288,6,Basic,314.47,0,Wallet,No,5,Lucknow,1
+CUST10289,4,Basic,295.89,3,UPI Autopay,Yes,13,Chennai,0
+CUST10290,10,Basic,316.06,1,Credit Card,Yes,7,Hyderabad,0
+CUST10291,11,Basic,299.53,0,Debit Card,No,27,Hyderabad,0
+CUST10292,7,Basic,314.6,0,Wallet,Yes,47,Delhi,1
+CUST10293,19,Standard,535.87,0,Debit Card,No,2,Mumbai,0
+CUST10294,28,Standard,500.59,0,Debit Card,Yes,8,Kolkata,0
+CUST10295,25,Basic,322.56,0,Credit Card,No,20,Kolkata,1
+CUST10296,13,Standard,497.37,2,Credit Card,No,0,Hyderabad,0
+CUST10297,18,Basic,309.2,0,Wallet,No,4,Chennai,1
+CUST10298,54,Basic,284.46,0,Credit Card,No,6,Lucknow,0
+CUST10299,4,Basic,302.05,1,Debit Card,Yes,48,Ahmedabad,0
+CUST10300,2,Basic,321.43,0,Wallet,Yes,2,Ahmedabad,0
+CUST10301,25,Standard,496.64,0,Debit Card,No,0,Bengaluru,0
+CUST10302,27,Basic,317.06,1,Debit Card,Yes,33,Hyderabad,0
+CUST10303,12,Standard,495.52,0,Credit Card,No,7,Delhi,0
+CUST10304,17,Basic,285.18,1,UPI Autopay,Yes,3,Hyderabad,0
+CUST10305,4,Standard,526.51,0,UPI Autopay,No,1,Chennai,0
+CUST10306,4,Basic,310.12,0,Wallet,Yes,3,Kolkata,0
+CUST10307,15,Basic,316.92,1,Net Banking,No,2,Lucknow,0
+CUST10308,15,Standard,494.37,0,UPI Autopay,Yes,1,Kolkata,0
+CUST10309,9,Basic,298.96,0,Debit Card,No,8,Delhi,0
+CUST10310,13,Standard,483.15,0,Credit Card,Yes,3,Bengaluru,0
+CUST10311,11,Basic,298.97,0,Debit Card,No,5,Ahmedabad,0
+CUST10312,11,Basic,285.25,1,UPI Autopay,Yes,6,Delhi,0
+CUST10313,25,Standard,524.17,0,Credit Card,No,2,Jaipur,0
+CUST10314,28,Basic,316.02,0,Debit Card,No,36,Mumbai,0
+CUST10315,22,Standard,490.11,2,UPI Autopay,Yes,15,Mumbai,0
+CUST10316,10,Premium,839.61,0,Net Banking,No,3,Lucknow,0
+CUST10317,17,Basic,289.46,0,UPI Autopay,Yes,3,Pune,0
+CUST10318,15,Basic,322.1,0,Credit Card,No,5,Mumbai,0
+CUST10319,3,Standard,500.75,0,UPI Autopay,Yes,9,Delhi,0
+CUST10320,5,Standard,527.79,1,Debit Card,No,6,Pune,1
+CUST10321,16,Basic,286.99,1,Net Banking,No,11,Chennai,0
+CUST10322,10,Standard,511.8,2,Net Banking,Yes,28,Chennai,0
+CUST10323,31,Standard,499.85,4,Net Banking,No,3,Pune,1
+CUST10324,7,Standard,510.78,0,UPI Autopay,Yes,0,Mumbai,0
+CUST10325,16,Premium,760.74,3,UPI Autopay,Yes,38,Kolkata,0
+CUST10326,4,Standard,482.61,1,UPI Autopay,No,2,Chennai,0
+CUST10327,5,Basic,319.18,0,Credit Card,Yes,,Hyderabad,1
+CUST10328,9,Basic,287.75,0,UPI Autopay,Yes,5,Ahmedabad,0
+CUST10329,1,Standard,527.06,5,Credit Card,Yes,0,Kolkata,0
+CUST10330,2,Standard,480.74,0,UPI Autopay,Yes,13,Delhi,0
+CUST10331,17,Standard,478.49,0,Debit Card,Yes,3,Hyderabad,0
+CUST10332,16,Basic,300.05,1,Wallet,Yes,,Mumbai,0
+CUST10333,15,Basic,321.49,0,UPI Autopay,Yes,0,Jaipur,1
+CUST10334,15,Standard,492.53,3,UPI Autopay,No,16,Hyderabad,0
+CUST10335,12,Standard,522.56,0,UPI Autopay,No,24,Ahmedabad,0
+CUST10336,8,Basic,308.85,0,Wallet,Yes,,Chennai,0
+CUST10337,3,Premium,818.09,0,Debit Card,No,24,Mumbai,0
+CUST10338,1,Basic,294.24,0,UPI Autopay,No,5,Jaipur,0
+CUST10339,24,Basic,299.69,1,,Yes,0,Mumbai,0
+CUST10340,12,Basic,315.46,0,Credit Card,No,14,Mumbai,0
+CUST10341,6,Basic,321.11,0,UPI Autopay,No,0,Lucknow,1
+CUST10342,16,Basic,312.88,1,UPI Autopay,Yes,9,Delhi,0
+CUST10343,11,Basic,304.15,2,UPI Autopay,Yes,11,Pune,0
+CUST10344,22,Basic,319.03,0,Credit Card,No,2,Lucknow,0
+CUST10345,16,Standard,507.18,0,Wallet,Yes,1,Mumbai,0
+CUST10346,36,Standard,481.53,1,UPI Autopay,No,0,Bengaluru,0
+CUST10347,11,Basic,289.88,3,Wallet,No,19,Kolkata,0
+CUST10348,5,Basic,319.65,0,Net Banking,No,1,Bengaluru,0
+CUST10349,4,Standard,537.71,3,UPI Autopay,Yes,2,Pune,1
+CUST10350,7,Standard,474.57,0,Credit Card,Yes,7,Ahmedabad,0
+CUST10351,8,Premium,862.69,1,Debit Card,No,12,Delhi,0
+CUST10352,1,Basic,293.11,0,Net Banking,No,24,Bengaluru,0
+CUST10353,23,Basic,312.74,0,UPI Autopay,No,4,Bengaluru,1
+CUST10354,58,Basic,294.93,0,UPI Autopay,No,4,Chennai,0
+CUST10355,10,Standard,511.72,0,Debit Card,No,7,Bengaluru,1
+CUST10356,10,Premium,783.64,0,UPI Autopay,No,9,Chennai,0
+CUST10357,7,Basic,286.95,0,Net Banking,No,1,Delhi,0
+CUST10358,10,Basic,288.74,0,Net Banking,No,4,Mumbai,0
+CUST10359,2,Standard,493.78,1,Debit Card,Yes,15,Delhi,0
+CUST10360,2,Basic,297.88,0,Debit Card,Yes,37,Bengaluru,0
+CUST10361,49,Premium,816.8,0,UPI Autopay,Yes,12,Mumbai,0
+CUST10362,1,Premium,861.11,0,Net Banking,No,7,Mumbai,1
+CUST10363,14,Basic,315.64,0,UPI Autopay,No,4,Delhi,0
+CUST10364,2,Premium,843.07,0,Wallet,Yes,20,Kolkata,1
+CUST10365,28,Basic,285.2,1,UPI Autopay,Yes,1,Pune,0
+CUST10366,10,Basic,307.92,1,Debit Card,No,17,Ahmedabad,1
+CUST10367,2,Basic,289.38,0,Wallet,No,7,Jaipur,1
+CUST10368,26,Premium,840.27,0,Credit Card,No,19,Jaipur,0
+CUST10369,7,Basic,285.06,1,,No,,Ahmedabad,0
+CUST10370,13,Standard,538.89,4,UPI Autopay,Yes,2,Bengaluru,0
+CUST10371,24,Premium,818.85,4,Credit Card,No,38,Delhi,0
+CUST10372,4,Standard,526.35,1,Wallet,Yes,9,Lucknow,0
+CUST10373,14,Standard,486.26,5,Wallet,No,2,Ahmedabad,0
+CUST10374,1,Basic,307.44,0,Credit Card,Yes,7,Delhi,0
+CUST10375,7,Basic,315.24,2,UPI Autopay,Yes,9,Delhi,0
+CUST10376,24,Premium,848.45,3,UPI Autopay,No,4,Mumbai,1
+CUST10377,7,Basic,321.98,1,Credit Card,No,5,Chennai,1
+CUST10378,4,Premium,831.09,3,,Yes,7,Delhi,1
+CUST10379,8,Standard,493.16,0,UPI Autopay,Yes,6,Lucknow,0
+CUST10380,1,Standard,533.8,4,UPI Autopay,Yes,22,Delhi,0
+CUST10381,7,Basic,297.53,0,,No,13,Chennai,1
+CUST10382,10,Basic,293.75,0,UPI Autopay,Yes,,Kolkata,0
+CUST10383,10,Basic,290.52,0,Wallet,No,3,Ahmedabad,0
+CUST10384,25,Standard,523.24,0,Credit Card,No,0,Bengaluru,0
+CUST10385,7,Premium,766.76,0,,Yes,6,Mumbai,0
+CUST10386,7,Premium,851.83,1,Credit Card,No,,Kolkata,0
+CUST10387,3,Basic,292.04,0,Debit Card,No,10,Pune,0
+CUST10388,18,Basic,287.78,0,Credit Card,No,0,Bengaluru,0
+CUST10389,9,Basic,309.78,1,UPI Autopay,Yes,1,Pune,0
+CUST10390,60,Standard,481.54,1,Credit Card,No,2,Jaipur,0
+CUST10391,8,Basic,298.88,0,UPI Autopay,Yes,2,Pune,0
+CUST10392,14,Basic,311.12,0,Debit Card,No,4,Lucknow,0
+CUST10393,5,Basic,299.1,0,Wallet,No,22,Lucknow,1
+CUST10394,35,Standard,479.17,2,Debit Card,No,18,Lucknow,0
+CUST10395,19,Standard,481.85,1,UPI Autopay,No,28,Hyderabad,0
+CUST10396,3,Basic,322.46,0,Wallet,No,14,Pune,0
+CUST10397,7,Standard,526.42,0,Credit Card,No,15,Jaipur,0
+CUST10398,10,Premium,840.75,1,Credit Card,No,4,Delhi,0
+CUST10399,14,Standard,536.64,0,UPI Autopay,No,12,Jaipur,1
+CUST10400,34,Premium,786.49,1,Credit Card,No,1,Kolkata,0
+CUST10401,3,Standard,519.05,0,Wallet,Yes,2,Ahmedabad,1
+CUST10402,41,Premium,761.15,2,UPI Autopay,Yes,5,Mumbai,0
+CUST10403,58,Basic,295.73,1,Net Banking,Yes,10,Lucknow,0
+CUST10404,17,Basic,292.27,2,,No,16,Bengaluru,1
+CUST10405,12,Basic,296.14,0,UPI Autopay,No,16,Bengaluru,1
+CUST10406,4,Premium,779.9,0,UPI Autopay,Yes,3,Hyderabad,0
+CUST10407,6,Standard,506.82,1,UPI Autopay,Yes,3,Lucknow,0
+CUST10408,10,Premium,808.34,0,UPI Autopay,No,2,Mumbai,0
+CUST10409,6,Basic,290.38,1,Wallet,No,8,Hyderabad,1
+CUST10410,6,Basic,284.83,1,Net Banking,Yes,19,Delhi,1
+CUST10411,15,Basic,293.86,1,UPI Autopay,No,8,Kolkata,0
+CUST10412,37,Premium,806.73,0,UPI Autopay,Yes,7,Lucknow,0
+CUST10413,2,Standard,517.02,2,UPI Autopay,Yes,7,Pune,1
+CUST10414,19,Standard,495.86,0,UPI Autopay,Yes,,Pune,0
+CUST10415,4,Standard,489.64,0,Wallet,No,4,Chennai,0
+CUST10416,19,Standard,516.57,7,UPI Autopay,Yes,3,Bengaluru,0
+CUST10417,14,Premium,843.81,0,Debit Card,No,8,Ahmedabad,0
+CUST10418,38,Standard,506.96,2,Net Banking,No,1,Mumbai,0
+CUST10419,11,Standard,521.09,0,Wallet,No,18,Mumbai,1
+CUST10420,5,Basic,317.92,0,Wallet,No,7,Ahmedabad,0
+CUST10421,31,Standard,530.25,1,Wallet,Yes,17,Jaipur,0
+CUST10422,3,Standard,508.42,0,Wallet,Yes,38,Chennai,1
+CUST10423,9,Standard,532.86,0,UPI Autopay,Yes,12,Ahmedabad,1
+CUST10424,7,Premium,791.6,0,Credit Card,Yes,11,Lucknow,0
+CUST10425,24,Standard,523.58,0,Debit Card,No,4,Ahmedabad,0
+CUST10426,8,Basic,291.8,0,UPI Autopay,Yes,14,Hyderabad,0
+CUST10427,1,Basic,312.57,0,Wallet,Yes,0,Jaipur,0
+CUST10428,15,Basic,316.07,0,UPI Autopay,Yes,7,Chennai,0
+CUST10429,10,Standard,482.73,6,Credit Card,No,1,Kolkata,1
+CUST10430,1,Basic,322.33,0,UPI Autopay,Yes,1,Bengaluru,0
+CUST10431,8,Standard,524.08,1,Credit Card,Yes,0,Bengaluru,0
+CUST10432,1,Basic,301.32,0,UPI Autopay,Yes,1,Bengaluru,0
+CUST10433,6,Standard,517.03,0,Debit Card,Yes,14,Mumbai,1
+CUST10434,12,Standard,492.39,1,Credit Card,No,12,Jaipur,1
+CUST10435,58,Basic,299.98,0,Credit Card,No,9,Ahmedabad,0
+CUST10436,7,Basic,310.16,2,Net Banking,No,1,Mumbai,1
+CUST10437,25,Basic,312.18,2,Debit Card,No,30,Pune,0
+CUST10438,10,Basic,290.84,0,UPI Autopay,No,2,Mumbai,0
+CUST10439,2,Standard,477.03,2,Debit Card,Yes,3,Ahmedabad,0
+CUST10440,50,Basic,312.54,0,UPI Autopay,Yes,4,Ahmedabad,0
+CUST10441,6,Basic,317.12,1,Debit Card,No,0,Bengaluru,0
+CUST10442,60,Premium,769.82,2,Credit Card,No,4,Lucknow,0
+CUST10443,8,Basic,285.17,1,Net Banking,No,1,Ahmedabad,0
+CUST10444,2,Basic,285.84,0,UPI Autopay,Yes,9,Lucknow,0
+CUST10445,21,Basic,321.2,2,Credit Card,No,7,Kolkata,0
+CUST10446,18,Basic,297.49,1,Credit Card,No,6,Lucknow,1
+CUST10447,1,Standard,484.23,2,Wallet,No,0,Ahmedabad,0
+CUST10448,7,Basic,294.86,0,Credit Card,No,13,Mumbai,0
+CUST10449,10,Standard,503.12,2,Credit Card,Yes,5,Bengaluru,1
+CUST10450,2,Basic,305.71,0,UPI Autopay,Yes,7,Pune,0
+CUST10451,36,Standard,516.51,0,UPI Autopay,No,13,Ahmedabad,0
+CUST10452,7,Standard,512.97,1,UPI Autopay,Yes,0,Hyderabad,0
+CUST10453,1,Basic,308.68,1,,No,0,Delhi,0
+CUST10454,11,Standard,522.22,0,UPI Autopay,Yes,1,Kolkata,0
+CUST10455,4,Standard,486.41,0,Net Banking,Yes,8,Lucknow,0
+CUST10456,3,Premium,806.56,1,Credit Card,No,0,Bengaluru,0
+CUST10457,13,Basic,306.79,3,Net Banking,No,9,Delhi,0
+CUST10458,21,Basic,299.11,1,Wallet,No,3,Lucknow,0
+CUST10459,40,Standard,491.8,3,Wallet,No,1,Kolkata,0
+CUST10460,15,Premium,812.26,2,Credit Card,Yes,10,Jaipur,0
+CUST10461,17,Basic,308.31,0,UPI Autopay,Yes,31,Delhi,0
+CUST10462,12,Standard,494.96,0,UPI Autopay,Yes,6,Kolkata,0
+CUST10463,18,Premium,814.51,2,Credit Card,Yes,0,Kolkata,0
+CUST10464,3,Standard,487.02,1,,Yes,2,Bengaluru,0
+CUST10465,19,Basic,313.34,0,Net Banking,Yes,16,Jaipur,0
+CUST10466,33,Standard,510.46,0,Net Banking,No,2,Bengaluru,0
+CUST10467,42,Basic,321.24,4,UPI Autopay,Yes,0,Pune,0
+CUST10468,4,Premium,848.42,0,UPI Autopay,Yes,,Chennai,0
+CUST10469,23,Standard,513.19,1,Wallet,Yes,1,Mumbai,0
+CUST10470,4,Basic,304.02,0,Credit Card,No,1,Lucknow,0
+CUST10471,30,Basic,302.18,3,UPI Autopay,No,7,Lucknow,0
+CUST10472,30,Basic,314.75,0,UPI Autopay,Yes,5,Delhi,0
+CUST10473,12,Standard,484.39,0,Credit Card,Yes,17,Chennai,0
+CUST10474,7,Basic,320.99,1,Credit Card,No,11,Bengaluru,0
+CUST10475,2,Basic,293.39,1,Wallet,Yes,0,Chennai,0
+CUST10476,8,Standard,481.4,0,Debit Card,Yes,5,Chennai,1
+CUST10477,12,Standard,505.63,0,Debit Card,Yes,0,Mumbai,0
+CUST10478,3,Premium,814.93,0,UPI Autopay,Yes,11,Kolkata,0
+CUST10479,29,Basic,316.26,2,Debit Card,No,13,Mumbai,0
+CUST10480,22,Basic,301.9,0,UPI Autopay,Yes,12,Jaipur,0
+CUST10481,2,Standard,533.15,0,Credit Card,No,3,Kolkata,0
+CUST10482,18,Standard,515.66,1,Net Banking,No,9,Mumbai,1
+CUST10483,8,Standard,492.85,1,Debit Card,Yes,20,Kolkata,0
+CUST10484,9,Standard,504.8,0,UPI Autopay,Yes,12,Jaipur,0
+CUST10485,6,Standard,493.38,2,Wallet,No,8,Bengaluru,1
+CUST10486,13,Standard,482.04,0,Credit Card,No,23,Pune,0
+CUST10487,4,Standard,521.14,0,Wallet,No,1,Delhi,0
+CUST10488,4,Premium,779.23,0,Net Banking,No,15,Jaipur,1
+CUST10489,10,Standard,492.9,0,UPI Autopay,Yes,5,Chennai,0
+CUST10490,8,Standard,489.26,0,UPI Autopay,Yes,5,Chennai,0
+CUST10491,16,Basic,306.76,1,UPI Autopay,Yes,4,Bengaluru,0
+CUST10492,7,Standard,520.25,1,UPI Autopay,Yes,,Chennai,0
+CUST10493,34,Standard,497.32,0,Credit Card,Yes,7,Pune,0
+CUST10494,32,Basic,304.99,0,Wallet,Yes,0,Bengaluru,0
+CUST10495,31,Standard,526.77,1,Net Banking,Yes,0,Pune,0
+CUST10496,13,Premium,808.09,1,UPI Autopay,Yes,11,Pune,0
+CUST10497,3,Standard,479.92,0,UPI Autopay,Yes,26,Lucknow,0
+CUST10498,19,Standard,483.16,0,Credit Card,No,16,Delhi,1
+CUST10499,22,Standard,497.33,0,Credit Card,Yes,3,Bengaluru,0
+CUST10500,18,Standard,525.39,0,Wallet,No,0,Chennai,0
+CUST10501,2,Premium,824.86,0,Debit Card,No,6,Kolkata,0
+CUST10502,17,Basic,309.45,2,Credit Card,No,19,Jaipur,1
+CUST10503,9,Standard,496.43,1,Wallet,Yes,17,Ahmedabad,0
+CUST10504,3,Basic,309.06,0,UPI Autopay,Yes,10,Mumbai,1
+CUST10505,18,Basic,296.89,0,Debit Card,No,7,Kolkata,1
+CUST10506,1,Basic,306.34,0,Debit Card,Yes,6,Bengaluru,0
+CUST10507,3,Premium,812.71,0,Wallet,No,16,Pune,0
+CUST10508,48,Basic,307.63,0,Credit Card,Yes,4,Delhi,0
+CUST10509,26,Standard,485.85,1,UPI Autopay,Yes,3,Ahmedabad,0
+CUST10510,15,Basic,298.75,0,UPI Autopay,Yes,19,Kolkata,0
+CUST10511,29,Standard,485.56,2,Credit Card,No,6,Mumbai,0
+CUST10512,2,Standard,532.56,0,UPI Autopay,No,9,Kolkata,0
+CUST10513,12,Basic,285.74,0,UPI Autopay,No,12,Kolkata,0
+CUST10514,7,Standard,532.94,2,Credit Card,No,2,Hyderabad,1
+CUST10515,39,Basic,307.31,0,UPI Autopay,Yes,,Bengaluru,0
+CUST10516,14,Basic,284.33,1,Debit Card,Yes,3,Delhi,0
+CUST10517,9,Standard,491.0,0,Credit Card,No,38,Kolkata,0
+CUST10518,23,Basic,314.52,0,UPI Autopay,Yes,2,Pune,0
+CUST10519,14,Standard,499.88,0,Wallet,Yes,,Delhi,1
+CUST10520,2,Standard,525.04,1,Debit Card,No,0,Kolkata,0
+CUST10521,54,Basic,287.59,0,Wallet,No,0,Hyderabad,0
+CUST10522,8,Standard,521.05,3,Credit Card,No,2,Lucknow,0
+CUST10523,1,Standard,485.42,0,UPI Autopay,No,21,Jaipur,0
+CUST10524,6,Basic,307.35,0,UPI Autopay,Yes,0,Hyderabad,0
+CUST10525,18,Premium,768.07,0,Credit Card,No,4,Hyderabad,0
+CUST10526,12,Standard,478.5,0,UPI Autopay,No,19,Chennai,0
+CUST10527,7,Standard,488.73,3,Credit Card,No,0,Delhi,1
+CUST10528,9,Basic,286.86,0,Wallet,No,25,Jaipur,0
+CUST10529,27,Standard,519.08,4,Credit Card,No,11,Ahmedabad,1
+CUST10530,19,Premium,848.59,0,UPI Autopay,Yes,12,Hyderabad,0
+CUST10531,19,Basic,296.32,3,Credit Card,Yes,14,Hyderabad,0
+CUST10532,6,Basic,313.16,0,Credit Card,Yes,3,Hyderabad,0
+CUST10533,36,Basic,320.86,1,Wallet,No,1,Hyderabad,0
+CUST10534,33,Basic,291.93,0,,Yes,0,Mumbai,0
+CUST10535,19,Standard,513.87,1,Credit Card,Yes,5,Lucknow,0
+CUST10536,7,Premium,850.56,1,UPI Autopay,Yes,11,Jaipur,0
+CUST10537,6,Basic,306.46,0,Net Banking,No,6,Jaipur,1
+CUST10538,7,Premium,839.64,0,UPI Autopay,Yes,3,Bengaluru,0
+CUST10539,1,Basic,306.63,0,Debit Card,Yes,6,Hyderabad,0
+CUST10540,6,Premium,794.69,0,Credit Card,No,11,Chennai,1
+CUST10541,31,Basic,291.04,0,Credit Card,Yes,0,Pune,1
+CUST10542,27,Standard,529.6,0,Net Banking,No,5,Bengaluru,0
+CUST10543,4,Standard,538.63,2,Credit Card,No,12,Pune,0
+CUST10544,5,Premium,764.01,0,UPI Autopay,Yes,,Mumbai,0
+CUST10545,10,Basic,298.08,0,Wallet,Yes,0,Mumbai,0
+CUST10546,7,Standard,513.33,1,Debit Card,No,31,Pune,1
+CUST10547,8,Standard,505.67,1,Wallet,No,2,Delhi,0
+CUST10548,33,Standard,534.29,0,Debit Card,No,19,Mumbai,0
+CUST10549,3,Basic,296.37,0,,Yes,2,Ahmedabad,1
+CUST10550,25,Premium,836.73,0,Credit Card,Yes,15,Delhi,0
+CUST10551,21,Standard,535.06,1,UPI Autopay,Yes,0,Mumbai,0
+CUST10552,45,Standard,477.54,1,Credit Card,No,0,Lucknow,0
+CUST10553,3,Standard,531.49,0,UPI Autopay,Yes,7,Delhi,0
+CUST10554,12,Basic,285.42,0,Wallet,No,5,Jaipur,0
+CUST10555,44,Standard,482.81,3,Credit Card,No,4,Lucknow,0
+CUST10556,10,Standard,508.68,2,Credit Card,Yes,0,Pune,0
+CUST10557,8,Basic,295.85,0,Net Banking,No,3,Ahmedabad,0
+CUST10558,13,Standard,505.96,1,UPI Autopay,No,12,Lucknow,0
+CUST10559,5,Basic,298.57,0,Credit Card,No,1,Kolkata,0
+CUST10560,29,Basic,287.13,1,Credit Card,No,7,Pune,0
+CUST10561,6,Standard,526.52,0,Wallet,Yes,2,Ahmedabad,0
+CUST10562,16,Basic,308.26,0,UPI Autopay,Yes,6,Delhi,0
+CUST10563,58,Basic,288.91,0,UPI Autopay,Yes,0,Hyderabad,0
+CUST10564,7,Basic,315.13,7,Credit Card,No,3,Delhi,1
+CUST10565,1,Standard,478.68,0,UPI Autopay,No,13,Bengaluru,1
+CUST10566,3,Standard,490.2,1,Credit Card,No,0,Ahmedabad,0
+CUST10567,22,Basic,309.94,0,Credit Card,No,22,Delhi,0
+CUST10568,16,Basic,320.49,0,UPI Autopay,Yes,1,Bengaluru,0
+CUST10569,32,Basic,288.44,1,,Yes,2,Mumbai,0
+CUST10570,9,Basic,321.71,1,Debit Card,No,1,Mumbai,0
+CUST10571,5,Standard,518.55,0,Wallet,No,0,Chennai,0
+CUST10572,17,Standard,525.39,0,UPI Autopay,No,12,Chennai,0
+CUST10573,27,Basic,291.55,1,UPI Autopay,Yes,18,Ahmedabad,0
+CUST10574,20,Standard,509.26,0,Credit Card,No,3,Ahmedabad,0
+CUST10575,6,Premium,854.04,0,UPI Autopay,Yes,2,Pune,0
+CUST10576,13,Standard,524.38,0,Debit Card,No,7,Chennai,0
+CUST10577,24,Basic,312.08,1,Credit Card,No,5,Ahmedabad,0
+CUST10578,24,Basic,295.06,0,UPI Autopay,Yes,8,Bengaluru,0
+CUST10579,29,Basic,318.0,0,Credit Card,Yes,6,Kolkata,0
+CUST10580,18,Standard,519.54,0,UPI Autopay,Yes,0,Hyderabad,0
+CUST10581,18,Premium,845.48,0,Debit Card,No,10,Kolkata,0
+CUST10582,28,Standard,477.83,1,Credit Card,No,14,Mumbai,1
+CUST10583,47,Premium,769.14,1,Credit Card,Yes,5,Hyderabad,0
+CUST10584,14,Premium,817.05,0,Debit Card,No,6,Ahmedabad,0
+CUST10585,20,Basic,288.1,1,Credit Card,No,8,Jaipur,0
+CUST10586,60,Basic,297.74,0,Wallet,Yes,3,Kolkata,0
+CUST10587,28,Basic,293.41,0,UPI Autopay,Yes,10,Chennai,0
+CUST10588,53,Basic,299.48,1,Wallet,No,5,Pune,0
+CUST10589,1,Premium,781.36,0,Net Banking,No,13,Jaipur,0
+CUST10590,12,Standard,511.13,0,Credit Card,Yes,2,Lucknow,0
+CUST10591,5,Basic,295.72,1,Credit Card,Yes,0,Chennai,0
+CUST10592,26,Basic,316.15,1,,No,7,Pune,0
+CUST10593,1,Standard,498.8,1,Wallet,Yes,16,Kolkata,0
+CUST10594,9,Premium,849.39,0,,No,0,Kolkata,0
+CUST10595,1,Standard,494.76,0,UPI Autopay,Yes,1,Kolkata,0
+CUST10596,57,Standard,511.37,0,Credit Card,No,1,Chennai,0
+CUST10597,2,Standard,477.25,0,UPI Autopay,Yes,11,Delhi,0
+CUST10598,23,Standard,486.9,0,Credit Card,No,46,Jaipur,1
+CUST10599,5,Basic,314.24,0,Wallet,Yes,8,Kolkata,0
+CUST10600,8,Basic,297.44,1,Net Banking,Yes,3,Ahmedabad,0
+CUST10601,16,Basic,319.97,0,Debit Card,Yes,10,Mumbai,0
+CUST10602,2,Basic,320.94,3,Wallet,No,0,Mumbai,1
+CUST10603,6,Standard,495.58,1,UPI Autopay,Yes,11,Jaipur,0
+CUST10604,11,Standard,483.22,1,UPI Autopay,Yes,8,Bengaluru,0
+CUST10605,5,Basic,291.85,1,UPI Autopay,Yes,23,Mumbai,0
+CUST10606,8,Basic,317.17,1,Wallet,Yes,16,Kolkata,1
+CUST10607,5,Basic,322.01,0,UPI Autopay,No,,Delhi,0
+CUST10608,4,Premium,817.29,1,UPI Autopay,No,2,Ahmedabad,0
+CUST10609,8,Basic,297.53,0,Debit Card,Yes,30,Jaipur,0
+CUST10610,6,Basic,294.07,0,Wallet,No,23,Pune,1
+CUST10611,5,Basic,299.32,0,Debit Card,No,9,Hyderabad,1
+CUST10612,9,Standard,501.71,0,Debit Card,No,1,Delhi,1
+CUST10613,14,Standard,487.17,0,Debit Card,No,19,Kolkata,0
+CUST10614,60,Premium,774.13,3,Wallet,Yes,6,Mumbai,0
+CUST10615,4,Premium,774.17,0,UPI Autopay,No,25,Pune,1
+CUST10616,10,Premium,851.92,3,UPI Autopay,No,0,Delhi,1
+CUST10617,1,Premium,823.13,1,Debit Card,No,2,Bengaluru,0
+CUST10618,8,Standard,504.97,0,Debit Card,No,3,Kolkata,0
+CUST10619,11,Basic,291.56,0,Net Banking,Yes,2,Kolkata,0
+CUST10620,5,Standard,487.21,0,UPI Autopay,No,4,Lucknow,0
+CUST10621,11,Basic,301.83,0,Credit Card,Yes,10,Kolkata,0
+CUST10622,21,Basic,320.55,1,Credit Card,No,9,Bengaluru,0
+CUST10623,12,Standard,527.7,0,Wallet,No,4,Bengaluru,0
+CUST10624,14,Standard,514.96,0,UPI Autopay,Yes,2,Pune,0
+CUST10625,10,Basic,307.88,0,Credit Card,Yes,14,Ahmedabad,1
+CUST10626,2,Standard,485.71,1,Wallet,No,,Chennai,1
+CUST10627,10,Basic,307.0,1,UPI Autopay,Yes,2,Delhi,0
+CUST10628,21,Basic,288.49,0,UPI Autopay,Yes,3,Jaipur,0
+CUST10629,16,Basic,7990.0,0,UPI Autopay,Yes,,Delhi,0
+CUST10630,3,Basic,313.95,0,UPI Autopay,Yes,25,Pune,0
+CUST10631,16,Basic,289.16,0,,Yes,,Ahmedabad,0
+CUST10632,13,Basic,318.36,0,Credit Card,No,4,Mumbai,0
+CUST10633,15,Basic,318.34,0,Debit Card,No,1,Delhi,0
+CUST10634,3,Standard,476.43,2,Debit Card,No,2,Mumbai,1
+CUST10635,1,Basic,290.98,1,Debit Card,No,7,Jaipur,0
+CUST10636,4,Standard,511.61,3,UPI Autopay,Yes,3,Kolkata,0
+CUST10637,28,Standard,528.76,0,Credit Card,Yes,15,Chennai,0
+CUST10638,12,Standard,519.19,1,UPI Autopay,Yes,7,Mumbai,0
+CUST10639,11,Standard,534.63,5,UPI Autopay,Yes,3,Jaipur,0
+CUST10640,14,Standard,534.19,1,Credit Card,No,5,Delhi,1
+CUST10641,35,Basic,295.34,0,UPI Autopay,Yes,12,Hyderabad,0
+CUST10642,26,Premium,802.06,0,Credit Card,No,0,Hyderabad,0
+CUST10643,19,Basic,286.69,0,Credit Card,No,0,Chennai,0
+CUST10644,7,Standard,514.01,0,UPI Autopay,Yes,3,Ahmedabad,0
+CUST10645,40,Standard,515.93,0,,No,6,Chennai,0
+CUST10646,10,Standard,534.24,0,Credit Card,No,9,Jaipur,1
+CUST10647,13,Basic,310.7,1,Wallet,No,27,Pune,1
+CUST10648,30,Basic,298.64,0,UPI Autopay,Yes,1,Mumbai,0
+CUST10649,32,Standard,519.8,0,UPI Autopay,Yes,5,Hyderabad,0
+CUST10650,8,Standard,493.68,0,UPI Autopay,Yes,0,Hyderabad,0
+CUST10651,40,Basic,285.02,0,Credit Card,Yes,20,Jaipur,0
+CUST10652,6,Basic,313.96,0,Wallet,No,,Hyderabad,1
+CUST10653,21,Standard,520.35,0,UPI Autopay,No,9,Lucknow,0
+CUST10654,33,Basic,318.61,0,Net Banking,No,0,Pune,0
+CUST10655,17,Basic,291.85,0,Credit Card,No,8,Pune,0
+CUST10656,3,Basic,284.64,1,Credit Card,Yes,3,Chennai,0
+CUST10657,6,Premium,842.56,1,UPI Autopay,Yes,17,Jaipur,0
+CUST10658,10,Basic,302.35,1,UPI Autopay,Yes,4,Delhi,0
+CUST10659,20,Premium,824.43,1,Credit Card,No,3,Hyderabad,0
+CUST10660,20,Standard,508.66,4,Net Banking,No,1,Ahmedabad,0
+CUST10661,2,Basic,309.1,1,Credit Card,No,1,Lucknow,0
+CUST10662,5,Basic,291.18,2,UPI Autopay,No,3,Ahmedabad,0
+CUST10663,1,Standard,496.85,0,UPI Autopay,No,7,Delhi,1
+CUST10664,12,Basic,311.81,0,Credit Card,Yes,2,Ahmedabad,0
+CUST10665,9,Basic,308.18,0,Wallet,No,3,Lucknow,1
+CUST10666,10,Premium,817.97,0,Debit Card,Yes,8,Lucknow,0
+CUST10667,29,Basic,307.22,0,UPI Autopay,Yes,2,Kolkata,0
+CUST10668,2,Basic,315.69,1,UPI Autopay,Yes,8,Mumbai,0
+CUST10669,4,Basic,306.62,1,Net Banking,No,8,Ahmedabad,1
+CUST10670,13,Basic,306.51,0,Debit Card,Yes,6,Pune,0
+CUST10671,41,Premium,833.61,2,Wallet,No,7,Jaipur,0
+CUST10672,9,Basic,295.48,0,Credit Card,Yes,9,Chennai,0
+CUST10673,2,Basic,285.26,0,Credit Card,No,9,Kolkata,1
+CUST10674,8,Standard,517.03,0,UPI Autopay,Yes,20,Kolkata,1
+CUST10675,3,Premium,828.65,0,UPI Autopay,Yes,10,Ahmedabad,0
+CUST10676,18,Premium,773.15,0,Net Banking,No,17,Lucknow,0
+CUST10677,43,Standard,503.53,0,Net Banking,No,2,Kolkata,0
+CUST10678,15,Standard,528.98,0,Credit Card,No,6,Chennai,0
+CUST10679,1,Basic,302.83,0,Credit Card,No,0,Jaipur,0
+CUST10680,60,Premium,839.95,0,UPI Autopay,No,0,Ahmedabad,0
+CUST10681,16,Standard,517.43,1,Credit Card,No,7,Chennai,0
+CUST10682,13,Basic,301.7,2,Credit Card,Yes,3,Pune,0
+CUST10683,6,Basic,319.92,1,Debit Card,No,0,Ahmedabad,0
+CUST10684,14,Standard,516.63,0,Debit Card,Yes,5,Delhi,0
+CUST10685,12,Premium,787.91,0,UPI Autopay,No,0,Mumbai,0
+CUST10686,15,Premium,835.81,1,UPI Autopay,Yes,12,Hyderabad,0
+CUST10687,11,Standard,529.97,0,UPI Autopay,Yes,21,Delhi,0
+CUST10688,30,Standard,500.84,0,Debit Card,No,1,Lucknow,0
+CUST10689,22,Basic,309.01,1,UPI Autopay,Yes,4,Pune,0
+CUST10690,11,Premium,854.87,0,Debit Card,No,2,Jaipur,0
+CUST10691,33,Basic,320.09,0,Debit Card,No,9,Bengaluru,0
+CUST10692,2,Standard,497.0,2,Debit Card,No,2,Pune,1
+CUST10693,5,Basic,309.48,0,Net Banking,No,10,Lucknow,0
+CUST10694,24,Standard,518.01,5,UPI Autopay,Yes,0,Mumbai,0
+CUST10695,1,Basic,288.09,0,UPI Autopay,Yes,1,Bengaluru,0
+CUST10696,16,Basic,307.14,2,UPI Autopay,Yes,,Mumbai,0
+CUST10697,2,Standard,498.44,1,Debit Card,No,1,Mumbai,0
+CUST10698,20,Basic,302.2,3,Debit Card,No,2,Kolkata,0
+CUST10699,19,Standard,524.01,0,Net Banking,Yes,0,Kolkata,0
+CUST10700,7,Basic,321.19,0,Credit Card,No,21,Lucknow,1
+CUST10701,8,Standard,481.08,0,Credit Card,No,0,Ahmedabad,0
+CUST10702,21,Basic,286.88,1,UPI Autopay,Yes,18,Delhi,0
+CUST10703,17,Basic,285.52,0,UPI Autopay,Yes,3,Bengaluru,0
+CUST10704,12,Premium,810.02,0,Net Banking,No,12,Jaipur,0
+CUST10705,5,Basic,310.84,1,UPI Autopay,Yes,38,Chennai,0
+CUST10706,19,Basic,308.63,3,,Yes,25,Mumbai,0
+CUST10707,30,Standard,492.86,0,Credit Card,No,8,Pune,0
+CUST10708,20,Premium,824.55,0,UPI Autopay,Yes,10,Delhi,0
+CUST10709,1,Basic,322.78,0,Credit Card,No,8,Ahmedabad,0
+CUST10710,13,Premium,49900.0,6,UPI Autopay,Yes,12,Bengaluru,1
+CUST10711,9,Basic,309.47,0,Wallet,No,6,Lucknow,0
+CUST10712,5,Basic,312.64,0,UPI Autopay,No,7,Hyderabad,1
+CUST10713,20,Basic,290.75,0,UPI Autopay,No,4,Delhi,0
+CUST10714,29,Basic,315.83,0,Credit Card,No,0,Hyderabad,0
+CUST10715,9,Standard,537.76,1,UPI Autopay,No,6,Delhi,0
+CUST10716,7,Premium,781.2,0,UPI Autopay,Yes,2,Kolkata,0
+CUST10717,3,Basic,290.46,0,Credit Card,Yes,12,Lucknow,0
+CUST10718,8,Basic,318.24,0,UPI Autopay,No,9,Lucknow,1
+CUST10719,35,Basic,315.43,1,Debit Card,Yes,8,Jaipur,0
+CUST10720,10,Basic,290.83,1,Credit Card,No,7,Mumbai,0
+CUST10721,16,Standard,496.62,0,UPI Autopay,Yes,6,Mumbai,0
+CUST10722,16,Premium,861.55,0,Credit Card,No,1,Bengaluru,0
+CUST10723,4,Standard,518.5,4,Credit Card,Yes,8,Bengaluru,1
+CUST10724,1,Basic,292.2,0,Debit Card,No,4,Mumbai,0
+CUST10725,22,Premium,777.32,1,Credit Card,Yes,18,Ahmedabad,0
+CUST10726,15,Basic,291.78,1,UPI Autopay,No,3,Mumbai,0
+CUST10727,5,Basic,291.82,2,UPI Autopay,Yes,0,Kolkata,1
+CUST10728,3,Premium,806.31,0,UPI Autopay,Yes,7,Pune,1
+CUST10729,4,Basic,310.96,0,UPI Autopay,No,4,Delhi,1
+CUST10730,23,Basic,295.52,0,Net Banking,No,18,Lucknow,0
+CUST10731,57,Premium,768.03,2,Credit Card,No,7,Ahmedabad,0
+CUST10732,6,Standard,521.81,0,UPI Autopay,Yes,17,Lucknow,0
+CUST10733,47,Premium,852.35,0,UPI Autopay,No,10,Jaipur,0
+CUST10734,1,Standard,505.14,1,Net Banking,No,2,Jaipur,0
+CUST10735,23,Standard,500.43,0,UPI Autopay,Yes,54,Bengaluru,0
+CUST10736,11,Basic,311.39,2,Debit Card,Yes,4,Delhi,0
+CUST10737,34,Basic,314.75,0,Credit Card,No,15,Mumbai,0
+CUST10738,8,Standard,508.49,0,Net Banking,No,7,Lucknow,0
+CUST10739,26,Standard,479.3,2,Debit Card,Yes,23,Chennai,0
+CUST10740,36,Basic,298.26,1,UPI Autopay,Yes,6,Mumbai,0
+CUST10741,14,Standard,483.03,0,Credit Card,No,10,Lucknow,0
+CUST10742,33,Standard,522.91,1,UPI Autopay,No,5,Kolkata,0
+CUST10743,6,Basic,297.47,0,Credit Card,Yes,9,Jaipur,0
+CUST10744,37,Standard,497.93,1,Debit Card,No,17,Hyderabad,0
+CUST10745,36,Standard,479.25,2,UPI Autopay,No,0,Pune,0
+CUST10746,2,Basic,289.9,0,Wallet,Yes,4,Jaipur,1
+CUST10747,43,Standard,501.3,1,UPI Autopay,Yes,0,Hyderabad,0
+CUST10748,29,Standard,495.84,1,Debit Card,No,5,Jaipur,0
+CUST10749,30,Basic,295.87,0,Net Banking,Yes,2,Ahmedabad,0
+CUST10750,8,Basic,4990.0,0,UPI Autopay,No,7,Delhi,1
+CUST10751,20,Basic,321.88,2,Debit Card,No,1,Hyderabad,0
+CUST10752,2,Premium,818.73,0,UPI Autopay,Yes,9,Chennai,0
+CUST10753,60,Basic,301.48,4,Credit Card,Yes,0,Ahmedabad,0
+CUST10754,24,Premium,855.42,0,Wallet,No,5,Pune,0
+CUST10755,11,Basic,320.74,4,Credit Card,Yes,6,Ahmedabad,0
+CUST10756,7,Basic,302.67,0,,Yes,0,Lucknow,0
+CUST10757,30,Basic,287.64,0,Debit Card,No,2,Pune,1
+CUST10758,4,Basic,317.07,1,Wallet,No,4,Ahmedabad,0
+CUST10759,7,Standard,535.25,2,UPI Autopay,Yes,15,Chennai,0
+CUST10760,8,Basic,297.46,0,Credit Card,No,1,Ahmedabad,0
+CUST10761,22,Basic,301.25,0,Debit Card,No,10,Kolkata,0
+CUST10762,3,Standard,479.63,0,Credit Card,No,34,Mumbai,1
+CUST10763,44,Standard,498.43,0,Debit Card,Yes,1,Ahmedabad,0
+CUST10764,20,Standard,482.93,0,Credit Card,No,0,Pune,1
+CUST10765,29,Basic,305.79,0,UPI Autopay,Yes,2,Ahmedabad,0
+CUST10766,3,Standard,492.71,0,Wallet,No,0,Pune,0
+CUST10767,11,Premium,821.26,0,Credit Card,No,2,Ahmedabad,0
+CUST10768,59,Standard,498.26,1,UPI Autopay,Yes,6,Delhi,0
+CUST10769,7,Premium,773.12,0,UPI Autopay,Yes,19,Chennai,1
+CUST10770,1,Basic,308.89,0,UPI Autopay,Yes,11,Lucknow,1
+CUST10771,23,Standard,530.65,2,Debit Card,Yes,9,Chennai,0
+CUST10772,2,Standard,527.46,0,Credit Card,No,5,Chennai,0
+CUST10773,41,Basic,292.52,0,Net Banking,No,6,Jaipur,0
+CUST10774,30,Standard,519.61,1,Credit Card,No,0,Delhi,0
+CUST10775,42,Standard,494.26,0,Net Banking,No,,Chennai,0
+CUST10776,4,Basic,312.99,0,UPI Autopay,Yes,9,Pune,0
+CUST10777,3,Basic,287.11,1,Net Banking,Yes,11,Kolkata,0
+CUST10778,1,Basic,314.88,0,UPI Autopay,Yes,2,Mumbai,0
+CUST10779,6,Basic,287.8,0,Debit Card,No,1,Chennai,0
+CUST10780,1,Basic,313.05,0,Credit Card,No,15,Lucknow,0
+CUST10781,5,Standard,480.48,1,UPI Autopay,Yes,1,Pune,0
+CUST10782,4,Standard,474.33,1,Wallet,No,15,Ahmedabad,1
+CUST10783,8,Standard,502.57,3,,Yes,3,Hyderabad,1
+CUST10784,12,Basic,313.65,0,Credit Card,No,5,Chennai,0
+CUST10785,20,Standard,476.68,0,UPI Autopay,Yes,7,Pune,0
+CUST10786,19,Premium,782.51,0,Wallet,No,15,Ahmedabad,0
+CUST10787,45,Basic,284.55,1,Debit Card,No,,Mumbai,0
+CUST10788,3,Basic,311.07,4,Debit Card,No,1,Chennai,1
+CUST10789,60,Basic,307.18,5,UPI Autopay,No,10,Pune,0
+CUST10790,24,Standard,512.56,1,Net Banking,No,3,Lucknow,0
+CUST10791,48,Premium,812.17,0,Credit Card,Yes,5,Hyderabad,0
+CUST10792,16,Basic,287.92,0,UPI Autopay,Yes,28,Kolkata,0
+CUST10793,15,Basic,295.82,1,Net Banking,No,5,Ahmedabad,0
+CUST10794,26,Basic,309.79,0,UPI Autopay,Yes,15,Jaipur,0
+CUST10795,1,Standard,538.32,2,UPI Autopay,Yes,15,Ahmedabad,0
+CUST10796,10,Basic,305.69,2,UPI Autopay,Yes,5,Delhi,0
+CUST10797,6,Basic,313.75,1,Credit Card,No,6,Ahmedabad,0
+CUST10798,11,Premium,811.68,0,Credit Card,No,7,Chennai,0
+CUST10799,24,Basic,286.44,1,UPI Autopay,Yes,13,Lucknow,0
+CUST10800,1,Premium,794.5,0,UPI Autopay,Yes,3,Hyderabad,0
+CUST10801,5,Standard,512.49,2,UPI Autopay,Yes,3,Bengaluru,0
+CUST10802,13,Basic,309.62,0,Credit Card,No,0,Ahmedabad,0
+CUST10803,15,Premium,798.29,0,Credit Card,No,0,Hyderabad,0
+CUST10804,7,Standard,7990.0,0,Debit Card,No,,Ahmedabad,0
+CUST10805,17,Premium,766.87,2,UPI Autopay,Yes,2,Lucknow,0
+CUST10806,9,Basic,312.93,0,Net Banking,Yes,3,Mumbai,0
+CUST10807,14,Standard,501.76,0,UPI Autopay,No,5,Pune,0
+CUST10808,10,Standard,487.03,0,Debit Card,No,11,Delhi,1
+CUST10809,35,Standard,507.54,0,Credit Card,No,13,Ahmedabad,0
+CUST10810,5,Standard,526.53,2,Wallet,No,10,Bengaluru,0
+CUST10811,12,Basic,289.79,0,Debit Card,Yes,4,Chennai,0
+CUST10812,32,Premium,824.9,2,UPI Autopay,Yes,,Lucknow,0
+CUST10813,5,Basic,289.88,0,Net Banking,Yes,5,Kolkata,1
+CUST10814,9,Premium,780.03,0,UPI Autopay,No,2,Jaipur,0
+CUST10815,4,Premium,859.16,0,UPI Autopay,No,0,Lucknow,0
+CUST10816,6,Basic,321.17,2,Debit Card,No,4,Delhi,0
+CUST10817,5,Standard,506.5,0,,No,11,Jaipur,0
+CUST10818,5,Premium,783.78,0,Net Banking,Yes,7,Kolkata,0
+CUST10819,27,Standard,534.74,0,UPI Autopay,Yes,2,Kolkata,0
+CUST10820,5,Standard,505.86,0,Wallet,Yes,4,Hyderabad,1
+CUST10821,53,Premium,856.37,0,Debit Card,No,0,Lucknow,0
+CUST10822,1,Standard,525.88,0,Wallet,No,2,Kolkata,0
+CUST10823,6,Premium,796.74,2,UPI Autopay,No,15,Kolkata,0
+CUST10824,1,Premium,855.39,3,UPI Autopay,No,11,Pune,1
+CUST10825,4,Premium,854.18,1,Wallet,No,4,Bengaluru,1
+CUST10826,6,Basic,314.35,0,Debit Card,No,3,Kolkata,0
+CUST10827,34,Standard,527.53,1,Credit Card,No,7,Jaipur,0
+CUST10828,22,Standard,475.82,0,Debit Card,No,12,Delhi,0
+CUST10829,1,Basic,295.93,1,UPI Autopay,Yes,10,Delhi,0
+CUST10830,31,Standard,525.47,0,Credit Card,No,2,Lucknow,0
+CUST10831,29,Standard,486.94,0,UPI Autopay,No,23,Lucknow,0
+CUST10832,5,Premium,854.93,1,Debit Card,No,29,Hyderabad,1
+CUST10833,5,Premium,764.22,1,Debit Card,Yes,25,Delhi,0
+CUST10834,48,Basic,311.98,0,Wallet,No,8,Mumbai,0
+CUST10835,5,Basic,320.82,2,UPI Autopay,Yes,3,Kolkata,0
+CUST10836,32,Standard,538.61,0,Debit Card,No,,Delhi,0
+CUST10837,1,Premium,783.51,0,UPI Autopay,Yes,8,Mumbai,0
+CUST10838,1,Basic,296.61,1,Debit Card,No,9,Lucknow,1
+CUST10839,5,Basic,286.33,0,UPI Autopay,No,45,Lucknow,1
+CUST10840,20,Standard,474.4,0,Credit Card,No,8,Delhi,0
+CUST10841,56,Standard,511.71,0,Credit Card,No,16,Delhi,0
+CUST10842,2,Standard,502.13,0,UPI Autopay,No,5,Pune,0
+CUST10843,23,Premium,788.44,2,Debit Card,No,2,Chennai,0
+CUST10844,10,Basic,312.69,0,Wallet,No,20,Ahmedabad,1
+CUST10845,1,Basic,292.98,0,UPI Autopay,Yes,4,Ahmedabad,0
+CUST10846,1,Basic,311.61,0,Credit Card,No,16,Mumbai,0
+CUST10847,7,Basic,295.09,2,Debit Card,No,6,Lucknow,0
+CUST10848,4,Premium,759.48,1,UPI Autopay,No,2,Ahmedabad,1
+CUST10849,19,Premium,761.75,1,Debit Card,No,7,Mumbai,0
+CUST10850,30,Basic,287.2,2,Debit Card,No,24,Lucknow,0
+CUST10851,18,Basic,285.75,1,Credit Card,No,69,Lucknow,0
+CUST10852,3,Premium,842.31,0,Net Banking,No,6,Lucknow,1
+CUST10853,8,Basic,290.97,4,Wallet,Yes,15,Delhi,1
+CUST10854,8,Basic,309.21,3,UPI Autopay,Yes,12,Pune,0
+CUST10855,38,Standard,497.34,0,UPI Autopay,Yes,4,Kolkata,0
+CUST10856,11,Standard,501.49,1,Net Banking,No,4,Kolkata,0
+CUST10857,2,Standard,537.19,1,Debit Card,No,21,Jaipur,1
+CUST10858,16,Standard,492.91,0,Wallet,No,1,Delhi,0
+CUST10859,19,Basic,293.72,0,Credit Card,No,19,Jaipur,1
+CUST10860,2,Basic,287.72,1,Credit Card,Yes,2,Mumbai,0
+CUST10861,24,Basic,312.83,0,Net Banking,No,0,Kolkata,0
+CUST10862,34,Basic,306.87,0,Debit Card,No,2,Delhi,0
+CUST10863,4,Basic,322.23,0,Debit Card,No,0,Kolkata,0
+CUST10864,2,Basic,302.6,1,Wallet,No,7,Ahmedabad,1
+CUST10865,6,Standard,514.06,1,Wallet,No,13,Mumbai,0
+CUST10866,3,Basic,288.4,0,Wallet,No,1,Delhi,0
+CUST10867,17,Basic,308.38,1,UPI Autopay,Yes,4,Ahmedabad,0
+CUST10868,9,Basic,319.13,1,Credit Card,No,0,Ahmedabad,0
+CUST10869,15,Basic,306.18,2,UPI Autopay,Yes,7,Kolkata,0
+CUST10870,60,Premium,835.61,1,Credit Card,Yes,5,Ahmedabad,0
+CUST10871,12,Standard,534.72,2,Wallet,Yes,0,Bengaluru,0
+CUST10872,9,Basic,286.52,2,Credit Card,No,5,Chennai,0
+CUST10873,10,Basic,290.32,1,Credit Card,No,5,Lucknow,1
+CUST10874,39,Basic,307.45,2,Debit Card,Yes,2,Kolkata,0
+CUST10875,52,Premium,828.97,1,Net Banking,No,14,Lucknow,0
+CUST10876,4,Standard,479.64,0,UPI Autopay,Yes,5,Kolkata,0
+CUST10877,46,Standard,489.28,0,Wallet,No,2,Delhi,0
+CUST10878,4,Premium,49900.0,1,,Yes,2,Jaipur,0
+CUST10879,5,Basic,297.28,0,UPI Autopay,No,,Delhi,0
+CUST10880,31,Premium,821.82,0,UPI Autopay,No,12,Mumbai,0
+CUST10881,59,Standard,513.6,2,UPI Autopay,Yes,5,Delhi,0
+CUST10882,16,Premium,853.67,0,UPI Autopay,Yes,5,Mumbai,0
+CUST10883,3,Basic,315.89,0,UPI Autopay,No,11,Bengaluru,0
+CUST10884,5,Standard,496.19,0,UPI Autopay,Yes,11,Chennai,0
+CUST10885,16,Basic,313.33,0,Net Banking,Yes,4,Kolkata,0
+CUST10886,37,Premium,812.66,1,Wallet,No,11,Jaipur,0
+CUST10887,47,Basic,296.29,4,UPI Autopay,Yes,11,Delhi,0
+CUST10888,38,Basic,308.6,1,Debit Card,No,2,Kolkata,0
+CUST10889,35,Standard,530.72,1,UPI Autopay,Yes,14,Jaipur,0
+CUST10890,16,Basic,299.75,1,Wallet,No,7,Ahmedabad,1
+CUST10891,20,Premium,840.23,0,UPI Autopay,Yes,0,Chennai,0
+CUST10892,8,Standard,531.13,0,Credit Card,Yes,5,Pune,0
+CUST10893,12,Standard,484.43,0,Net Banking,No,2,Pune,0
+CUST10894,21,Premium,770.52,0,,Yes,3,Bengaluru,0
+CUST10895,23,Premium,805.66,1,UPI Autopay,Yes,2,Lucknow,0
+CUST10896,14,Premium,824.25,0,Credit Card,No,2,Lucknow,0
+CUST10897,18,Standard,507.76,0,UPI Autopay,Yes,13,Chennai,0
+CUST10898,10,Basic,300.6,0,UPI Autopay,Yes,1,Hyderabad,0
+CUST10899,10,Basic,304.51,1,Credit Card,No,2,Ahmedabad,0
+CUST10900,17,Premium,830.62,3,Debit Card,No,1,Jaipur,0
+CUST10901,3,Standard,482.44,1,Wallet,Yes,1,Ahmedabad,0
+CUST10902,1,Basic,305.78,3,UPI Autopay,No,0,Chennai,0
+CUST10903,14,Basic,290.01,0,Wallet,Yes,5,Delhi,0
+CUST10904,3,Standard,477.21,2,,Yes,13,Ahmedabad,0
+CUST10905,1,Standard,478.43,0,Credit Card,Yes,4,Chennai,0
+CUST10906,25,Standard,520.76,1,Net Banking,No,4,Ahmedabad,0
+CUST10907,18,Basic,312.34,0,Debit Card,No,3,Kolkata,0
+CUST10908,7,Basic,310.11,0,UPI Autopay,Yes,1,Bengaluru,0
+CUST10909,14,Standard,519.94,0,UPI Autopay,Yes,1,Lucknow,0
+CUST10910,13,Standard,536.15,0,Net Banking,No,0,Jaipur,0
+CUST10911,4,Basic,314.63,0,Debit Card,No,4,Jaipur,1
+CUST10912,15,Basic,285.8,2,UPI Autopay,Yes,4,Jaipur,0
+CUST10913,7,Basic,288.51,0,UPI Autopay,Yes,2,Mumbai,0
+CUST10914,3,Premium,829.54,0,Wallet,Yes,9,Pune,0
+CUST10915,8,Basic,300.1,0,UPI Autopay,No,1,Hyderabad,0
+CUST10916,5,Standard,489.39,0,Credit Card,No,2,Chennai,0
+CUST10917,11,Basic,302.87,0,UPI Autopay,No,,Lucknow,0
+CUST10918,18,Basic,305.61,1,,Yes,0,Jaipur,0
+CUST10919,4,Premium,797.83,5,Net Banking,No,,Jaipur,1
+CUST10920,10,Basic,302.11,2,UPI Autopay,No,0,Ahmedabad,0
+CUST10921,6,Basic,310.48,8,Net Banking,Yes,14,Pune,1
+CUST10922,1,Standard,510.58,0,Credit Card,Yes,1,Jaipur,0
+CUST10923,60,Premium,780.95,0,Net Banking,No,23,Pune,0
+CUST10924,60,Standard,491.76,1,UPI Autopay,Yes,25,Chennai,0
+CUST10925,1,Standard,515.98,0,Credit Card,No,8,Kolkata,0
+CUST10926,13,Standard,505.77,0,UPI Autopay,No,8,Jaipur,0
+CUST10927,1,Premium,828.81,1,UPI Autopay,No,,Chennai,1
+CUST10928,8,Premium,843.38,4,UPI Autopay,Yes,1,Bengaluru,0
+CUST10929,5,Basic,294.98,3,UPI Autopay,Yes,7,Pune,0
+CUST10930,27,Basic,322.15,4,UPI Autopay,Yes,9,Lucknow,0
+CUST10931,4,Basic,315.97,0,Wallet,No,5,Jaipur,1
+CUST10932,4,Standard,517.65,1,UPI Autopay,Yes,10,Delhi,0
+CUST10933,5,Standard,488.84,0,Net Banking,Yes,9,Jaipur,0
+CUST10934,16,Standard,531.34,0,Credit Card,No,8,Chennai,0
+CUST10935,10,Premium,787.51,1,Credit Card,No,11,Hyderabad,1
+CUST10936,1,Premium,814.35,0,Credit Card,Yes,16,Bengaluru,1
+CUST10937,60,Basic,310.85,3,Wallet,Yes,3,Mumbai,0
+CUST10938,16,Basic,302.71,1,Credit Card,No,3,Pune,0
+CUST10939,5,Standard,536.25,2,Net Banking,No,2,Mumbai,0
+CUST10940,24,Standard,523.62,1,Credit Card,Yes,0,Bengaluru,0
+CUST10941,8,Premium,831.07,1,UPI Autopay,No,0,Lucknow,0
+CUST10942,16,Basic,310.39,0,UPI Autopay,Yes,,Kolkata,0
+CUST10943,5,Standard,516.85,0,Credit Card,No,16,Lucknow,0
+CUST10944,2,Standard,517.89,0,Credit Card,No,0,Bengaluru,0
+CUST10945,15,Basic,314.73,0,Credit Card,No,2,Kolkata,0
+CUST10946,11,Standard,486.11,0,UPI Autopay,Yes,7,Jaipur,0
+CUST10947,52,Standard,494.24,2,Net Banking,Yes,2,Chennai,0
+CUST10948,6,Premium,812.82,1,UPI Autopay,Yes,13,Jaipur,0
+CUST10949,32,Basic,291.65,0,Wallet,No,3,Ahmedabad,0
+CUST10950,19,Premium,821.35,0,Credit Card,No,7,Kolkata,0
+CUST10951,7,Basic,318.1,2,Credit Card,No,8,Hyderabad,0
+CUST10952,11,Basic,302.74,1,Net Banking,No,3,Kolkata,1
+CUST10953,4,Premium,796.74,0,UPI Autopay,Yes,2,Hyderabad,0
+CUST10954,16,Premium,796.43,4,UPI Autopay,Yes,1,Pune,0
+CUST10955,21,Basic,305.6,0,UPI Autopay,No,19,Bengaluru,0
+CUST10956,29,Basic,309.5,2,UPI Autopay,Yes,4,Chennai,0
+CUST10957,27,Standard,535.1,4,Wallet,No,16,Mumbai,1
+CUST10958,3,Premium,772.64,0,Credit Card,No,3,Kolkata,0
+CUST10959,60,Basic,285.85,1,UPI Autopay,Yes,,Chennai,0
+CUST10960,5,Standard,492.22,0,Credit Card,No,5,Mumbai,0
+CUST10961,25,Standard,513.94,0,Credit Card,No,11,Chennai,1
+CUST10962,12,Standard,494.93,0,Debit Card,No,5,Pune,0
+CUST10963,14,Standard,525.34,1,UPI Autopay,No,4,Hyderabad,0
+CUST10964,9,Basic,318.59,1,Wallet,No,6,Delhi,1
+CUST10965,23,Basic,304.22,0,UPI Autopay,Yes,3,Ahmedabad,0
+CUST10966,11,Basic,315.32,0,Credit Card,Yes,2,Mumbai,0
+CUST10967,8,Basic,316.8,0,Debit Card,No,20,Mumbai,0
+CUST10968,3,Basic,305.27,0,Debit Card,Yes,10,Pune,0
+CUST10969,4,Standard,482.99,2,Debit Card,No,2,Pune,0
+CUST10970,6,Basic,322.8,3,Net Banking,No,0,Jaipur,1
+CUST10971,60,Premium,848.95,0,Debit Card,Yes,2,Lucknow,0
+CUST10972,25,Standard,520.92,0,Net Banking,Yes,1,Kolkata,0
+CUST10973,4,Basic,305.76,0,Credit Card,Yes,22,Bengaluru,0
+CUST10974,12,Standard,4990.0,0,Credit Card,No,11,Jaipur,0
+CUST10975,6,Standard,510.87,0,UPI Autopay,No,41,Lucknow,1
+CUST10976,16,Standard,513.48,2,Wallet,Yes,3,Jaipur,0
+CUST10977,8,Standard,495.38,3,Debit Card,Yes,1,Jaipur,1
+CUST10978,4,Standard,513.19,0,UPI Autopay,No,3,Hyderabad,0
+CUST10979,5,Standard,478.59,0,Credit Card,Yes,15,Kolkata,0
+CUST10980,8,Premium,772.46,0,Debit Card,No,18,Hyderabad,1
+CUST10981,3,Basic,300.85,1,Credit Card,No,22,Lucknow,0
+CUST10982,4,Standard,503.82,0,Wallet,No,13,Lucknow,0
+CUST10983,27,Standard,533.1,2,Credit Card,No,10,Pune,0
+CUST10984,17,Premium,795.07,2,Net Banking,No,13,Delhi,1
+CUST10985,9,Basic,308.06,0,Credit Card,No,9,Mumbai,0
+CUST10986,9,Premium,783.95,2,UPI Autopay,Yes,2,Mumbai,1
+CUST10987,20,Standard,488.14,0,Wallet,No,42,Mumbai,1
+CUST10988,23,Standard,524.62,0,UPI Autopay,Yes,,Bengaluru,0
+CUST10989,2,Standard,522.69,0,Debit Card,No,4,Bengaluru,1
+CUST10990,5,Standard,482.9,1,,No,0,Hyderabad,0
+CUST10991,21,Basic,302.35,0,UPI Autopay,No,7,Delhi,0
+CUST10992,6,Standard,499.4,0,Net Banking,No,1,Chennai,1
+CUST10993,4,Standard,531.96,0,Credit Card,Yes,8,Jaipur,0
+CUST10994,17,Standard,532.24,0,UPI Autopay,Yes,0,Kolkata,0
+CUST10995,24,Premium,797.96,0,UPI Autopay,Yes,36,Chennai,0
+CUST10996,28,Standard,478.15,3,UPI Autopay,No,8,Delhi,0
+CUST10997,1,Standard,526.96,0,Debit Card,No,21,Kolkata,0
+CUST10998,45,Basic,292.36,0,UPI Autopay,Yes,3,Kolkata,0
+CUST10999,4,Basic,309.62,0,Debit Card,Yes,17,Kolkata,0
+CUST11000,6,Standard,537.82,0,Credit Card,No,15,Delhi,0

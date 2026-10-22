@@ -30,7 +30,7 @@ export const partA: RawDomain[] = [
     practicalTask: {
       title: "Dataset observation report",
       brief:
-        "Analyse the provided dataset and explain three key observations using appropriate machine learning concepts.",
+        "Analyse the StreamKart customer churn dataset and explain three key observations using appropriate machine learning concepts.",
       requirements: [
         "State the shape of the dataset and the target variable you would predict",
         "Describe three concrete observations (distribution, correlation, imbalance, missing values or outliers)",
@@ -227,7 +227,7 @@ export const partA: RawDomain[] = [
     practicalTask: {
       title: "Dashboard analysis activity",
       brief:
-        "Build a dashboard-style analysis from the provided dataset and explain what a decision-maker should do next.",
+        "Build a dashboard-style analysis from the UrbanCart 2025 sales dataset and explain what a decision-maker should do next.",
       requirements: [
         "Define the business question your analysis answers",
         "List the cleaning steps you applied and the assumptions behind them",
@@ -424,7 +424,7 @@ export const partA: RawDomain[] = [
     practicalTask: {
       title: "Business performance review",
       brief:
-        "Analyse a business scenario, identify the underlying problem and present a structured recommendation.",
+        "Analyse the GlowRoot business scenario and quarterly KPI sheet, identify the underlying problem and present a structured recommendation.",
       requirements: [
         "Summarise the business situation and the metric that is under pressure",
         "Provide a root-cause breakdown with at least three candidate causes",
